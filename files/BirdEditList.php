@@ -120,13 +120,13 @@ $texts = array_map('file_get_contents', $files);
                 button.value = originalText;
                 button.disabled = false;
                 button.classList.remove('loading');
-            }, 2000);
+            }, 500);
         }
 
         function handleFormSubmit(form) {
             const button = form.querySelector('input[type="submit"]');
             animateSave(button);
-            setTimeout(() => form.submit(), 2000);
+            setTimeout(() => form.submit(), 500);
             return false;
         }
 
@@ -138,13 +138,13 @@ $texts = array_map('file_get_contents', $files);
             setTimeout(() => {
                 button.value = originalText;
                 button.disabled = false;
-            }, 2000);
+            }, 500);
         }
 
         function handleRestart(form) {
             const button = form.querySelector('input[type="submit"]');
             animateRestart(button);
-            setTimeout(() => form.submit(), 2000);
+            setTimeout(() => form.submit(), 500);
             return false;
         }
     </script>
