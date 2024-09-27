@@ -206,7 +206,7 @@ $texts = array_map('file_get_contents', $files);
 </form>
 
 <div class="footer" style="text-align: center; margin-top: 20px;">
-    by <a href="https://t.me/spatiumstas" target="_blank">@spatiumstas</a>
+    by <a href="https://github.com/spatiumstas" target="_blank">spatiumstas</a>
 </div>
 
 </body>
