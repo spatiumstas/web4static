@@ -99,8 +99,7 @@ download_file() {
     local path="$2"
     local filename=$(basename "$path")
     echo "Скачиваем файл $filename..."
-    
-    # Проверяем наличие файла по URL
+
     if ! curl -s -f -o "$path" "$url"; then
         print_message "Ошибка при скачивании файла $filename. Возможно, файл не найден" "$RED"
         read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
@@ -119,12 +118,10 @@ set_permissions() {
 modify_index_file() {
     if [ -f "$PATH_INDEX" ]; then
         if ! grep -q '<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>' "$PATH_INDEX"; then
-            # Добавляем строку после <meta charset="utf-8" />
             sed -i '/<meta charset="utf-8" \/>/a <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>' "$PATH_INDEX"
         fi
 
         if ! grep -q '<a href="addons/editlist.php" target="myframe" title="Edit vpn list">' "$PATH_INDEX"; then
-            # Добавляем строку перед <a href="addons/info/index.php" target="myframe" title="System Health and Information">
             sed -i '/<a href="addons\/info\/index.php" target="myframe" title="System Health and Information"><img src="addons\/img\/btn\/linfo.png"><\/a>/i <a href="addons/editlist.php" target="myframe" title="Edit vpn list"><img src="addons/img/btn/web4static.png"></a>' "$PATH_INDEX"
         fi
     else
@@ -134,11 +131,9 @@ modify_index_file() {
 
 replace_ip_address() {
     local new_ip="$1"
-    
-    # Заменяем IP в editlist.php
+
     sed -i "s|http://192.168.1.1:88/ext-ui/addons/editlist.php|http://$new_ip:88/ext-ui/addons/editlist.php|g" "$PATH_EDITLIST"
-    
-    # Заменяем IP в runbird4static.php
+
     sed -i "s|header('Location: http://192.168.1.1:88/ext-ui/addons/editlist.php');|header('Location: http://$new_ip:88/ext-ui/addons/editlist.php');|g" "$PATH_RUNBIRD"
 }
 
@@ -148,14 +143,14 @@ install_web() {
     check_internet
 
     download_file "$URL_EDITLIST" "$PATH_EDITLIST"
-    
+
     download_file "$URL_RUNBIRD" "$PATH_RUNBIRD"
     set_permissions "$PATH_RUNBIRD"
-    
+
     modify_index_file
-    
+
     download_file "$URL_VPN_ICON" "$PATH_VPN_ICON"
-    
+
     echo ""
     read -p "Введите IP-адрес роутера (по умолчанию 192.168.1.1): " user_ip
     user_ip=${user_ip:-192.168.1.1}
@@ -163,6 +158,12 @@ install_web() {
     if [ "$user_ip" != "192.168.1.1" ]; then
         replace_ip_address "$user_ip"
     fi
+
+    for file in "/opt/root/IPset4Static/lists/user-vpn1.list" "/opt/root/IPset4Static/lists/user-vpn2.list"; do
+        if [ ! -f "$file" ]; then
+            touch "$file"
+        fi
+    done
     
     print_message "Web-интерфейс успешно установлен и доступен по адресу http://$user_ip:88/ext-ui" "$GREEN"
     read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
