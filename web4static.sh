@@ -8,14 +8,14 @@ USER="spatiumstas"
 REPO="web4static"
 VERSION="1.0"
 
-URL_EDITLIST="https://raw.githubusercontent.com/${USER}/${REPO}/refs/heads/main/editlist.php"
-URL_RUNBIRD="https://raw.githubusercontent.com/${USER}/${REPO}/refs/heads/main/run4static.php"
-URL_VPN_ICON="https://raw.githubusercontent.com/${USER}/${REPO}/refs/heads/main/vpn.png"
+URL_EDITLIST="https://raw.githubusercontent.com/${USER}/${REPO}/refs/heads/main/files/editlist.php"
+URL_RUNBIRD="https://raw.githubusercontent.com/${USER}/${REPO}/refs/heads/main/files/run4static.php"
+URL_VPN_ICON="https://raw.githubusercontent.com/${USER}/${REPO}/refs/heads/main/files/web4static.png"
 
 PATH_EDITLIST="/opt/share/www/ext-ui/addons/editlist.php"
 PATH_RUNBIRD="/opt/share/www/ext-ui/addons/run4static.php"
 PATH_INDEX="/opt/share/www/ext-ui/index.html"
-PATH_VPN_ICON="/opt/share/www/ext-ui/addons/img/btn/vpn.png"
+PATH_VPN_ICON="/opt/share/www/ext-ui/addons/img/btn/web4static.png"
 
 print_menu() {
   printf "\033c"
@@ -125,7 +125,7 @@ modify_index_file() {
 
         if ! grep -q '<a href="addons/editlist.php" target="myframe" title="Edit vpn list">' "$PATH_INDEX"; then
             # Добавляем строку перед <a href="addons/info/index.php" target="myframe" title="System Health and Information">
-            sed -i '/<a href="addons\/info\/index.php" target="myframe" title="System Health and Information"><img src="addons\/img\/btn\/linfo.png"><\/a>/i <a href="addons/editlist.php" target="myframe" title="Edit vpn list"><img src="addons/img/btn/vpn.png"></a>' "$PATH_INDEX"
+            sed -i '/<a href="addons\/info\/index.php" target="myframe" title="System Health and Information"><img src="addons\/img\/btn\/linfo.png"><\/a>/i <a href="addons/editlist.php" target="myframe" title="Edit vpn list"><img src="addons/img/btn/web4static.png"></a>' "$PATH_INDEX"
         fi
     else
         echo "Файл $PATH_INDEX не найден."
