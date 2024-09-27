@@ -196,7 +196,7 @@ $texts = array_map('file_get_contents', $files);
     </form>
 </div>
 
-<form action="run4static.php" onsubmit="return handleRestart(this);">
+<form action="runIPset4static.php" onsubmit="return handleRestart(this);">
     <input type="submit" value="Restart service">
 </form>
 
