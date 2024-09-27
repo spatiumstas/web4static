@@ -4,7 +4,7 @@ $url = 'http://192.168.1.1:88/ext-ui/addons/editlist.php';
 $files = [
     'vpn-text' => '/opt/root/IPset4Static/lists/user-ipset-vpn.list',
     'vpn-text1' => '/opt/root/IPset4Static/lists/user-ipset-vpn1.list',
-    'vpn-text2' => '/opt/root/IPset4Static/lists/user-ipset-vpn1.list',
+    'vpn-text2' => '/opt/root/IPset4Static/lists/user-ipset-vpn2.list',
     'isp-text' => '/opt/root/IPset4Static/lists/user-ipset-isp.list'
 ];
 
@@ -176,7 +176,7 @@ $texts = array_map('file_get_contents', $files);
 <form id="selector" action="" method="post">
     <input type="button" onclick="showSection('uservpn')" value="user-ipset-vpn.list"/>
     <input type="button" onclick="showSection('uservpn1')" value="user-ipset-vpn1.list"/>
-    <input type="button" onclick="showSection('uservpn2')" value="user-ipset-vpn1.list"/>
+    <input type="button" onclick="showSection('uservpn2')" value="user-ipset-vpn2.list"/>
     <input type="button" onclick="showSection('userisp')" value="user-ipset-isp.list"/>
 </form>
 

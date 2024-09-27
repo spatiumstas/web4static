@@ -23,6 +23,12 @@ URL_RUN_BIRD="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/runBi
 PATH_RUN4STATIC_BIRD="/opt/share/www/ext-ui/addons/runBird4Static.php"
 PATH_LIST_BIRD="Bird4Static"
 
+# combo4Static
+URL_EDITLIST_COMBO="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/ComboEditList.php"
+URL_RUN_COMBO="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/runCombo4Static.php"
+PATH_RUN4STATIC_COMBO="/opt/share/www/ext-ui/addons/runCombo4Static.php"
+PATH_LIST_COMBO="Bird4Static/IPset4Static"
+
 print_menu() {
   printf "\033c"
   printf "${CYAN}"
@@ -38,7 +44,8 @@ EOF
   echo ""
   echo "1. Установить/Обновить Web-интерфейс IPset4Static"
   echo "2. Установить/Обновить Web-интерфейс Bird4Static"
-  echo "3. Удалить Web-интерфейс"
+  echo "3. Установить/Обновить Web-интерфейс Bird4Static+IPset4Static"
+  echo "4. Удалить Web-интерфейс"
   echo ""
   echo "00. Выход"
   echo "99. Обновить скрипт"
@@ -57,7 +64,8 @@ main_menu() {
         case "$choice" in
             1) install_web "IPset4Static" ;;
             2) install_web "Bird4Static" ;;
-            3) remove_web ;;
+            3) install_web "Combo4Static" ;;
+            4) remove_web ;;
             99) script_update "main" ;;
             88) script_update "dev" ;;
             00) exit ;;
@@ -148,11 +156,22 @@ install_web() {
         URL_RUN="$URL_RUN_IPSET"
         PATH_RUN4STATIC="$PATH_RUN4STATIC_IPSET"
         TOUCH_LIST="$PATH_LIST_IPSET"
+        FILE_VPN1="user-ipset-vpn1.list"
+        FILE_VPN2="user-ipset-vpn2.list"
     elif [ "$interface_type" == "Bird4Static" ]; then
         URL_EDITLIST="$URL_EDITLIST_BIRD"
         URL_RUN="$URL_RUN_BIRD"
         PATH_RUN4STATIC="$PATH_RUN4STATIC_BIRD"
         TOUCH_LIST="$PATH_LIST_BIRD"
+        FILE_VPN1="user-vpn1.list"
+        FILE_VPN2="user-vpn2.list"
+    elif [ "$interface_type" == "Combo4Static" ]; then
+        URL_EDITLIST="$URL_EDITLIST_COMBO"
+        URL_RUN="$URL_RUN_COMBO"
+        PATH_RUN4STATIC="$PATH_RUN4STATIC_COMBO"
+        TOUCH_LIST="$PATH_LIST_COMBO"
+        FILE_VPN1="user-ipset-vpn1.list"
+        FILE_VPN2="user-ipset-vpn2.list"
     else
         echo "Неверный тип интерфейса."
         return
@@ -174,7 +193,7 @@ install_web() {
         replace_ip_address "$user_ip"
     fi
 
-    for file in "/opt/root/$TOUCH_LIST/lists/user-vpn1.list" "/opt/root/$TOUCH_LIST/lists/user-vpn2.list"; do
+    for file in "/opt/root/$TOUCH_LIST/lists/$FILE_VPN1" "/opt/root/$TOUCH_LIST/lists/$FILE_VPN2"; do
         if [ ! -f "$file" ]; then
             touch "$file"
         fi
