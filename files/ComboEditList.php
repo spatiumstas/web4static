@@ -1,11 +1,11 @@
 <?php
-$fileRun = 'runIPset4Static.php';
+$fileRun = 'runCombo4Static.php';
 $url = 'http://192.168.1.1:88/ext-ui/addons/editlist.php';
 $files = [
-    'vpn-text' => '/opt/root/IPset4Static/lists/user-ipset-vpn.list',
-    'vpn-text1' => '/opt/root/IPset4Static/lists/user-ipset-vpn1.list',
-    'vpn-text2' => '/opt/root/IPset4Static/lists/user-ipset-vpn1.list',
-    'isp-text' => '/opt/root/IPset4Static/lists/user-ipset-isp.list'
+    'vpn-text' => '/opt/root/Bird4Static/IPset4Static/lists/user-ipset-vpn.list',
+    'vpn-text1' => '/opt/root/Bird4Static/IPset4Static/lists/user-ipset-vpn1.list',
+    'vpn-text2' => '/opt/root/Bird4Static/IPset4Static/lists/user-ipset-vpn1.list',
+    'isp-text' => '/opt/root/Bird4Static/IPset4Static/lists/user-ipset-isp.list'
 ];
 
 foreach ($files as $key => $file) {
@@ -164,12 +164,12 @@ $texts = array_map('file_get_contents', $files);
 
 <header>
     <pre>
-                __    __ __       __        __  _     
+                __    __ __       __        __  _
  _      _____  / /_  / // / _____/ /_____ _/ /_(_)____
 | | /| / / _ \/ __ \/ // /_/ ___/ __/ __ `/ __/ / ___/
-| |/ |/ /  __/ /_/ /__  __(__  ) /_/ /_/ / /_/ / /__  
-|__/|__/\___/_.___/  /_/ /____/\__/\__,_/\__/_/\___/  
-                                                              
+| |/ |/ /  __/ /_/ /__  __(__  ) /_/ /_/ / /_/ / /__
+|__/|__/\___/_.___/  /_/ /____/\__/\__,_/\__/_/\___/
+
     </pre>
 </header>
 
