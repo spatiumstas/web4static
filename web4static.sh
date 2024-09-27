@@ -191,7 +191,7 @@ replace_ip_address() {
 
     sed -i "s|http://192.168.1.1:88/ext-ui/addons/editlist.php|http://$new_ip:88/ext-ui/addons/editlist.php|g" "$PATH_EDITLIST"
 
-    sed -i "s|header('Location: http://192.168.1.1:88/ext-ui/addons/editlist.php');|header('Location: http://$new_ip:88/ext-ui/addons/editlist.php');|g" "$PATH_RUN"
+    sed -i "s|header('Location: http://192.168.1.1:88/ext-ui/addons/editlist.php');|header('Location: http://$new_ip:88/ext-ui/addons/editlist.php');|g" "$PATH_RUN4STATIC"
 }
 
 remove_web() {
