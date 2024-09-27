@@ -6,7 +6,6 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 USER="spatiumstas"
 REPO="web4static"
-VERSION="1.0"
 PATH_INDEX="/opt/share/www/ext-ui/index.html"
 PATH_EDITLIST="/opt/share/www/ext-ui/addons/editlist.php"
 URL_VPN_ICON="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/web4static.png"
@@ -28,18 +27,18 @@ print_menu() {
   printf "\033c"
   printf "${CYAN}"
   cat <<'EOF'
-                __    __ __ _____ __        __  _         ___ ____ 
- _      _____  / /_  / // // ___// /_____ _/ /_(_)____   <  // __ \
-| | /| / / _ \/ __ \/ // /_\__ \/ __/ __ `/ __/ / ___/   / // / / /
-| |/ |/ /  __/ /_/ /__  __/__/ / /_/ /_/ / /_/ / /__    / // /_/ / 
-|__/|__/\___/_.___/  /_/ /____/\__/\__,_/\__/_/\___/   /_(_)____/  
-                                                                                                                                                  
+                __    __ __       __        __  _
+ _      _____  / /_  / // / _____/ /_____ _/ /_(_)____
+| | /| / / _ \/ __ \/ // /_/ ___/ __/ __ `/ __/ / ___/
+| |/ |/ /  __/ /_/ /__  __(__  ) /_/ /_/ / /_/ / /__
+|__/|__/\___/_.___/  /_/ /____/\__/\__,_/\__/_/\___/
+
 EOF
   printf "${NC}"
   echo ""
-  echo "1. Установить web-интерфейс IPset4Static"
-  echo "2. Установить web-интерфейс Bird4Static"
-  echo "3. Удалить web-интерфейс"
+  echo "1. Установить/Обновить Web-интерфейс IPset4Static"
+  echo "2. Установить/Обновить Web-интерфейс Bird4Static"
+  echo "3. Удалить Web-интерфейс"
   echo ""
   echo "00. Выход"
   echo "99. Обновить скрипт"
