@@ -1,5 +1,5 @@
 <?php
-
+$fileRun = 'runBird4Static.php';
 $url = 'http://192.168.1.1:88/ext-ui/addons/editlist.php';
 $files = [
     'vpn-text' => '/opt/root/Bird4Static/lists/user-vpn.list',
@@ -26,6 +26,10 @@ $texts = array_map('file_get_contents', $files);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuration</title>
     <style>
+        html, body {
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -39,7 +43,8 @@ $texts = array_map('file_get_contents', $files);
             color: #333;
             white-space: pre;
             margin: 0;
-            line-height: 1;
+            line-height: 1.2;
+            padding: 20px 0;
         }
         .subtitle {
             display: inline-block;
@@ -90,7 +95,7 @@ $texts = array_map('file_get_contents', $files);
         }
         header pre {
           display: grid;
-          font-size: max(0.7rem, 1.7vmin) !important;
+          font-size: max(0.6rem, 1.9vmin) !important;
           justify-content: center;
           align-content: center;
           text-align: center;
@@ -104,48 +109,54 @@ $texts = array_map('file_get_contents', $files);
         }
     </style>
     <script>
+        const fileRun = <?php echo json_encode($fileRun); ?>;
+
         function showSection(sectionId) {
             document.querySelectorAll('.form-section').forEach(section => {
                 section.classList.remove('active');
             });
             document.getElementById(sectionId).classList.add('active');
         }
+        function handleSaveAndRestart(form) {
+            const button = form.querySelector('input[type="submit"]');
+            animateSave(button);
+            const formData = new FormData(form);
 
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            }).then(response => {
+                if (response.ok) {
+                    setTimeout(() => {
+                        fetch(fileRun, {
+                            method: 'POST'
+                        }).then(res => {
+                            if (res.ok) {
+                            }
+                            button.disabled = false;
+                            button.value = 'Save & Restart';
+                            button.classList.remove('loading');
+                        });
+                    }, 1000);
+                } else {
+                    button.disabled = false;
+                    button.value = 'Save & Restart';
+                    button.classList.remove('loading');
+                }
+            }).catch(err => {
+                button.disabled = false;
+                button.value = 'Save & Restart';
+                button.classList.remove('loading');
+                console.error('Ошибка:', err);
+            });
+
+            return false;
+        }
         function animateSave(button) {
             const originalText = button.value;
             button.value = 'Saving...';
             button.disabled = true;
             button.classList.add('loading');
-            setTimeout(() => {
-                button.value = originalText;
-                button.disabled = false;
-                button.classList.remove('loading');
-            }, 500);
-        }
-
-        function handleFormSubmit(form) {
-            const button = form.querySelector('input[type="submit"]');
-            animateSave(button);
-            setTimeout(() => form.submit(), 500);
-            return false;
-        }
-
-        function animateRestart(button) {
-            const originalText = button.value;
-            button.value = 'Restarting...';
-            button.disabled = true;
-            button.classList.add('loading');
-            setTimeout(() => {
-                button.value = originalText;
-                button.disabled = false;
-            }, 500);
-        }
-
-        function handleRestart(form) {
-            const button = form.querySelector('input[type="submit"]');
-            animateRestart(button);
-            setTimeout(() => form.submit(), 500);
-            return false;
         }
     </script>
 </head>
@@ -170,41 +181,36 @@ $texts = array_map('file_get_contents', $files);
 </form>
 
 <div id="uservpn" class="form-section">
-    <form action="" method="post" onsubmit="return handleFormSubmit(this);">
+    <form id="form-vpn" action="" method="post" onsubmit="return handleSaveAndRestart(this);">
         <legend>VPN list</legend>
         <textarea name="vpn-text"><?php echo htmlspecialchars($texts['vpn-text']); ?></textarea>
-        <input type="submit" value="Save & Close"/>
+        <input type="submit" value="Save & Restart" />
     </form>
 </div>
 
 <div id="uservpn1" class="form-section">
-    <form action="" method="post" onsubmit="return handleFormSubmit(this);">
+    <form id="form-vpn1" action="" method="post" onsubmit="return handleSaveAndRestart(this);">
         <legend>VPN1 list</legend>
         <textarea name="vpn-text1"><?php echo htmlspecialchars($texts['vpn-text1']); ?></textarea>
-        <input type="submit" value="Save & Close"/>
+        <input type="submit" value="Save & Restart" />
     </form>
 </div>
 
 <div id="uservpn2" class="form-section">
-    <form action="" method="post" onsubmit="return handleFormSubmit(this);">
+    <form id="form-vpn2" action="" method="post" onsubmit="return handleSaveAndRestart(this);">
         <legend>VPN2 list</legend>
         <textarea name="vpn-text2"><?php echo htmlspecialchars($texts['vpn-text2']); ?></textarea>
-        <input type="submit" value="Save & Close"/>
+        <input type="submit" value="Save & Restart" />
     </form>
 </div>
 
 <div id="userisp" class="form-section">
-    <form action="" method="post" onsubmit="return handleFormSubmit(this);">
+    <form id="form-isp" action="" method="post" onsubmit="return handleSaveAndRestart(this);">
         <legend>ISP list</legend>
         <textarea name="isp-text"><?php echo htmlspecialchars($texts['isp-text']); ?></textarea>
-        <input type="submit" value="Save & Close"/>
+        <input type="submit" value="Save & Restart" />
     </form>
 </div>
-
-<form action="runBird4Static.php" onsubmit="return handleRestart(this);">
-    <input type="submit" value="Restart service">
-</form>
-
 <div class="footer" style="text-align: center; margin-top: 20px;">
     by <a href="https://github.com/spatiumstas" target="_blank">spatiumstas</a>
 </div>
