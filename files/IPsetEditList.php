@@ -32,18 +32,19 @@ $texts = array_map('file_get_contents', $files);
             padding: 20px;
             background-color: #f4f4f4;
             border-radius: 8px;
+            grid-template-rows: minmax(3.5rem, 15vmin) 1fr 6rem;
         }
         .header {
             text-align: center;
             color: #333;
-            white-space: pre; 
-            margin: 0; 
+            white-space: pre;
+            margin: 0;
             line-height: 1;
         }
         .subtitle {
-            display: inline-block; 
-            font-size: 16px; 
-            margin-left: 10px; 
+            display: inline-block;
+            font-size: 16px;
+            margin-left: 10px;
         }
         .form-section { display: none; }
         .form-section.active { display: block; }
@@ -87,10 +88,13 @@ $texts = array_map('file_get_contents', $files);
         .footer a:hover {
             text-decoration: underline;
         }
-        pre {
-            white-space: pre-wrap;
-            word-wrap: break-word; 
-            font-size: 16px; 
+        header pre {
+          display: grid;
+          font-size: max(0.7rem, 1.7vmin) !important;
+          justify-content: center;
+          align-content: center;
+          text-align: center;
+          font-size: 70%;
         }
 
         @media (max-width: 600px) {
@@ -147,15 +151,15 @@ $texts = array_map('file_get_contents', $files);
 </head>
 <body>
 
-<div class="header">
+<header>
     <pre>
-                __    __ __ _____ __        __  _     
+                __    __ __ _____ __        __  _
  _      _____  / /_  / // // ___// /_____ _/ /_(_)____
 | | /| / / _ \/ __ \/ // /_\__ \/ __/ __ `/ __/ / ___/
-| |/ |/ /  __/ /_/ /__  __/__/ / /_/ /_/ / /_/ / /__  
-|__/|__/\___/_.___/  /_/ /____/\__/\__,_/\__/_/\___/  
+| |/ |/ /  __/ /_/ /__  __/__/ / /_/ /_/ / /_/ / /__
+|__/|__/\___/_.___/  /_/ /____/\__/\__,_/\__/_/\___/
     </pre>
-</div>
+</header>
 
 <form id="selector" action="" method="post">
     <input type="button" onclick="showSection('uservpn')" value="user-vpn.list"/>
