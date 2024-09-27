@@ -14,13 +14,15 @@ PATH_VPN_ICON="/opt/share/www/ext-ui/addons/img/btn/web4static.png"
 
 # IPset4Static
 URL_EDITLIST_IPSET="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/IPsetEditList.php"
-URL_RUN_IPSET="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/runIPset4static.php"
-PATH_RUN4STATIC_IPSET="/opt/share/www/ext-ui/addons/runIPset4static.php"
+URL_RUN_IPSET="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/runIPset4Static.php"
+PATH_RUN4STATIC_IPSET="/opt/share/www/ext-ui/addons/runIPset4Static.php"
+PATH_LIST_IPSET="IPset4Static"
 
 # Bird4Static
 URL_EDITLIST_BIRD="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/BirdEditList.php"
-URL_RUN_BIRD="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/runBird4static.php"
-PATH_RUN4STATIC_BIRD="/opt/share/www/ext-ui/addons/runBird4static.php"
+URL_RUN_BIRD="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/runBird4Static.php"
+PATH_RUN4STATIC_BIRD="/opt/share/www/ext-ui/addons/runBird4Static.php"
+PATH_LIST_BIRD="Bird4Static"
 
 print_menu() {
   printf "\033c"
@@ -146,10 +148,12 @@ install_web() {
         URL_EDITLIST="$URL_EDITLIST_IPSET"
         URL_RUN="$URL_RUN_IPSET"
         PATH_RUN4STATIC="$PATH_RUN4STATIC_IPSET"
+        TOUCH_LIST="$PATH_LIST_IPSET"
     elif [ "$interface_type" == "Bird4Static" ]; then
         URL_EDITLIST="$URL_EDITLIST_BIRD"
         URL_RUN="$URL_RUN_BIRD"
         PATH_RUN4STATIC="$PATH_RUN4STATIC_BIRD"
+        TOUCH_LIST="$PATH_LIST_BIRD"
     else
         echo "Неверный тип интерфейса."
         return
@@ -171,7 +175,7 @@ install_web() {
         replace_ip_address "$user_ip"
     fi
 
-    for file in "/opt/root/IPset4Static/lists/user-vpn1.list" "/opt/root/IPset4Static/lists/user-vpn2.list"; do
+    for file in "/opt/root/$TOUCH_LIST/lists/user-vpn1.list" "/opt/root/$TOUCH_LIST/lists/user-vpn2.list"; do
         if [ ! -f "$file" ]; then
             touch "$file"
         fi
