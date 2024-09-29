@@ -24,6 +24,6 @@ chmod +x $OPT_DIR/$SCRIPT
 cd $OPT_DIR/bin
 ln -sf $OPT_DIR/$SCRIPT $OPT_DIR/bin/web4static
 URL=$(url)
-JSON_DATA="{\"script_update\": \"1.1\"}"
+JSON_DATA="{\"script_update\": \"web4static_install\"}"
 curl -X POST -H "Content-Type: application/json" -d "$JSON_DATA" "$URL" -o /dev/null -s
 $OPT_DIR/$SCRIPT
