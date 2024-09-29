@@ -12,9 +12,6 @@ PATH_INDEX="/opt/share/www/ext-ui/index.html"
 PATH_EDITLIST="/opt/share/www/ext-ui/addons/web4static.php"
 PATH_VPN_ICON="/opt/share/www/ext-ui/addons/web4static/main.png"
 PATH_RUN4STATIC="/opt/share/www/ext-ui/addons/web4static/run4Static.php"
-PATH_SCRIPT_RUN_BIRD="/opt/root/Bird4Static/scripts/add-bird4_routes.sh"
-PATH_SCRIPT_RUN_IPSET="/opt/root/IPset4Static/scripts/update-ipset.sh"
-PATH_SCRIPT_RUN_COMBO="/opt/root/Bird4Static/scripts/add-bird4_routes.sh; /opt/root/Bird4Static/IPset4Static/scripts/update-ipset.sh"
 
 URL_EDITLIST="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/web4static.php"
 URL_VPN_ICON="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/main.png"
@@ -138,20 +135,6 @@ install_web() {
   print_message "Начинаем установку Web-интерфейса $interface_type..." "$GREEN"
   packages_checker
 
-  if [ "$interface_type" == "IPset4Static" ]; then
-    run4Static_path="$PATH_SCRIPT_RUN_IPSET"
-
-  elif [ "$interface_type" == "Bird4Static" ]; then
-    run4Static_path="$PATH_SCRIPT_RUN_BIRD"
-
-  elif [ "$interface_type" == "Combo4Static" ]; then
-    run4Static_path="$PATH_SCRIPT_RUN_COMBO"
-
-  else
-    echo "Неверный тип интерфейса."
-    return
-  fi
-
   mkdir -p "$WEB4STATIC_DIR"
   download_file "$URL_EDITLIST" "$PATH_EDITLIST"
   download_file "$URL_RUN" "$PATH_RUN4STATIC"
@@ -168,7 +151,7 @@ install_web() {
   read -p "Введите IP-адрес роутера (по умолчанию 192.168.1.1): " user_ip
   user_ip=${user_ip:-192.168.1.1}
 
-  replace_path "$user_ip" "$run4Static_path"
+  replace_path "$user_ip"
 
   echo "Файлы успешно пропатчены"
 
@@ -179,7 +162,6 @@ install_web() {
 
 replace_path() {
   local new_ip="$1"
-  local run4Static_path="$2"
 
   replace_with_error_check() {
     local search="$1"
@@ -196,7 +178,6 @@ replace_path() {
 
   replace_with_error_check "http://192.168.1.1:88/ext-ui/addons/web4static.php" "http://$new_ip:88/ext-ui/addons/web4static.php" "$PATH_EDITLIST" "URL"
 
-  replace_with_error_check 'shell_exec("/opt/root/Bird4Static/scripts/add-bird4_routes.sh");' "shell_exec(\"$run4Static_path\");" "$PATH_RUN4STATIC" "shell_exec Bird4Static"
   replace_with_error_check "header('Location: http://192.168.1.1:88/ext-ui/addons/web4static.php');" "header('Location: http://$new_ip:88/ext-ui/addons/web4static.php');" "$PATH_RUN4STATIC" "header URL"
 }
 
