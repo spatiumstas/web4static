@@ -12,12 +12,9 @@ PATH_INDEX="/opt/share/www/ext-ui/index.html"
 PATH_EDITLIST="/opt/share/www/ext-ui/addons/web4static.php"
 PATH_VPN_ICON="/opt/share/www/ext-ui/addons/web4static/main.png"
 PATH_RUN4STATIC="/opt/share/www/ext-ui/addons/web4static/run4Static.php"
-PATH_LIST_IPSET="IPset4Static"
-PATH_LIST_BIRD="Bird4Static"
-PATH_LIST_COMBO="Bird4Static/IPset4Static"
-PATH_SCRIPT_RUN_BIRD="/opt/root/$PATH_LIST_BIRD/scripts/add-bird4_routes.sh"
-PATH_SCRIPT_RUN_IPSET="/opt/root/$PATH_LIST_IPSET/scripts/update-ipset.sh"
-PATH_SCRIPT_RUN_COMBO="/opt/root/$PATH_LIST_COMBO/scripts/update-ipset.sh"
+PATH_SCRIPT_RUN_BIRD="/opt/root/Bird4Static/scripts/add-bird4_routes.sh"
+PATH_SCRIPT_RUN_IPSET="/opt/root/IPset4Static/scripts/update-ipset.sh"
+PATH_SCRIPT_RUN_COMBO="/opt/root/Bird4Static/IPset4Static/scripts/update-ipset.sh"
 
 URL_EDITLIST="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/web4static.php"
 URL_VPN_ICON="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/main.png"
@@ -142,15 +139,12 @@ install_web() {
   packages_checker
 
   if [ "$interface_type" == "IPset4Static" ]; then
-    TOUCH_LIST="$PATH_LIST_IPSET"
     run4Static_path="$PATH_SCRIPT_RUN_IPSET"
 
   elif [ "$interface_type" == "Bird4Static" ]; then
-    TOUCH_LIST="$PATH_LIST_BIRD"
     run4Static_path="$PATH_SCRIPT_RUN_BIRD"
 
   elif [ "$interface_type" == "Combo4Static" ]; then
-    TOUCH_LIST="$PATH_LIST_COMBO"
     run4Static_path="$PATH_SCRIPT_RUN_COMBO"
 
   else
@@ -175,12 +169,6 @@ install_web() {
   user_ip=${user_ip:-192.168.1.1}
 
   replace_path "$user_ip" "$run4Static_path"
-
-  for file in "/opt/root/$TOUCH_LIST/lists/$FILE_VPN1" "/opt/root/$TOUCH_LIST/lists/$FILE_VPN2"; do
-    if [ ! -f "$file" ]; then
-      touch "$file"
-    fi
-  done
 
   echo "Файлы успешно пропатчены"
 
