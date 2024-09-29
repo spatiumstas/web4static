@@ -24,7 +24,7 @@ $texts = array_map('file_get_contents', $files);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuration</title>
+    <title>web4static</title>
     <style>
         html, body {
             overflow-x: hidden;
