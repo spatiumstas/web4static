@@ -9,7 +9,7 @@ REPO="web4static"
 
 WEB4STATIC_DIR="/opt/share/www/ext-ui/addons/web4static"
 PATH_INDEX="/opt/share/www/ext-ui/index.html"
-PATH_EDITLIST="/opt/share/www/ext-ui/addons/web4static.php"
+PATH_WEB4STATIC="/opt/share/www/ext-ui/addons/web4static.php"
 PATH_VPN_ICON="/opt/share/www/ext-ui/addons/web4static/main.png"
 PATH_RUN4STATIC="/opt/share/www/ext-ui/addons/web4static/run4Static.php"
 
@@ -25,20 +25,17 @@ print_menu() {
   printf "${CYAN}"
   cat <<'EOF'
                 __    __ __       __        __  _              ___ ___
- _      _____  / /_  / // / _____/ /_____ _/ /_(_)____   _   _<  /<  /
-| | /| / / _ \/ __ \/ // /_/ ___/ __/ __ `/ __/ / ___/  | | / / / / /
-| |/ |/ /  __/ /_/ /__  __(__  ) /_/ /_/ / /_/ / /__    | |/ / / / /
-|__/|__/\___/_.___/  /_/ /____/\__/\__,_/\__/_/\___/    |___/_(_)_/
+ _      _____  / /_  / // / _____/ /_____ _/ /_(_)____   _   _<  /|__ \
+| | /| / / _ \/ __ \/ // /_/ ___/ __/ __ `/ __/ / ___/  | | / / / __/ /
+| |/ |/ /  __/ /_/ /__  __(__  ) /_/ /_/ / /_/ / /__    | |/ / / / __/
+|__/|__/\___/_.___/  /_/ /____/\__/\__,_/\__/_/\___/    |___/_(_)____/
 
 EOF
-  echo ""
-  echo "Куда установить web-интерфейс?"
   printf "${NC}"
-  echo "1. IPset4Static"
-  echo "2. Bird4Static"
-  echo "3. Bird4Static + IPset4Static"
   echo ""
-  echo "88. Удалить web-интерфейс"
+  echo "1. Установить/Обновить web-интерфейс"
+  echo "2. Удалить web-интерфейс"
+  echo ""
   echo "99. Обновить скрипт"
   echo "00. Выход"
   echo ""
@@ -54,12 +51,10 @@ main_menu() {
     main_menu
   else
     case "$choice" in
-    1) install_web "IPset4Static" ;;
-    2) install_web "Bird4Static" ;;
-    3) install_web "Combo4Static" ;;
-    88) remove_web ;;
+    1) install_web ;;
+    2) remove_web ;;
+    88) script_update "dev" ;;
     99) script_update "main" ;;
-    77) script_update "dev" ;;
     00) exit ;;
     *)
       echo "Неверный выбор. Попробуйте снова."
@@ -131,12 +126,11 @@ modify_index_file() {
 }
 
 install_web() {
-  local interface_type=$1
-  print_message "Начинаем установку Web-интерфейса $interface_type..." "$GREEN"
+  print_message "Начинаем установку Web-интерфейса..." "$GREEN"
   packages_checker
 
   mkdir -p "$WEB4STATIC_DIR"
-  download_file "$URL_EDITLIST" "$PATH_EDITLIST"
+  download_file "$URL_EDITLIST" "$PATH_WEB4STATIC"
   download_file "$URL_RUN" "$PATH_RUN4STATIC"
   download_file "$URL_ASCII" "$WEB4STATIC_DIR/ascii.txt"
   download_file "$URL_STYLES" "$WEB4STATIC_DIR/styles.css"
@@ -176,7 +170,7 @@ replace_path() {
     fi
   }
 
-  replace_with_error_check "http://192.168.1.1:88/ext-ui/addons/web4static.php" "http://$new_ip:88/ext-ui/addons/web4static.php" "$PATH_EDITLIST" "URL"
+  replace_with_error_check "http://192.168.1.1:88/ext-ui/addons/web4static.php" "http://$new_ip:88/ext-ui/addons/web4static.php" "$PATH_WEB4STATIC" "URL"
 
   replace_with_error_check "header('Location: http://192.168.1.1:88/ext-ui/addons/web4static.php');" "header('Location: http://$new_ip:88/ext-ui/addons/web4static.php');" "$PATH_RUN4STATIC" "header URL"
 }
@@ -187,9 +181,9 @@ remove_web() {
   echo "Удаляю директорию $WEB4STATIC_DIR..."
   sleep 1
   rm -r $WEB4STATIC_DIR
-  echo "Удаляю файл $PATH_EDITLIST..."
+  echo "Удаляю файл $PATH_WEB4STATIC..."
   sleep 1
-  rm $PATH_EDITLIST
+  rm $PATH_WEB4STATIC
 
   print_message "Успешно удалёно, пакет ext-ui не затронут" "$GREEN"
   read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
