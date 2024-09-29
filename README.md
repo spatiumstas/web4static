@@ -23,4 +23,3 @@ opkg update && opkg install curl && curl -L -s "https://raw.githubusercontent.co
 
 
 - Ручной запуска скрипта через `web4static` или `/opt/web4static.sh`
-- Удаление web-интерфейса через скрипт полностью удалит пакет `ext-ui`
