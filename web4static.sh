@@ -14,7 +14,7 @@ PATH_VPN_ICON="/opt/share/www/ext-ui/addons/web4static/main.png"
 PATH_RUN4STATIC="/opt/share/www/ext-ui/addons/web4static/run4Static.php"
 PATH_SCRIPT_RUN_BIRD="/opt/root/Bird4Static/scripts/add-bird4_routes.sh"
 PATH_SCRIPT_RUN_IPSET="/opt/root/IPset4Static/scripts/update-ipset.sh"
-PATH_SCRIPT_RUN_COMBO="/opt/root/Bird4Static/IPset4Static/scripts/update-ipset.sh"
+PATH_SCRIPT_RUN_COMBO="/opt/root/Bird4Static/scripts/add-bird4_routes.sh; /opt/root/Bird4Static/IPset4Static/scripts/update-ipset.sh"
 
 URL_EDITLIST="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/web4static.php"
 URL_VPN_ICON="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/main.png"
