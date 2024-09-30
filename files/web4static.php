@@ -48,7 +48,7 @@ $texts = array_map('file_get_contents', $files);
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>web4static</title>
     <link rel="icon" href="web4static/main.png" type="image/x-icon">
     <link rel="stylesheet" href="web4static/styles.css">
@@ -65,7 +65,8 @@ $texts = array_map('file_get_contents', $files);
     </pre>
 </header>
 
-
+<body>
+    <main>
 <form id="selector" action="" method="post">
     <?php foreach ($files as $key => $path): ?>
         <input type="button" onclick="showSection('<?php echo $key; ?>')" value="<?php echo basename($path); ?>"/>
@@ -75,16 +76,32 @@ $texts = array_map('file_get_contents', $files);
 <?php foreach ($files as $key => $path): ?>
     <div id="<?php echo $key; ?>" class="form-section" style="display:none;">
         <form id="form-<?php echo $key; ?>" action="" method="post" onsubmit="return handleSaveAndRestart(this);">
-            <legend><?php echo ucfirst(str_replace('-', ' ', $key)); ?> list</legend>
             <textarea name="<?php echo $key; ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
             <input type="submit" value="Save & Restart" />
         </form>
     </div>
 <?php endforeach; ?>
-
+    </main>
+</body>
+<footer>
+<button onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle Dark Mode">
+    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+    </svg>
+</button>
 <div class="footer" style="text-align: center; margin-top: 20px;">
     by <a href="https://github.com/spatiumstas" target="_blank">spatiumstas</a>
 </div>
-
-</body>
+</footer>
 </html>

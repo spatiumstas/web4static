@@ -175,7 +175,6 @@ replace_path() {
   replace_with_error_check "header('Location: http://192.168.1.1:88/ext-ui/addons/web4static.php');" "header('Location: http://$new_ip:88/ext-ui/addons/web4static.php');" "$PATH_RUN4STATIC" "header URL"
 }
 
-
 remove_web() {
   echo ""
   echo "Удаляю директорию $WEB4STATIC_DIR..."
