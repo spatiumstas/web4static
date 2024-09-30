@@ -1,6 +1,8 @@
 html, body {
-    overflow-x: hidden;
-    overflow-y: auto;
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 body {
@@ -12,7 +14,85 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    color: #000; /* Цвет текста для светлой темы */
 }
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+footer {
+    background-color: #f4f4f4; /* Цвет фона футера для светлой темы */
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #000; /* Цвет текста для светлой темы */
+    width: 100%;
+    position: relative;
+}
+
+.footer {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px; /* Размер шрифта */
+    color: #555; /* Цвет текста */
+}
+
+.footer a {
+    color: #007BFF;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+#theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+}
+
+/* Цвет иконок */
+#theme-toggle svg {
+    color: #333; /* Цвет иконок в светлой теме */
+    transition: color 0.3s ease;
+}
+
+/* Стили для тёмной темы */
+body.dark-theme {
+    background-color: #121212; /* Фон для тёмной темы */
+    color: #fff; /* Цвет текста для тёмной темы */
+}
+
+footer.dark-theme {
+    background-color: #121212; /* Цвет фона футера в тёмной теме */
+    color: #fff; /* Цвет текста футера в тёмной теме */
+}
+
+/* Цвет иконок в тёмной теме */
+body.dark-theme #theme-toggle svg {
+    color: #f0e68c; /* Цвет иконок в тёмной теме (желтоватый для контраста) */
+}
+
+/* Переключение между иконками */
+body.dark-theme #sun-icon {
+    display: none;
+}
+
+body.dark-theme #moon-icon {
+    display: inline;
+}
+
+body:not(.dark-theme) #moon-icon {
+    display: none;
+}
+
 
 .header {
     text-align: center;
@@ -29,19 +109,8 @@ body {
     margin-left: 10px;
 }
 
-.button-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin: 20px 0;
-}
-
-input[type="button"] {
-    margin: 10px;
-    flex: 0 1 200px;
-}
-
 .form-section {
+    justify-content: space-around;
     display: none;
     width: 100%;
     max-width: 600px;
@@ -52,14 +121,47 @@ input[type="button"] {
 }
 
 textarea {
-    width: 100%;
-    height: 200px;
-    resize: none;
-    overflow: auto;
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Занимает всю ширину родительского контейнера */
+    height: 200px; /* Высота текстовой области */
+    resize: none; /* Запрещаем изменение размера */
+    overflow: auto; /* Включаем прокрутку, если текст превышает высоту */
+    padding: 10px; /* Отступы внутри текстовой области */
+    border-radius: 20px; /* Скругление углов */
+    border: 1px solid #ccc; /* Цвет границы */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Тень */
+    box-sizing: border-box; /* Учитываем границы и отступы в ширине и высоте */
+    padding: 15px;
+    overflow: hidden;
+    overflow-y: scroll;
+}
+
+textarea::-webkit-scrollbar {
+    display: none; /* Скрываем скроллбар */
+}
+
+textarea:focus {
+    border-color: #007BFF; /* Цвет границы при фокусе */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Лёгкая тень для акцента */
+    outline: none; /* Убираем стандартный контур при фокусе */
+}
+
+textarea::placeholder {
+    color: #aaa; /* Цвет текста-подсказки */
+    opacity: 0.8; /* Прозрачность */
+}
+
+/* Стили для тёмной темы */
+body.dark-theme textarea {
+    background-color: #121212; /* Цвет фона для тёмной темы */
+    color: #fff; /* Цвет текста для тёмной темы */
+    border: 1px solid #444; /* Цвет границы для тёмной темы */
+    box-shadow: none; /* Убираем тень в тёмной теме */
+}
+
+/* Стили для фокуса в тёмной теме */
+body.dark-theme textarea:focus {
+    border-color: #007BFF; /* Цвет границы при фокусе в тёмной теме */
+    outline: none; /* Убираем стандартный контур при фокусе */
 }
 
 input[type="submit"], input[type="reset"], input[type="button"] {
@@ -77,24 +179,14 @@ input[type="submit"]:hover, input[type="reset"]:hover, input[type="button"]:hove
     background-color: #0056b3;
 }
 
+.button-active {
+    background-color: #0056b3; /* Цвет фона для активной кнопки */
+    transform: translateY(2px); /* Немного опустите кнопку при активации */
+    border: 1px solid #004494; /* Более темная граница для активной кнопки */
+}
+
 .loading {
     opacity: 0.5;
-}
-
-.footer {
-    margin-top: 20px;
-    text-align: center;
-    font-size: 14px;
-    color: #555;
-}
-
-.footer a {
-    color: #007BFF;
-    text-decoration: none;
-}
-
-.footer a:hover {
-    text-decoration: underline;
 }
 
 header pre {
