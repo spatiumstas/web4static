@@ -10,7 +10,7 @@ body {
     margin: 20px;
     padding: 20px;
     background-color: #f4f4f4;
-    border-radius: 8px;
+    border-radius: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -167,7 +167,7 @@ body.dark-theme textarea:focus {
 input[type="submit"], input[type="reset"], input[type="button"] {
     margin: 10px 0;
     padding: 10px 15px;
-    border-radius: 4px;
+    border-radius: 20px;
     border: none;
     background-color: #007BFF;
     color: white;
@@ -191,7 +191,7 @@ input[type="submit"]:hover, input[type="reset"]:hover, input[type="button"]:hove
 
 header pre {
     display: grid;
-    font-size: max(0.6rem, 1.9vmin) !important;
+    font-size: max(0.7rem, 1.9vmin) !important;
     justify-content: center;
     align-content: center;
     text-align: center;
