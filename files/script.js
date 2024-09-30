@@ -30,7 +30,9 @@ function applySavedTheme() {
     const savedTheme = localStorage.getItem('theme');
     const footer = document.querySelector('footer');
 
-    if (savedTheme === 'dark') {
+    if (!savedTheme) {
+        detectSystemTheme();
+    } else if (savedTheme === 'dark') {
         document.body.classList.add('dark-theme');
         footer.classList.add('dark-theme');
     }
@@ -38,17 +40,44 @@ function applySavedTheme() {
     updateIconDisplay();
 }
 
+function detectSystemTheme() {
+    const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+
+    if (prefersDarkScheme.matches) {
+        document.body.classList.add('dark-theme');
+        document.querySelector('footer').classList.add('dark-theme');
+    }
+
+    updateIconDisplay();
+}
+
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+    const footer = document.querySelector('footer');
+    if (e.matches) {
+        document.body.classList.add('dark-theme');
+        footer.classList.add('dark-theme');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        document.body.classList.remove('dark-theme');
+        footer.classList.remove('dark-theme');
+        localStorage.setItem('theme', 'light');
+    }
+
+    updateIconDisplay();
+});
+
 applySavedTheme();
+
 
 function showSection(section) {
     const buttons = document.querySelectorAll('input[type="button"]');
     buttons.forEach(button => {
-        button.classList.remove('button-active'); // Убираем класс активной кнопки
+        button.classList.remove('button-active');
     });
 
     const activeButton = Array.from(buttons).find(button => button.value === section);
     if (activeButton) {
-        activeButton.classList.add('button-active'); // Добавляем класс активной кнопки
+        activeButton.classList.add('button-active');
     }
 
     var sections = document.getElementsByClassName('form-section');
