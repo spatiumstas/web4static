@@ -101,14 +101,7 @@ download_file() {
     main_menu
   fi
 
-  echo "Файл $filename скачан успешно."
-  echo ""
   return 0
-}
-
-set_permissions() {
-  local path="$1"
-  chmod 777 "$path"
 }
 
 modify_index_file() {
@@ -135,7 +128,6 @@ install_web() {
   download_file "$URL_ASCII" "$WEB4STATIC_DIR/ascii.txt"
   download_file "$URL_STYLES" "$WEB4STATIC_DIR/styles.css"
   download_file "$URL_SCRIPT" "$WEB4STATIC_DIR/script.js"
-  set_permissions "$PATH_RUN4STATIC"
 
   modify_index_file
 
