@@ -2,7 +2,8 @@
 
 ### Веб-интерфейс для управления списками [Bird4Static](https://github.com/DennoN-RUS/Bird4Static) / [IPset4Static](https://github.com/DennoN-RUS/IPset4Static)
 
-<img src="https://github.com/user-attachments/assets/73cf07f1-6908-40e8-aef5-1fce8fa16100" alt="" width="800">
+![IMG_8660-round-corners](https://github.com/user-attachments/assets/af0af424-17b8-4a29-b4bf-ea6fc804b73a)
+
 
 # Установка:
 
