@@ -50,6 +50,7 @@ $texts = array_map('file_get_contents', $files);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>web4static</title>
+    <link rel="apple-touch-icon" href="web4static/apple-touch-icon.png">
     <link rel="icon" href="web4static/main.png" type="image/x-icon">
     <link rel="stylesheet" href="web4static/styles.css">
     <script src="web4static/script.js" defer></script>
