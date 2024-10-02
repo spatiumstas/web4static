@@ -51,7 +51,7 @@ $texts = array_map('file_get_contents', $files);
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>web4static</title>
     <!-- Для iOS -->
-    <link rel="apple-touch-icon" href="https://img.icons8.com/external-vectorslab-flat-vectorslab/180/external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2.png" alt="external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/main/files/apple-touch-icon.png">
 
     <!-- Для иконки в формате .ico для браузеров -->
     <link rel="icon" href="https://img.icons8.com/external-vectorslab-flat-vectorslab/48/external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2.png" alt="external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2" sizes="48x48" type="image/x-icon">
