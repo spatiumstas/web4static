@@ -69,7 +69,7 @@ $texts = array_map('file_get_contents', $files);
 
 <header>
     <pre>
-        <?php echo htmlspecialchars(file_get_contents('/opt/share/www/ext-ui/addons/web4static/ascii.txt')); ?>
+        <?php echo htmlspecialchars(file_get_contents('web4static/ascii.txt')); ?>
     </pre>
 </header>
 
