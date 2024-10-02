@@ -11,10 +11,12 @@ WEB4STATIC_DIR="/opt/share/www/ext-ui/addons/web4static"
 PATH_INDEX="/opt/share/www/ext-ui/index.html"
 PATH_WEB4STATIC="/opt/share/www/ext-ui/addons/web4static.php"
 PATH_VPN_ICON="/opt/share/www/ext-ui/addons/web4static/main.png"
+PATH_VPN_ICON2="/opt/share/www/ext-ui/addons/web4static/apple-touch-icon.png"
 PATH_RUN4STATIC="/opt/share/www/ext-ui/addons/web4static/run4Static.php"
 
 URL_EDITLIST="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/web4static.php"
 URL_VPN_ICON="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/main.png"
+URL_VPN_ICON2="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/apple-touch-icon.png"
 URL_RUN="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/run4Static.php"
 URL_STYLES="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/styles.css"
 URL_SCRIPT="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/script.js"
@@ -132,6 +134,7 @@ install_web() {
   modify_index_file
 
   download_file "$URL_VPN_ICON" "$PATH_VPN_ICON"
+  download_file "$URL_VPN_ICON2" "$PATH_VPN_ICON2"
 
   echo ""
   read -p "Введите IP-адрес роутера (по умолчанию 192.168.1.1): " user_ip
