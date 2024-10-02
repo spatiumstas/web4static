@@ -2,7 +2,8 @@
 
 ### Веб-интерфейс для управления списками [Bird4Static](https://github.com/DennoN-RUS/Bird4Static) / [IPset4Static](https://github.com/DennoN-RUS/IPset4Static)
 
-<img src="https://github.com/user-attachments/assets/73cf07f1-6908-40e8-aef5-1fce8fa16100" alt="" width="800">
+![IMG_8660-round-corners](https://github.com/user-attachments/assets/af0af424-17b8-4a29-b4bf-ea6fc804b73a)
+
 
 # Установка:
 
@@ -17,5 +18,5 @@ opkg update && opkg install curl && curl -L -s "https://raw.githubusercontent.co
    - Скрипт установит `ext-ui` если не было, следуйте установке пакета
    - Будет предложено ввести адрес своего роутера. По умолчанию `192.168.1.1`
 
-3. Открыть веб-интерфейс в [отдельном окне](http://192.168.1.1:88/ext-ui/addons/editlist.php) или выбрав в интерфейсе [ext-ui](http://192.168.1.1:88/ext-ui/)
+3. Открыть веб-интерфейс в [отдельном окне](http://192.168.1.1:88/ext-ui/addons/web4static.php) или выбрав в интерфейсе [ext-ui](http://192.168.1.1:88/ext-ui/)
    - Ручной запуска скрипта через `web4static` или `/opt/web4static.sh`
