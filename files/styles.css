@@ -95,7 +95,6 @@ body:not(.dark-theme) #moon-icon {
     display: none;
 }
 
-
 .header {
     text-align: center;
     color: #333;
@@ -140,7 +139,6 @@ textarea {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Тень */
     box-sizing: border-box; /* Учитываем границы и отступы в ширине и высоте */
 }
-
 
 textarea::-webkit-scrollbar {
     display: none; /* Скрываем скроллбар */
@@ -196,11 +194,10 @@ input[type="submit"]:hover, input[type="reset"]:hover, input[type="button"]:hove
 
 header pre {
     display: grid;
-    font-size: max(0.6rem, 1.9vmin) !important;
+    font-size: max(0.68rem, 1.9vmin) !important;
     justify-content: center;
     align-content: center;
     text-align: center;
-    font-size: 70%;
 }
 
 @media (max-width: 600px) {
