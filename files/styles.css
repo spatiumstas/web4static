@@ -110,10 +110,17 @@ body:not(.dark-theme) #moon-icon {
 }
 
 .form-section {
-    justify-content: space-around;
-    display: none;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch; /* Чтобы все элементы растягивались по ширине */
+    justify-content: center;
     width: 100%;
-    max-width: 600px;
+    max-width: 400px;
+}
+
+.form-section textarea {
+    width: 100%; /* Обеспечим, что textarea будет занимать всю ширину контейнера */
+    box-sizing: border-box; /* Учитываем границы и отступы */
 }
 
 .form-section.active {
@@ -124,16 +131,14 @@ textarea {
     width: 100%; /* Занимает всю ширину родительского контейнера */
     height: 200px; /* Высота текстовой области */
     resize: none; /* Запрещаем изменение размера */
-    overflow: auto; /* Включаем прокрутку, если текст превышает высоту */
-    padding: 10px; /* Отступы внутри текстовой области */
+    overflow: auto; /* Используем один overflow, чтобы избежать конфликтов */
+    padding: 15px; /* Отступы внутри текстовой области */
     border-radius: 20px; /* Скругление углов */
     border: 1px solid #ccc; /* Цвет границы */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Тень */
     box-sizing: border-box; /* Учитываем границы и отступы в ширине и высоте */
-    padding: 15px;
-    overflow: hidden;
-    overflow-y: scroll;
 }
+
 
 textarea::-webkit-scrollbar {
     display: none; /* Скрываем скроллбар */
@@ -176,13 +181,11 @@ input[type="submit"], input[type="reset"], input[type="button"] {
 }
 
 input[type="submit"]:hover, input[type="reset"]:hover, input[type="button"]:hover {
-    background-color: #0056b3;
+    background-color: #003d8e;
 }
 
 .button-active {
-    background-color: #0056b3; /* Цвет фона для активной кнопки */
-    transform: translateY(2px); /* Немного опустите кнопку при активации */
-    border: 1px solid #004494; /* Более темная граница для активной кнопки */
+    background-color: #003d8e !important;
 }
 
 .loading {

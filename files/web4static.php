@@ -50,8 +50,15 @@ $texts = array_map('file_get_contents', $files);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>web4static</title>
-    <link rel="apple-touch-icon" href="web4static/apple-touch-icon.png">
-    <link rel="icon" href="web4static/main.png" type="image/x-icon">
+    <!-- Для iOS -->
+    <link rel="apple-touch-icon" href="https://img.icons8.com/external-vectorslab-flat-vectorslab/180/external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2.png" alt="external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2">
+
+    <!-- Для иконки в формате .ico для браузеров -->
+    <link rel="icon" href="https://img.icons8.com/external-vectorslab-flat-vectorslab/48/external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2.png" alt="external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2" sizes="48x48" type="image/x-icon">
+
+    <!-- Для Android и других платформ -->
+    <link rel="icon" href="https://img.icons8.com/external-vectorslab-flat-vectorslab/192/external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2.png" alt="external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2" sizes="192x192">
+
     <link rel="stylesheet" href="web4static/styles.css">
     <script src="web4static/script.js" defer></script>
      <script>
@@ -68,20 +75,24 @@ $texts = array_map('file_get_contents', $files);
 
 <body>
     <main>
-<form id="selector" action="" method="post">
-    <?php foreach ($files as $key => $path): ?>
-        <input type="button" onclick="showSection('<?php echo $key; ?>')" value="<?php echo basename($path); ?>"/>
-    <?php endforeach; ?>
-</form>
-
-<?php foreach ($files as $key => $path): ?>
-    <div id="<?php echo $key; ?>" class="form-section" style="display:none;">
-        <form id="form-<?php echo $key; ?>" action="" method="post" onsubmit="return handleSaveAndRestart(this);">
-            <textarea name="<?php echo $key; ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
-            <input type="submit" value="Save & Restart" />
+        <form id="selector" action="" method="post">
+            <?php foreach ($files as $key => $path): ?>
+                <input type="button" onclick="showSection('<?php echo $key; ?>')" value="<?php echo $key; ?>" />
+            <?php endforeach; ?>
         </form>
-    </div>
-<?php endforeach; ?>
+
+        <?php foreach ($files as $key => $path): ?>
+            <div id="<?php echo $key; ?>" class="form-section" style="display:none;">
+                <form id="form-<?php echo $key; ?>" action="" method="post" onsubmit="return handleSaveAndRestart(this);">
+                    <div class="textarea-container">
+                        <textarea name="<?php echo $key; ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
+                    </div>
+                    <div class="button-container">
+                        <input type="submit" value="Save & Restart" />
+                    </div>
+                </form>
+            </div>
+        <?php endforeach; ?>
     </main>
 </body>
 <footer>

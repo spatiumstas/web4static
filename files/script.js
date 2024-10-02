@@ -71,6 +71,7 @@ applySavedTheme();
 
 function showSection(section) {
     const buttons = document.querySelectorAll('input[type="button"]');
+
     buttons.forEach(button => {
         button.classList.remove('button-active');
     });
@@ -80,10 +81,10 @@ function showSection(section) {
         activeButton.classList.add('button-active');
     }
 
-    var sections = document.getElementsByClassName('form-section');
-    for (var i = 0; i < sections.length; i++) {
-        sections[i].style.display = 'none';
-    }
+    const sections = document.getElementsByClassName('form-section');
+    Array.from(sections).forEach(section => {
+        section.style.display = 'none';
+    });
 
     document.getElementById(section).style.display = 'block';
 }
