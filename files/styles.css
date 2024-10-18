@@ -27,13 +27,11 @@ html, body {
 }
 
 body {
-    margin: 20px;
     padding: 20px;
     border-radius: var(--border-radius);
     display: flex;
     flex-direction: column;
     align-items: center;
-    color: #000; /* Цвет текста для светлой темы */
 }
 
 main {
@@ -48,7 +46,6 @@ footer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    color: #000; /* Цвет текста для светлой темы */
     width: 100%;
     position: relative;
 }
