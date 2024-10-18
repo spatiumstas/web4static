@@ -89,45 +89,74 @@ function showSection(section) {
     document.getElementById(section).style.display = 'block';
 }
 
-function handleSaveAndRestart(form) {
-    const button = form.querySelector('input[type="submit"]');
-    animateSave(button);
-    const formData = new FormData(form);
+document.getElementById('mainForm').addEventListener('submit', function(event) {
+    event.preventDefault();
 
-    fetch(form.action, {
+    const button = this.querySelector('input[type="submit"]');
+
+    console.log('Форма отправлена, сохраняю...');
+    animateSave(button, 'saving');
+
+    const formData = new FormData(this);
+
+    fetch(this.action, {
         method: 'POST',
         body: formData
     }).then(response => {
+        console.log('Ответ от сервера получен:', response);
+
         if (response.ok) {
+            console.log('Данные успешно сохранены, перезапуск сервиса...');
+
             setTimeout(() => {
-                fetch(fileRun, {
-                    method: 'POST'
-                }).then(res => {
-                    if (res.ok) {
-                    }
-                    button.disabled = false;
-                    button.value = 'Save & Restart';
-                    button.classList.remove('loading');
+                animateSave(button, 'restarting');
+
+                setTimeout(() => {
+                    fetch(fileRun, {
+                        method: 'POST'
+                    }).then(res => {
+                        console.log('Ответ от сервиса:', res);
+
+                        if (res.ok) {
+                            console.log("Перезапуск выполнен успешно");
+                        } else {
+                            console.error('Ошибка при перезапуске сервиса');
+                        }
+
+                        button.disabled = false;
+                        button.value = 'Save & Restart';
+                        button.classList.remove('loading');
+                    }).catch(err => {
+                        console.error('Ошибка при обращении к fileRun:', err);
+
+                        button.disabled = false;
+                        button.value = 'Save & Restart';
+                        button.classList.remove('loading');
+                    });
                 });
             }, 1000);
         } else {
+            console.error('Ошибка при сохранении данных на сервере');
             button.disabled = false;
             button.value = 'Save & Restart';
             button.classList.remove('loading');
         }
     }).catch(err => {
+        console.error('Ошибка при отправке данных на сервер:', err);
         button.disabled = false;
         button.value = 'Save & Restart';
         button.classList.remove('loading');
-        console.error('Ошибка:', err);
     });
 
     return false;
-}
+});
 
-function animateSave(button) {
-    const originalText = button.value;
-    button.value = 'Saving...';
-    button.disabled = true;
-    button.classList.add('loading');
+function animateSave(button, state) {
+    if (state === 'saving') {
+        button.value = 'Saving...';
+        button.disabled = true;
+        button.classList.add('loading');
+    } else if (state === 'restarting') {
+        button.value = 'Restarting...';
+    }
 }

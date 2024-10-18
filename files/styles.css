@@ -1,4 +1,23 @@
+:root {
+    --background-color: #fff;
+    --primary-color: #379dd8;
+    --white-color: #fff;
+    --black-color: #000;
+    --border-textarea-color: #ebebeb;
+    --border-radius: 20px;
+    --font-family: Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #1b2434;
+        --border-textarea-color: #4d545f;
+        --font-family: Roboto, sans-serif;
+    }
+}
+
 html, body {
+    font-family: Roboto, sans-serif;
     height: 100%;
     margin: 0;
     display: flex;
@@ -8,11 +27,9 @@ html, body {
 }
 
 body {
-    font-family: Arial, sans-serif;
     margin: 20px;
     padding: 20px;
-    background-color: #f4f4f4;
-    border-radius: 20px;
+    border-radius: var(--border-radius);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -27,7 +44,6 @@ main {
 }
 
 footer {
-    background-color: #f4f4f4; /* Цвет фона футера для светлой темы */
     border-radius: 8px;
     display: flex;
     flex-direction: column;
@@ -41,16 +57,17 @@ footer {
     margin-top: 20px;
     text-align: center;
     font-size: 14px; /* Размер шрифта */
-    color: #555; /* Цвет текста */
+    color: var(--primary-color);
 }
 
 .footer a {
-    color: #007BFF;
+    color: var(--primary-color);
     text-decoration: none;
 }
 
-.footer a:hover {
-    text-decoration: underline;
+footer.dark-theme {
+    background-color: var(--background-color); /* Цвет фона футера в тёмной теме */
+    color: var(--primary-color); /* Цвет текста футера в тёмной теме */
 }
 
 #theme-toggle {
@@ -68,13 +85,8 @@ footer {
 
 /* Стили для тёмной темы */
 body.dark-theme {
-    background-color: #121212; /* Фон для тёмной темы */
-    color: #fff; /* Цвет текста для тёмной темы */
-}
-
-footer.dark-theme {
-    background-color: #121212; /* Цвет фона футера в тёмной теме */
-    color: #fff; /* Цвет текста футера в тёмной теме */
+    background-color: var(--background-color); /* Фон для тёмной темы */
+    color: var(--white-color); /* Цвет текста для тёмной темы */
 }
 
 /* Цвет иконок в тёмной теме */
@@ -116,7 +128,6 @@ body:not(.dark-theme) #moon-icon {
     align-items: stretch; /* Чтобы все элементы растягивались по ширине */
     justify-content: center;
     width: 100%;
-    max-width: 400px;
 }
 
 .form-section textarea {
@@ -134,10 +145,10 @@ textarea {
     resize: none; /* Запрещаем изменение размера */
     overflow: auto; /* Используем один overflow, чтобы избежать конфликтов */
     padding: 15px; /* Отступы внутри текстовой области */
-    border-radius: 20px; /* Скругление углов */
-    border: 1px solid #ccc; /* Цвет границы */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Тень */
+    border-radius: var(--border-radius);
+    border: 1px solid #ebebeb; /* Цвет границы */
     box-sizing: border-box; /* Учитываем границы и отступы в ширине и высоте */
+    box-shadow: none; /* Убираем тень в тёмной теме */
 }
 
 textarea::-webkit-scrollbar {
@@ -145,8 +156,12 @@ textarea::-webkit-scrollbar {
 }
 
 textarea:focus {
-    border-color: #007BFF; /* Цвет границы при фокусе */
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Лёгкая тень для акцента */
+    border: 1px solid var(--primary-color);
+    outline: none; /* Убираем стандартный контур при фокусе */
+}
+
+textarea:hover {
+    border: 1px solid var(--primary-color);
     outline: none; /* Убираем стандартный контур при фокусе */
 }
 
@@ -157,39 +172,100 @@ textarea::placeholder {
 
 /* Стили для тёмной темы */
 body.dark-theme textarea {
-    background-color: #121212; /* Цвет фона для тёмной темы */
-    color: #fff; /* Цвет текста для тёмной темы */
-    border: 1px solid #444; /* Цвет границы для тёмной темы */
-    box-shadow: none; /* Убираем тень в тёмной теме */
+    background: var(--background-color); /* Цвет фона для тёмной темы */
+    color: var(--white-color); /* Цвет текста для тёмной темы */
+    border: 1px solid var(--border-textarea-color); /* Цвет границы для тёмной темы */
 }
 
 /* Стили для фокуса в тёмной теме */
 body.dark-theme textarea:focus {
-    border-color: #007BFF; /* Цвет границы при фокусе в тёмной теме */
+    border: 1px solid var(--primary-color);
     outline: none; /* Убираем стандартный контур при фокусе */
 }
 
-input[type="submit"], input[type="reset"], input[type="button"] {
-    margin: 10px 0;
-    padding: 10px 15px;
-    border-radius: 20px;
-    border: none;
-    background-color: #007BFF;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s;
+body.dark-theme textarea:hover {
+    border: 1px solid var(--primary-color);
+    outline: none; /* Убираем стандартный контур при фокусе */
 }
 
-input[type="submit"]:hover, input[type="reset"]:hover, input[type="button"]:hover {
-    background-color: #003d8e;
+.button-container {
+    display: flex; /* Включаем flexbox */
+    justify-content: center; /* Центрируем по горизонтали */
+    align-items: center; /* Центрируем по вертикали, если это нужно */
+    width: 100%; /* Занимает всю ширину контейнера */
+}
+
+/* Стили для кнопок в светлой теме */
+input[type="reset"],
+input[type="submit"] {
+    margin: 10px 0;
+    padding: 10px 15px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--primary-color); /* Цвет бордюра для светлой темы */
+    cursor: pointer;
+    background-color: var(--primary-color); /* Цвет фона для светлой темы */
+    color: var(--white-color); /* Цвет текста для светлой темы */
+    transition: background-color 0.3s, color 0.3s; /* Плавный переход для фона и текста */
+}
+
+input[type="button"] {
+    margin: 10px 0;
+    padding: 10px 15px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--primary-color); /* Цвет бордюра для светлой темы */
+    background-color: #fff;
+    cursor: pointer;
+    color: var(--black-color);
+    transition: background-color 0.3s, color 0.3s; /* Плавный переход для фона и текста */
+}
+
+/* Стили для кнопок в тёмной теме */
+body.dark-theme input[type="reset"],
+body.dark-theme input[type="submit"] {
+    margin: 10px 0;
+    padding: 10px 15px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--primary-color); /* Цвет бордюра для тёмной темы */
+    background-color: var(--primary-color); /* Цвет фона для тёмной темы */
+    color: var(--white-color); /* Цвет текста для тёмной темы */
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s; /* Плавный переход для фона и текста */
+}
+
+body.dark-theme input[type="button"] {
+    margin: 10px 0;
+    padding: 10px 15px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--primary-color); /* Цвет бордюра для тёмной темы */
+    background-color: var(--background-color); /* Цвет фона для тёмной темы */
+    color: var(--white-color); /* Цвет текста для тёмной темы */
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s; /* Плавный переход для фона и текста */
+}
+
+input[type="button"]:hover {
+    background-color: var(--primary-color); /* Цвет при наведении для обеих тем */
+    color: var(--white-color); /* Цвет текста при наведении для обеих тем */
+}
+
+body.dark-theme input[type="button"]:hover {
+    background-color: var(--primary-color); /* Цвет при наведении для обеих тем */
+    color: var(--white-color); /* Цвет текста при наведении для обеих тем */
 }
 
 .button-active {
-    background-color: #003d8e !important;
+    background-color: var(--primary-color) !important; /* Цвет при наведении для обеих тем */
+    color: var(--white-color) !important; /* Цвет текста при наведении для обеих тем */
 }
 
+body.dark-theme .button-active {
+    background-color: var(--primary-color) !important;
+    color: var(--white-color) !important;
+}
+
+
 .loading {
-    opacity: 0.5;
+    opacity: 0.6;
 }
 
 header pre {
@@ -202,7 +278,7 @@ header pre {
 
 @media (max-width: 600px) {
     pre {
-        font-size: 12px;
+        font-size: 32px;
     }
 
     .button-container {

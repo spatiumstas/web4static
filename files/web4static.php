@@ -33,12 +33,13 @@ if (!empty($birdFiles)) {
     );
 }
 
-foreach ($files as $key => $file) {
-    if (isset($_POST[$key])) {
-        file_put_contents($file, $_POST[$key]);
-        header("Location: $url");
-        exit();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    foreach ($_POST as $key => $content) {
+        $file = $files[$key];
+        file_put_contents($file, $content);
     }
+    http_response_code(200);
+    exit();
 }
 
 $texts = array_map('file_get_contents', $files);
@@ -72,27 +73,24 @@ $texts = array_map('file_get_contents', $files);
         <?php echo htmlspecialchars(file_get_contents('web4static/ascii.txt')); ?>
     </pre>
 </header>
-
 <body>
     <main>
-        <form id="selector" action="" method="post">
+        <form id="mainForm" action="" method="post">
             <?php foreach ($files as $key => $path): ?>
                 <input type="button" onclick="showSection('<?php echo $key; ?>')" value="<?php echo $key; ?>" />
             <?php endforeach; ?>
-        </form>
 
-        <?php foreach ($files as $key => $path): ?>
-            <div id="<?php echo $key; ?>" class="form-section" style="display:none;">
-                <form id="form-<?php echo $key; ?>" action="" method="post" onsubmit="return handleSaveAndRestart(this);">
+            <?php foreach ($files as $key => $path): ?>
+                <div id="<?php echo $key; ?>" class="form-section" style="display:none;">
                     <div class="textarea-container">
                         <textarea name="<?php echo $key; ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
                     </div>
-                    <div class="button-container">
-                        <input type="submit" value="Save & Restart" />
-                    </div>
-                </form>
+                </div>
+            <?php endforeach; ?>
+            <div class="button-container">
+                <input type="submit" value="Save & Restart" />
             </div>
-        <?php endforeach; ?>
+        </form>
     </main>
 </body>
 <footer>
@@ -113,7 +111,7 @@ $texts = array_map('file_get_contents', $files);
     </svg>
 </button>
 <div class="footer" style="text-align: center; margin-top: 20px;">
-    by <a href="https://github.com/spatiumstas" target="_blank">spatiumstas</a>
+        <a href="https://github.com/spatiumstas" target="_blank">spatiumstas</a>
 </div>
 </footer>
 </html>
