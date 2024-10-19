@@ -31,10 +31,15 @@ function applySavedTheme() {
     const footer = document.querySelector('footer');
 
     if (!savedTheme) {
-        detectSystemTheme();
+        document.body.classList.add('dark-theme');
+        footer.classList.add('dark-theme');
+        localStorage.setItem('theme', 'dark');
     } else if (savedTheme === 'dark') {
         document.body.classList.add('dark-theme');
         footer.classList.add('dark-theme');
+    } else {
+        document.body.classList.remove('dark-theme');
+        footer.classList.remove('dark-theme');
     }
 
     updateIconDisplay();
