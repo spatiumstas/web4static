@@ -42,7 +42,8 @@ if (!empty($birdFiles)) {
 if (!empty($nfqwsFiles)) {
     $files = array_merge(
         $files,
-        array_combine(array_map(fn($file) => basename($file, '.list'), $nfqwsFiles), $nfqwsFiles)
+        array_combine(
+            array_map(fn($file) => basename($file, '.list') . '-nfqws', $nfqwsFiles), $nfqwsFiles)
     );
 }
 
