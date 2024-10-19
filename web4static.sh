@@ -6,7 +6,9 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 USER="spatiumstas"
 REPO="web4static"
+MAIN_NAME="web4static.php"
 
+WEB4STATIC_FOLDER="w4s"
 WEB4STATIC_DIR="/opt/share/www/w4s"
 PATH_WEB4STATIC="/opt/share/www/w4s/web4static.php"
 PATH_VPN_ICON="/opt/share/www/w4s/files/main.png"
@@ -27,6 +29,7 @@ EOF
   echo "1. Установить/Обновить web-интерфейс"
   echo "2. Удалить web-интерфейс"
   echo ""
+  echo "77. Удалить используемые пакеты"
   echo "99. Обновить скрипт"
   echo "00. Выход"
   echo ""
@@ -35,7 +38,7 @@ EOF
 main_menu() {
   print_menu
   read -p "Выберите действие: " choice branch
-
+  echo ""
   choice=$(echo "$choice" | tr -d '\032' | tr -d '[A-Z]')
 
   if [ -z "$choice" ]; then
@@ -44,6 +47,7 @@ main_menu() {
     case "$choice" in
     1) install_web "${branch:-master}" ;;
     2) remove_web ;;
+    77) packages_delete ;;
     88) script_update "dev" ;;
     99) script_update "main" ;;
     00) exit ;;
@@ -71,7 +75,7 @@ print_message() {
 }
 
 packages_checker() {
-  if ! opkg list-installed | grep -q "^php8-cgi" || ! opkg list-installed | grep -q "^curl" || ! opkg list-installed | grep -q "^uhttpd_kn"  ; then
+  if ! opkg list-installed | grep -q "^php8-cgi" || ! opkg list-installed | grep -q "^curl" || ! opkg list-installed | grep -q "^uhttpd_kn"; then
     printf "${RED}Необходимые пакеты не найдены, устанавливаем...${NC}\n"
     echo ""
     opkg update
@@ -79,6 +83,14 @@ packages_checker() {
     /opt/etc/init.d/S80uhttpd restart
     echo ""
   fi
+}
+
+packages_delete() {
+  opkg remove php8-cgi uhttpd_kn curl --force-depends
+  wait
+  print_message "Пакеты php8-cgi, uhttpd_kn и curl успешно удалены" "$GREEN"
+  read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
+  main_menu
 }
 
 download_file() {
@@ -98,7 +110,11 @@ download_file() {
 
 install_web() {
   BRANCH="$1"
-  print_message "Начинаем установку Web-интерфейса для ветки $BRANCH..." "$GREEN"
+  if [ "$BRANCH" = "dev" ]; then
+    print_message "Устанавливаем Web-интерфейс из ветки $BRANCH..." "$GREEN"
+  else
+    print_message "Устанавливаем Web-интерфейс..." "$GREEN"
+  fi
   packages_checker
 
   mkdir -p "$WEB4STATIC_DIR/files"
@@ -122,10 +138,9 @@ install_web() {
   user_ip=${user_ip:-192.168.1.1}
 
   replace_path "$user_ip"
-
-  echo "Файлы успешно пропатчены"
-
-  print_message "Web-интерфейс установлен и доступен по адресу http://$user_ip:88/w4s/web4static.php" "$GREEN"
+  echo ""
+  /opt/etc/init.d/S80uhttpd restart
+  print_message "Web-интерфейс установлен и доступен по адресу http://$user_ip:88/w4s" "$GREEN"
   read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
   main_menu
 }
@@ -146,9 +161,17 @@ replace_path() {
     fi
   }
 
-  replace_with_error_check "http://192.168.1.1:88/w4s/web4static.php" "http://$new_ip:88/w4s/web4static.php" "$PATH_WEB4STATIC" "URL"
+  replace_with_error_check "http://192.168.1.1:88/${WEB4STATIC_FOLDER}/${MAIN_NAME}" "http://$new_ip:88/${WEB4STATIC_FOLDER}/${MAIN_NAME}" "$PATH_WEB4STATIC" "URL"
 
-  replace_with_error_check "header('Location: http://192.168.1.1:88/w4s/web4static.php');" "header('Location: http://$new_ip:88/w4s/web4static.php');" "$PATH_RUN4STATIC" "header URL"
+  replace_with_error_check "header('Location: http://192.168.1.1:88/${WEB4STATIC_FOLDER}/${MAIN_NAME}');" "header('Location: http://$new_ip:88/${WEB4STATIC_FOLDER}/${MAIN_NAME}');" "$PATH_RUN4STATIC" "header URL"
+
+  if grep -q '^ARGS=' "/opt/etc/init.d/S80uhttpd"; then
+    if ! grep -q ' -I web4static.php' "/opt/etc/init.d/S80uhttpd"; then
+      sed -i 's|^\(ARGS=.*\)"|\1 -I web4static.php"|' "/opt/etc/init.d/S80uhttpd"
+    fi
+  else
+    echo "Ошибка: строка 'ARGS=' не найдена в файле /opt/etc/init.d/S80uhttpd"
+  fi
 }
 
 remove_web() {
@@ -175,7 +198,11 @@ script_update() {
     chmod +x $OPT_DIR/$SCRIPT
     cd $OPT_DIR/bin
     ln -sf $OPT_DIR/$SCRIPT $OPT_DIR/bin/web4static
-    print_message "Скрипт успешно обновлён" "$GREEN"
+    if [ -n "$BRANCH" ]; then
+      print_message "Скрипт успешно обновлён на $BRANCH ветку..." "$GREEN"
+    else
+      print_message "Скрипт успешно обновлён" "$GREEN"
+    fi
     $OPT_DIR/$SCRIPT
   else
     print_message "Ошибка при скачивании скрипта" "$RED"
