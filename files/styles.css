@@ -8,14 +8,6 @@
     --font-family: Roboto, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --background-color: #1b2434;
-        --border-textarea-color: #4d545f;
-        --font-family: Roboto, sans-serif;
-    }
-}
-
 html, body {
     font-family: Roboto, sans-serif;
     height: 100%;
@@ -63,7 +55,7 @@ footer {
 }
 
 footer.dark-theme {
-    background-color: var(--background-color); /* Цвет фона футера в тёмной теме */
+    background-color: #1b2434; !important; /* Цвет фона футера в тёмной теме */
     color: var(--primary-color); /* Цвет текста футера в тёмной теме */
 }
 
@@ -82,8 +74,8 @@ footer.dark-theme {
 
 /* Стили для тёмной темы */
 body.dark-theme {
-    background-color: var(--background-color); /* Фон для тёмной темы */
-    color: var(--white-color); /* Цвет текста для тёмной темы */
+    background-color: #1b2434; /* Фон для тёмной темы */
+    color: #fff; /* Цвет текста для тёмной темы */
 }
 
 /* Цвет иконок в тёмной теме */
@@ -169,9 +161,9 @@ textarea::placeholder {
 
 /* Стили для тёмной темы */
 body.dark-theme textarea {
-    background: var(--background-color); /* Цвет фона для тёмной темы */
+    background-color: #1b2434; /* Цвет фона для тёмной темы */
     color: var(--white-color); /* Цвет текста для тёмной темы */
-    border: 1px solid var(--border-textarea-color); /* Цвет границы для тёмной темы */
+    border: 1px solid #4d545f; /* Цвет границы для тёмной темы */
 }
 
 /* Стили для фокуса в тёмной теме */
@@ -234,7 +226,7 @@ body.dark-theme input[type="button"] {
     padding: 10px 15px;
     border-radius: var(--border-radius);
     border: 1px solid var(--primary-color); /* Цвет бордюра для тёмной темы */
-    background-color: var(--background-color); /* Цвет фона для тёмной темы */
+    background-color: #1b2434; /* Цвет фона для тёмной темы */
     color: var(--white-color); /* Цвет текста для тёмной темы */
     cursor: pointer;
     transition: background-color 0.3s, color 0.3s; /* Плавный переход для фона и текста */
@@ -259,7 +251,6 @@ body.dark-theme .button-active {
     background-color: var(--primary-color) !important;
     color: var(--white-color) !important;
 }
-
 
 .loading {
     opacity: 0.6;
