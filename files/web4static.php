@@ -5,9 +5,11 @@ $url = 'http://192.168.1.1:88/ext-ui/addons/web4static.php';
 
 $ipsetPath = rtrim(shell_exec("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/lists/'"));
 $birdPath = rtrim(shell_exec("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'"));
+$nfqwsPath = '/opt/etc/nfqws/*.list';
 
 $ipsetFiles = [];
 $birdFiles = [];
+$nfqwsFiles = glob($nfqwsPath);
 
 if (is_dir($ipsetPath)) {
     $ipsetFiles = explode("\n", trim(shell_exec("ls $ipsetPath/*.list 2>/dev/null")));
@@ -15,6 +17,10 @@ if (is_dir($ipsetPath)) {
 
 if (is_dir($birdPath)) {
     $birdFiles = explode("\n", trim(shell_exec("ls $birdPath/*.list 2>/dev/null")));
+}
+
+if (!empty($nfqwsPath) && is_dir($nfqwsPath)) {
+    $nfqwsFiles = explode("\n", trim(shell_exec("ls $nfqwsPath/*.list 2>/dev/null")));
 }
 
 $files = [];
@@ -30,6 +36,13 @@ if (!empty($birdFiles)) {
     $files = array_merge(
         $files,
         array_combine(array_map(fn($file) => basename($file, '.list'), $birdFiles), $birdFiles)
+    );
+}
+
+if (!empty($nfqwsFiles)) {
+    $files = array_merge(
+        $files,
+        array_combine(array_map(fn($file) => basename($file, '.list'), $nfqwsFiles), $nfqwsFiles)
     );
 }
 
