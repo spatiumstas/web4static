@@ -76,6 +76,7 @@ packages_checker() {
     echo ""
     opkg update
     opkg install php8-cgi uhttpd_kn curl
+    /opt/etc/init.d/S80uhttpd restart
     echo ""
   fi
 }
