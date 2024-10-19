@@ -2,8 +2,7 @@
 
 ### Веб-интерфейс для управления списками [Bird4Static](https://github.com/DennoN-RUS/Bird4Static) / [IPset4Static](https://github.com/DennoN-RUS/IPset4Static)
 
-![IMG_8660-round-corners](https://github.com/user-attachments/assets/af0af424-17b8-4a29-b4bf-ea6fc804b73a)
-
+![IMG_8897-round-corners](https://github.com/user-attachments/assets/d657739a-a86d-4a99-82a9-a73f1f6b3682)
 
 # Установка:
 
@@ -11,7 +10,7 @@
 ```shell
 opkg update && opkg install curl && curl -L -s "https://raw.githubusercontent.com/spatiumstas/web4static/main/install.sh" > /tmp/install.sh && sh /tmp/install.sh
 ```
-<img src="https://github.com/user-attachments/assets/b740fe86-26d4-4ca2-aaf2-689cb772b5c3" alt="" width="700">
+<img src="https://github.com/user-attachments/assets/d2a164a9-13dc-487d-a8d1-26e68d6fda72" alt="" width="700">
 
 2. В скрипте выбрать установку web-интерфейса
 
