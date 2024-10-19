@@ -20,7 +20,6 @@ html, body {
     overflow-x: hidden;
     overflow-y: hidden;
     text-rendering: optimizeLegibility;
-    padding: 20px;
     border-radius: var(--border-radius);
     align-items: center;
 }
@@ -30,6 +29,7 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 35px;
 }
 
 footer {

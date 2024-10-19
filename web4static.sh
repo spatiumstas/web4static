@@ -6,19 +6,13 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 USER="spatiumstas"
 REPO="web4static"
+MAIN_NAME="web4static.php"
 
-WEB4STATIC_DIR="/opt/share/www/ext-ui/addons/web4static"
-PATH_INDEX="/opt/share/www/ext-ui/index.html"
-PATH_WEB4STATIC="/opt/share/www/ext-ui/addons/web4static.php"
-PATH_VPN_ICON="/opt/share/www/ext-ui/addons/web4static/main.png"
-PATH_RUN4STATIC="/opt/share/www/ext-ui/addons/web4static/run4Static.php"
-
-URL_EDITLIST="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/web4static.php"
-URL_VPN_ICON="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/main.png"
-URL_RUN="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/run4Static.php"
-URL_STYLES="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/styles.css"
-URL_SCRIPT="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/script.js"
-URL_ASCII="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/ascii.txt"
+WEB4STATIC_FOLDER="w4s"
+WEB4STATIC_DIR="/opt/share/www/w4s"
+PATH_WEB4STATIC="/opt/share/www/w4s/web4static.php"
+PATH_VPN_ICON="/opt/share/www/w4s/files/main.png"
+PATH_RUN4STATIC="/opt/share/www/w4s/files/run4Static.php"
 
 print_menu() {
   printf "\033c"
@@ -35,6 +29,7 @@ EOF
   echo "1. Установить/Обновить web-интерфейс"
   echo "2. Удалить web-интерфейс"
   echo ""
+  echo "77. Удалить используемые пакеты"
   echo "99. Обновить скрипт"
   echo "00. Выход"
   echo ""
@@ -42,16 +37,17 @@ EOF
 
 main_menu() {
   print_menu
-  read -p "Выберите действие: " choice
-
+  read -p "Выберите действие: " choice branch
+  echo ""
   choice=$(echo "$choice" | tr -d '\032' | tr -d '[A-Z]')
 
   if [ -z "$choice" ]; then
     main_menu
   else
     case "$choice" in
-    1) install_web ;;
+    1) install_web "${branch:-master}" ;;
     2) remove_web ;;
+    77) packages_delete ;;
     88) script_update "dev" ;;
     99) script_update "main" ;;
     00) exit ;;
@@ -79,13 +75,22 @@ print_message() {
 }
 
 packages_checker() {
-  if ! opkg list-installed | grep -q "^ext-ui" || ! opkg list-installed | grep -q "^curl"; then
-    printf "${RED}Пакеты ext-ui и/или curl не найдены, устанавливаем...${NC}\n"
+  if ! opkg list-installed | grep -q "^php8-cgi" || ! opkg list-installed | grep -q "^curl" || ! opkg list-installed | grep -q "^uhttpd_kn"; then
+    printf "${RED}Необходимые пакеты не найдены, устанавливаем...${NC}\n"
     echo ""
     opkg update
-    opkg install ext-ui curl
+    opkg install php8-cgi uhttpd_kn curl
+    /opt/etc/init.d/S80uhttpd restart
     echo ""
   fi
+}
+
+packages_delete() {
+  opkg remove php8-cgi uhttpd_kn curl --force-depends
+  wait
+  print_message "Пакеты php8-cgi, uhttpd_kn и curl успешно удалены" "$GREEN"
+  read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
+  main_menu
 }
 
 download_file() {
@@ -103,32 +108,28 @@ download_file() {
   return 0
 }
 
-modify_index_file() {
-  if [ -f "$PATH_INDEX" ]; then
-    if ! grep -q '<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>' "$PATH_INDEX"; then
-      sed -i '/<meta charset="utf-8" \/>/a <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>' "$PATH_INDEX"
-    fi
-
-    if ! grep -q '<a href="addons/web4static.php" target="myframe" title="web4static">' "$PATH_INDEX"; then
-      sed -i '/<a href="addons\/info\/index.php" target="myframe" title="System Health and Information"><img src="addons\/img\/btn\/linfo.png"><\/a>/i <a href="addons/web4static.php" target="myframe" title="web4static"><img src="addons/web4static/main.png"></a>' "$PATH_INDEX"
-    fi
-  else
-    echo "Файл $PATH_INDEX не найден."
-  fi
-}
-
 install_web() {
-  print_message "Начинаем установку Web-интерфейса..." "$GREEN"
+  BRANCH="$1"
+  if [ "$BRANCH" = "dev" ]; then
+    print_message "Устанавливаем Web-интерфейс из ветки $BRANCH..." "$GREEN"
+  else
+    print_message "Устанавливаем Web-интерфейс..." "$GREEN"
+  fi
   packages_checker
 
-  mkdir -p "$WEB4STATIC_DIR"
+  mkdir -p "$WEB4STATIC_DIR/files"
+  URL_EDITLIST="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/web4static.php"
+  URL_VPN_ICON="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/main.png"
+  URL_RUN="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/run4Static.php"
+  URL_STYLES="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/styles.css"
+  URL_SCRIPT="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/script.js"
+  URL_ASCII="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/ascii.txt"
+
   download_file "$URL_EDITLIST" "$PATH_WEB4STATIC"
   download_file "$URL_RUN" "$PATH_RUN4STATIC"
-  download_file "$URL_ASCII" "$WEB4STATIC_DIR/ascii.txt"
-  download_file "$URL_STYLES" "$WEB4STATIC_DIR/styles.css"
-  download_file "$URL_SCRIPT" "$WEB4STATIC_DIR/script.js"
-
-  modify_index_file
+  download_file "$URL_ASCII" "$WEB4STATIC_DIR/files/ascii.txt"
+  download_file "$URL_STYLES" "$WEB4STATIC_DIR/files/styles.css"
+  download_file "$URL_SCRIPT" "$WEB4STATIC_DIR/files/script.js"
 
   download_file "$URL_VPN_ICON" "$PATH_VPN_ICON"
 
@@ -137,10 +138,9 @@ install_web() {
   user_ip=${user_ip:-192.168.1.1}
 
   replace_path "$user_ip"
-
-  echo "Файлы успешно пропатчены"
-
-  print_message "Web-интерфейс установлен и доступен по адресу http://$user_ip:88/ext-ui" "$GREEN"
+  echo ""
+  /opt/etc/init.d/S80uhttpd restart
+  print_message "Web-интерфейс установлен и доступен по адресу http://$user_ip:88/w4s" "$GREEN"
   read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
   main_menu
 }
@@ -161,9 +161,17 @@ replace_path() {
     fi
   }
 
-  replace_with_error_check "http://192.168.1.1:88/ext-ui/addons/web4static.php" "http://$new_ip:88/ext-ui/addons/web4static.php" "$PATH_WEB4STATIC" "URL"
+  replace_with_error_check "http://192.168.1.1:88/${WEB4STATIC_FOLDER}/${MAIN_NAME}" "http://$new_ip:88/${WEB4STATIC_FOLDER}/${MAIN_NAME}" "$PATH_WEB4STATIC" "URL"
 
-  replace_with_error_check "header('Location: http://192.168.1.1:88/ext-ui/addons/web4static.php');" "header('Location: http://$new_ip:88/ext-ui/addons/web4static.php');" "$PATH_RUN4STATIC" "header URL"
+  replace_with_error_check "header('Location: http://192.168.1.1:88/${WEB4STATIC_FOLDER}/${MAIN_NAME}');" "header('Location: http://$new_ip:88/${WEB4STATIC_FOLDER}/${MAIN_NAME}');" "$PATH_RUN4STATIC" "header URL"
+
+  if grep -q '^ARGS=' "/opt/etc/init.d/S80uhttpd"; then
+    if ! grep -q ' -I web4static.php' "/opt/etc/init.d/S80uhttpd"; then
+      sed -i 's|^\(ARGS=.*\)"|\1 -I web4static.php"|' "/opt/etc/init.d/S80uhttpd"
+    fi
+  else
+    echo "Ошибка: строка 'ARGS=' не найдена в файле /opt/etc/init.d/S80uhttpd"
+  fi
 }
 
 remove_web() {
@@ -171,11 +179,8 @@ remove_web() {
   echo "Удаляю директорию $WEB4STATIC_DIR..."
   sleep 1
   rm -r $WEB4STATIC_DIR
-  echo "Удаляю файл $PATH_WEB4STATIC..."
-  sleep 1
-  rm $PATH_WEB4STATIC
 
-  print_message "Успешно удалёно, пакет ext-ui не затронут" "$GREEN"
+  print_message "Успешно удалёно" "$GREEN"
   read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
   main_menu
 }
@@ -193,7 +198,11 @@ script_update() {
     chmod +x $OPT_DIR/$SCRIPT
     cd $OPT_DIR/bin
     ln -sf $OPT_DIR/$SCRIPT $OPT_DIR/bin/web4static
-    print_message "Скрипт успешно обновлён" "$GREEN"
+    if [ -n "$BRANCH" ]; then
+      print_message "Скрипт успешно обновлён на $BRANCH ветку..." "$GREEN"
+    else
+      print_message "Скрипт успешно обновлён" "$GREEN"
+    fi
     $OPT_DIR/$SCRIPT
   else
     print_message "Ошибка при скачивании скрипта" "$RED"

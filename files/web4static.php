@@ -1,13 +1,17 @@
 <?php
 
-$fileRun = 'web4static/run4Static.php';
-$url = 'http://192.168.1.1:88/ext-ui/addons/web4static.php';
+$fileRun = 'files/run4Static.php';
+$url = 'http://192.168.1.1:88/w4s/web4static.php';
 
 $ipsetPath = rtrim(shell_exec("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/lists/'"));
 $birdPath = rtrim(shell_exec("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'"));
+$nfqwsPath = '/opt/etc/nfqws/*.list';
+$tpwsPath = '/opt/etc/tpws/*.list';
 
 $ipsetFiles = [];
 $birdFiles = [];
+$nfqwsFiles = glob($nfqwsPath);
+$tpwsFiles = glob($tpwsPath);
 
 if (is_dir($ipsetPath)) {
     $ipsetFiles = explode("\n", trim(shell_exec("ls $ipsetPath/*.list 2>/dev/null")));
@@ -15,6 +19,14 @@ if (is_dir($ipsetPath)) {
 
 if (is_dir($birdPath)) {
     $birdFiles = explode("\n", trim(shell_exec("ls $birdPath/*.list 2>/dev/null")));
+}
+
+if (!empty($nfqwsPath) && is_dir($nfqwsPath)) {
+    $nfqwsFiles = explode("\n", trim(shell_exec("ls $nfqwsPath/*.list 2>/dev/null")));
+}
+
+if (!empty($tpwsPath) && is_dir($tpwsPath)) {
+    $tpwsFiles = explode("\n", trim(shell_exec("ls $tpwsPath/*.list 2>/dev/null")));
 }
 
 $files = [];
@@ -30,6 +42,22 @@ if (!empty($birdFiles)) {
     $files = array_merge(
         $files,
         array_combine(array_map(fn($file) => basename($file, '.list'), $birdFiles), $birdFiles)
+    );
+}
+
+if (!empty($nfqwsFiles)) {
+    $files = array_merge(
+        $files,
+        array_combine(
+            array_map(fn($file) => basename($file, '.list') . '-nfqws', $nfqwsFiles), $nfqwsFiles)
+    );
+}
+
+if (!empty($tpwsFiles)) {
+    $files = array_merge(
+        $files,
+        array_combine(
+            array_map(fn($file) => basename($file, '.list') . '-tpws', $tpwsFiles), $tpwsFiles)
     );
 }
 
@@ -61,8 +89,8 @@ $texts = array_map('file_get_contents', $files);
     <!-- Для Android и других платформ -->
     <link rel="icon" href="https://img.icons8.com/external-vectorslab-flat-vectorslab/192/external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2.png" alt="external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2" sizes="192x192">
 
-    <link rel="stylesheet" href="web4static/styles.css">
-    <script src="web4static/script.js" defer></script>
+    <link rel="stylesheet" href="files/styles.css">
+    <script src="files/script.js" defer></script>
      <script>
          var fileRun = '<?php echo $fileRun; ?>';
      </script>
@@ -70,7 +98,7 @@ $texts = array_map('file_get_contents', $files);
 <body class="dark-theme">
 <header>
     <pre>
-        <?php echo htmlspecialchars(file_get_contents('web4static/ascii.txt')); ?>
+        <?php echo htmlspecialchars(file_get_contents('files/ascii.txt')); ?>
     </pre>
 </header>
 <body>
