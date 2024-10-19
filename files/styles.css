@@ -1,28 +1,27 @@
 :root {
     --background-color: #fff;
+    --background-color-dark: #1b2434;
     --primary-color: #379dd8;
     --white-color: #fff;
     --black-color: #000;
     --border-textarea-color: #ebebeb;
+    --border-textarea-color-black: #4d545f;
     --border-radius: 20px;
     --font-family: Roboto, sans-serif;
+    --placeholder-color: #aaa
 }
 
 html, body {
-    font-family: Roboto, sans-serif;
+    font-family: var(--font-family), serif;
     height: 100%;
     margin: 0;
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
     overflow-y: hidden;
-}
-
-body {
+    text-rendering: optimizeLegibility;
     padding: 20px;
     border-radius: var(--border-radius);
-    display: flex;
-    flex-direction: column;
     align-items: center;
 }
 
@@ -39,7 +38,6 @@ footer {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    position: relative;
 }
 
 .footer {
@@ -55,7 +53,7 @@ footer {
 }
 
 footer.dark-theme {
-    background-color: #1b2434; !important; /* Цвет фона футера в тёмной теме */
+    background-color: var(--background-color-dark) !important; /* Цвет фона футера в тёмной теме */
     color: var(--primary-color); /* Цвет текста футера в тёмной теме */
 }
 
@@ -74,7 +72,7 @@ footer.dark-theme {
 
 /* Стили для тёмной темы */
 body.dark-theme {
-    background-color: #1b2434; /* Фон для тёмной темы */
+    background-color: var(--background-color-dark); /* Фон для тёмной темы */
     color: #fff; /* Цвет текста для тёмной темы */
 }
 
@@ -119,15 +117,6 @@ body:not(.dark-theme) #moon-icon {
     width: 100%;
 }
 
-.form-section textarea {
-    width: 100%; /* Обеспечим, что textarea будет занимать всю ширину контейнера */
-    box-sizing: border-box; /* Учитываем границы и отступы */
-}
-
-.form-section.active {
-    display: block;
-}
-
 textarea {
     width: 100%; /* Занимает всю ширину родительского контейнера */
     height: 200px; /* Высота текстовой области */
@@ -135,9 +124,10 @@ textarea {
     overflow: auto; /* Используем один overflow, чтобы избежать конфликтов */
     padding: 15px; /* Отступы внутри текстовой области */
     border-radius: var(--border-radius);
-    border: 1px solid #ebebeb; /* Цвет границы */
+    border: 1px solid var(--border-textarea-color); /* Цвет границы */
     box-sizing: border-box; /* Учитываем границы и отступы в ширине и высоте */
     box-shadow: none; /* Убираем тень в тёмной теме */
+    scrollbar-width: none;
 }
 
 textarea::-webkit-scrollbar {
@@ -155,15 +145,15 @@ textarea:hover {
 }
 
 textarea::placeholder {
-    color: #aaa; /* Цвет текста-подсказки */
+    color: var(--placeholder-color); /* Цвет текста-подсказки */
     opacity: 0.8; /* Прозрачность */
 }
 
 /* Стили для тёмной темы */
 body.dark-theme textarea {
-    background-color: #1b2434; /* Цвет фона для тёмной темы */
+    background-color: var(--background-color-dark); /* Цвет фона для тёмной темы */
     color: var(--white-color); /* Цвет текста для тёмной темы */
-    border: 1px solid #4d545f; /* Цвет границы для тёмной темы */
+    border: 1px solid var(--border-textarea-color-black); /* Цвет границы для тёмной темы */
 }
 
 /* Стили для фокуса в тёмной теме */
@@ -202,7 +192,7 @@ input[type="button"] {
     padding: 10px 15px;
     border-radius: var(--border-radius);
     border: 1px solid var(--primary-color); /* Цвет бордюра для светлой темы */
-    background-color: #fff;
+    background-color: var(--background-color);
     cursor: pointer;
     color: var(--black-color);
     transition: background-color 0.3s, color 0.3s; /* Плавный переход для фона и текста */
@@ -226,7 +216,7 @@ body.dark-theme input[type="button"] {
     padding: 10px 15px;
     border-radius: var(--border-radius);
     border: 1px solid var(--primary-color); /* Цвет бордюра для тёмной темы */
-    background-color: #1b2434; /* Цвет фона для тёмной темы */
+    background-color: var(--background-color-dark); /* Цвет фона для тёмной темы */
     color: var(--white-color); /* Цвет текста для тёмной темы */
     cursor: pointer;
     transition: background-color 0.3s, color 0.3s; /* Плавный переход для фона и текста */

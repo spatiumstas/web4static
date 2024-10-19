@@ -73,7 +73,6 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e)
 
 applySavedTheme();
 
-
 function showSection(section) {
     const buttons = document.querySelectorAll('input[type="button"]');
 

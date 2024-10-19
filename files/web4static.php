@@ -67,8 +67,7 @@ $texts = array_map('file_get_contents', $files);
          var fileRun = '<?php echo $fileRun; ?>';
      </script>
 </head>
-<body>
-
+<body class="dark-theme">
 <header>
     <pre>
         <?php echo htmlspecialchars(file_get_contents('web4static/ascii.txt')); ?>
