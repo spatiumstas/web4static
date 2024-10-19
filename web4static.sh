@@ -13,13 +13,6 @@ PATH_WEB4STATIC="/opt/share/www/ext-ui/addons/web4static.php"
 PATH_VPN_ICON="/opt/share/www/ext-ui/addons/web4static/main.png"
 PATH_RUN4STATIC="/opt/share/www/ext-ui/addons/web4static/run4Static.php"
 
-URL_EDITLIST="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/web4static.php"
-URL_VPN_ICON="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/main.png"
-URL_RUN="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/run4Static.php"
-URL_STYLES="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/styles.css"
-URL_SCRIPT="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/script.js"
-URL_ASCII="https://raw.githubusercontent.com/${USER}/${REPO}/main/files/ascii.txt"
-
 print_menu() {
   printf "\033c"
   printf "${CYAN}"
@@ -42,7 +35,7 @@ EOF
 
 main_menu() {
   print_menu
-  read -p "Выберите действие: " choice
+  read -p "Выберите действие: " choice branch
 
   choice=$(echo "$choice" | tr -d '\032' | tr -d '[A-Z]')
 
@@ -50,7 +43,7 @@ main_menu() {
     main_menu
   else
     case "$choice" in
-    1) install_web ;;
+    1) install_web "${branch:-master}" ;; # Если branch не задан, по умолчанию будет master
     2) remove_web ;;
     88) script_update "dev" ;;
     99) script_update "main" ;;
@@ -118,10 +111,18 @@ modify_index_file() {
 }
 
 install_web() {
-  print_message "Начинаем установку Web-интерфейса..." "$GREEN"
+  BRANCH="$1"
+  print_message "Начинаем установку Web-интерфейса для ветки $BRANCH..." "$GREEN"
   packages_checker
 
   mkdir -p "$WEB4STATIC_DIR"
+  URL_EDITLIST="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/web4static.php"
+  URL_VPN_ICON="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/main.png"
+  URL_RUN="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/run4Static.php"
+  URL_STYLES="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/styles.css"
+  URL_SCRIPT="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/script.js"
+  URL_ASCII="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/ascii.txt"
+
   download_file "$URL_EDITLIST" "$PATH_WEB4STATIC"
   download_file "$URL_RUN" "$PATH_RUN4STATIC"
   download_file "$URL_ASCII" "$WEB4STATIC_DIR/ascii.txt"
