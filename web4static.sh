@@ -198,7 +198,7 @@ script_update() {
     chmod +x $OPT_DIR/$SCRIPT
     cd $OPT_DIR/bin
     ln -sf $OPT_DIR/$SCRIPT $OPT_DIR/bin/web4static
-    if [ -n "$BRANCH" ]; then
+    if [ "$BRANCH" = "dev" ]; then
       print_message "Скрипт успешно обновлён на $BRANCH ветку..." "$GREEN"
     else
       print_message "Скрипт успешно обновлён" "$GREEN"
