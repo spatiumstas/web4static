@@ -35,7 +35,6 @@ $tpwsFiles = array_merge(
 );
 
 $files = array_merge($ipsetFiles, $birdFiles, $nfqwsFiles, $tpwsFiles);
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($_POST as $key => $content) {
         $normalizedKey = str_replace('_conf', '.conf', $key);
@@ -43,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         isset($files[$normalizedKey]);
         $file = $files[$normalizedKey];
         file_put_contents($file, $content);
+        shell_exec("dos2unix " . escapeshellarg($file));
     }
     http_response_code(200);
     exit();
