@@ -3,68 +3,45 @@
 $fileRun = 'files/run4Static.php';
 $url = 'http://192.168.1.1:88/w4s/web4static.php';
 
-$ipsetPath = rtrim(shell_exec("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/lists/'"));
-$birdPath = rtrim(shell_exec("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'"));
-$nfqwsPath = '/opt/etc/nfqws/*.list';
-$tpwsPath = '/opt/etc/tpws/*.list';
-
-$ipsetFiles = [];
-$birdFiles = [];
-$nfqwsFiles = glob($nfqwsPath);
-$tpwsFiles = glob($tpwsPath);
-
-if (is_dir($ipsetPath)) {
-    $ipsetFiles = explode("\n", trim(shell_exec("ls $ipsetPath/*.list 2>/dev/null")));
-}
-
-if (is_dir($birdPath)) {
-    $birdFiles = explode("\n", trim(shell_exec("ls $birdPath/*.list 2>/dev/null")));
-}
-
-if (!empty($nfqwsPath) && is_dir($nfqwsPath)) {
-    $nfqwsFiles = explode("\n", trim(shell_exec("ls $nfqwsPath/*.list 2>/dev/null")));
-}
-
-if (!empty($tpwsPath) && is_dir($tpwsPath)) {
-    $tpwsFiles = explode("\n", trim(shell_exec("ls $tpwsPath/*.list 2>/dev/null")));
-}
-
-$files = [];
-
-if (!empty($ipsetFiles)) {
-    $files = array_merge(
-        $files,
-        array_combine(array_map(fn($file) => basename($file, '.list'), $ipsetFiles), $ipsetFiles)
+function getFilesFromPath(string $path, string $extension = 'list', string $suffix = ''): array {
+    $files = glob($path . '/*.' . $extension);
+    return array_combine(
+        array_map(fn($file) => basename($file, '.' . $extension) . $suffix, $files),
+        $files
     );
 }
 
-if (!empty($birdFiles)) {
-    $files = array_merge(
-        $files,
-        array_combine(array_map(fn($file) => basename($file, '.list'), $birdFiles), $birdFiles)
-    );
+function getFilesByShell(string $shellCmd, string $extension = 'list', string $suffix = ''): array {
+    $path = rtrim(shell_exec($shellCmd));
+    if (is_dir($path)) {
+        $files = explode("\n", trim(shell_exec("ls $path/*.$extension 2>/dev/null")));
+        return array_combine(
+            array_map(fn($file) => basename($file, '.' . $extension) . $suffix, $files),
+            $files
+        );
+    }
+    return [];
 }
 
-if (!empty($nfqwsFiles)) {
-    $files = array_merge(
-        $files,
-        array_combine(
-            array_map(fn($file) => basename($file, '.list') . '-nfqws', $nfqwsFiles), $nfqwsFiles)
-    );
-}
+$ipsetFiles = getFilesByShell("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/lists/'", 'list');
+$birdFiles = getFilesByShell("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'", 'list');
+$nfqwsFiles = array_merge(
+    getFilesFromPath('/opt/etc/nfqws', 'list', '-nfqws'),
+    is_file('/opt/etc/nfqws/nfqws.conf') ? ['nfqws.conf' => '/opt/etc/nfqws/nfqws.conf'] : []
+);
+$tpwsFiles = array_merge(
+    getFilesFromPath('/opt/etc/tpws', 'list', '-tpws'),
+    is_file('/opt/etc/tpws/tpws.conf') ? ['tpws.conf' => '/opt/etc/tpws/tpws.conf'] : []
+);
 
-if (!empty($tpwsFiles)) {
-    $files = array_merge(
-        $files,
-        array_combine(
-            array_map(fn($file) => basename($file, '.list') . '-tpws', $tpwsFiles), $tpwsFiles)
-    );
-}
-
+$files = array_merge($ipsetFiles, $birdFiles, $nfqwsFiles, $tpwsFiles);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($_POST as $key => $content) {
-        $file = $files[$key];
+        $normalizedKey = str_replace('_conf', '.conf', $key);
+        isset($files[$normalizedKey]);
+        $file = $files[$normalizedKey];
         file_put_contents($file, $content);
+        shell_exec("tr -d '\r' < " . escapeshellarg($file) . " > " . escapeshellarg($file) . ".tmp && mv " . escapeshellarg($file) . ".tmp " . escapeshellarg($file));
     }
     http_response_code(200);
     exit();
