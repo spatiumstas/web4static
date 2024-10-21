@@ -203,7 +203,10 @@ script_update() {
   fi
 }
 
-if [ "$1" = "install_web" ]; then
+if [ "$1" = "script_update" ]; then
+  script_update "main"
+elif [ "$1" = "install_web" ]; then
   install_web "main"
+else
+  main_menu
 fi
-main_menu
