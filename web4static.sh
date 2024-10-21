@@ -7,6 +7,9 @@ NC='\033[0m'
 USER="spatiumstas"
 REPO="web4static"
 MAIN_NAME="web4static.php"
+SCRIPT="web4static.sh"
+TMP_DIR="/tmp"
+OPT_DIR="/opt"
 
 WEB4STATIC_FOLDER="w4s"
 WEB4STATIC_DIR="/opt/share/www/w4s"
@@ -45,7 +48,7 @@ main_menu() {
     main_menu
   else
     case "$choice" in
-    1) install_web "${branch:-master}" ;;
+    1) install_web "${branch:-main}" ;;
     2) remove_web ;;
     77) packages_delete ;;
     88) script_update "dev" ;;
@@ -62,33 +65,25 @@ main_menu() {
 
 print_message() {
   local message=$1
-  local color=$2
-  local len=${#message}
-  local border=$(printf '%0.s-' $(seq 1 $((len + 2))))
-
-  printf "${color}\n"
-  echo -e "\n+${border}+"
-  echo -e "| ${message} |"
-  echo -e "+${border}+\n"
-  printf "${NC}"
+  local color=${2:-$NC}
+  local border=$(printf '%0.s-' $(seq 1 $((${#message} + 2))))
+  printf "${color}\n+${border}+\n| ${message} |\n+${border}+\n${NC}\n"
   sleep 1
 }
 
 packages_checker() {
   if ! opkg list-installed | grep -q "^php8-cgi" || ! opkg list-installed | grep -q "^curl" || ! opkg list-installed | grep -q "^uhttpd_kn"; then
-    printf "${RED}Необходимые пакеты не найдены, устанавливаем...${NC}\n"
-    echo ""
+    print_message "Устанавливаем пакеты..." "$CYAN"
     opkg update
     opkg install php8-cgi uhttpd_kn curl
-    wait 
     echo ""
   fi
 }
 
 packages_delete() {
-  opkg remove php8 php8-cgi uhttpd_kn curl --force-depends
+  opkg remove php8-cgi uhttpd_kn curl --force-depends
   wait
-  print_message "Пакеты pph8, php8-cgi, uhttpd_kn и curl успешно удалены" "$GREEN"
+  print_message "Пакеты php8-cgi, uhttpd_kn и curl успешно удалены" "$GREEN"
   read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
   main_menu
 }
@@ -110,14 +105,12 @@ download_file() {
 
 install_web() {
   BRANCH="$1"
-  if [ "$BRANCH" = "dev" ]; then
-    print_message "Устанавливаем Web-интерфейс из ветки $BRANCH..." "$GREEN"
-  else
-    print_message "Устанавливаем Web-интерфейс..." "$GREEN"
-  fi
-  packages_checker
 
+  script_update "$BRANCH" 1
+  print_message "Устанавливаем Web-интерфейс..." "$GREEN"
+  packages_checker
   mkdir -p "$WEB4STATIC_DIR/files"
+
   URL_EDITLIST="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/web4static.php"
   URL_VPN_ICON="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/main.png"
   URL_RUN="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/run4Static.php"
@@ -130,7 +123,6 @@ install_web() {
   download_file "$URL_ASCII" "$WEB4STATIC_DIR/files/ascii.txt"
   download_file "$URL_STYLES" "$WEB4STATIC_DIR/files/styles.css"
   download_file "$URL_SCRIPT" "$WEB4STATIC_DIR/files/script.js"
-
   download_file "$URL_VPN_ICON" "$PATH_VPN_ICON"
 
   echo ""
@@ -187,9 +179,7 @@ remove_web() {
 
 script_update() {
   BRANCH="$1"
-  SCRIPT="web4static.sh"
-  TMP_DIR="/tmp"
-  OPT_DIR="/opt"
+  INSTALL="$2"
 
   curl -L -s "https://raw.githubusercontent.com/$USER/$REPO/$BRANCH/$SCRIPT" --output $TMP_DIR/$SCRIPT
 
@@ -203,10 +193,17 @@ script_update() {
     else
       print_message "Скрипт успешно обновлён" "$GREEN"
     fi
-    $OPT_DIR/$SCRIPT
+    if [ "$INSTALL" = 1 ]; then
+      exec "$OPT_DIR/$SCRIPT"
+    else
+      exec "$OPT_DIR/$SCRIPT" install_web
+    fi
   else
     print_message "Ошибка при скачивании скрипта" "$RED"
   fi
 }
 
+if [ "$1" = "install_web" ]; then
+  install_web "main"
+fi
 main_menu
