@@ -80,15 +80,15 @@ packages_checker() {
     echo ""
     opkg update
     opkg install php8-cgi uhttpd_kn curl
-    /opt/etc/init.d/S80uhttpd restart
+    wait 
     echo ""
   fi
 }
 
 packages_delete() {
-  opkg remove php8-cgi uhttpd_kn curl --force-depends
+  opkg remove php8 php8-cgi uhttpd_kn curl --force-depends
   wait
-  print_message "Пакеты php8-cgi, uhttpd_kn и curl успешно удалены" "$GREEN"
+  print_message "Пакеты pph8, php8-cgi, uhttpd_kn и curl успешно удалены" "$GREEN"
   read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
   main_menu
 }
