@@ -62,25 +62,57 @@ main_menu() {
 
 print_message() {
   local message=$1
-  local color=$2
-  local len=${#message}
-  local border=$(printf '%0.s-' $(seq 1 $((len + 2))))
-
-  printf "${color}\n"
-  echo -e "\n+${border}+"
-  echo -e "| ${message} |"
-  echo -e "+${border}+\n"
-  printf "${NC}"
+  local color=${2:-$NC}
+  local border=$(printf '%0.s-' $(seq 1 $((${#message} + 2))))
+  printf "${color}\n+${border}+\n| ${message} |\n+${border}+\n${NC}\n"
   sleep 1
 }
 
 packages_checker() {
   if ! opkg list-installed | grep -q "^php8-cgi" || ! opkg list-installed | grep -q "^curl" || ! opkg list-installed | grep -q "^uhttpd_kn"; then
-    printf "${RED}Необходимые пакеты не найдены, устанавливаем...${NC}\n"
-    echo ""
     opkg update
     opkg install php8-cgi uhttpd_kn curl
-    wait 
+    wait
+    echo ""
+  fi
+}
+
+get_architecture() {
+  arch=$(opkg print-architecture | grep -oE 'mips-3|mipsel-3|aarch64-3' | head -n 1)
+
+  case "$arch" in
+  "mips-3") echo "mips" ;;
+  "mipsel-3") echo "mipsel" ;;
+  "aarch64-3") echo "aarch64" ;;
+  *) echo "unknown_arch" ;;
+  esac
+}
+
+check_keenetic_repo() {
+  if [ ! -f /opt/var/opkg-lists/keendev ]; then
+    print_message "Не найден репозиторий Keenetic, добавляю..." "$CYAN"
+    arch=$(get_architecture)
+    printf "${GREEN}Архитектура устройства - $arch${NC}\n"
+    echo ""
+    mkdir -p /opt/etc/opkg
+    case "$arch" in
+      "mips")
+        echo "src/gz keendev http://bin.entware.net/mipssf-k3.4/keenetic" > /opt/etc/opkg/w4s-keenetic.conf
+        ;;
+      "mipsel")
+        echo "src/gz keendev http://bin.entware.net/mipselsf-k3.4/keenetic" > /opt/etc/opkg/w4s-keenetic.conf
+        ;;
+      "aarch64")
+        echo "src/gz keendev http://bin.entware.net/aarch64-k3.10/keenetic" > /opt/etc/opkg/w4s-keenetic.conf
+        ;;
+      *)
+        printf "${RED}Неподдерживаемая архитектура: $arch${NC}\n"
+        echo ""
+        read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
+        main_menu
+        ;;
+    esac
+    opkg update
     echo ""
   fi
 }
@@ -97,15 +129,13 @@ download_file() {
   local url="$1"
   local path="$2"
   local filename=$(basename "$path")
-  echo "Скачиваем файл $filename..."
+  echo "Скачиваю файл $filename..."
 
   if ! curl -s -f -o "$path" "$url"; then
     print_message "Ошибка при скачивании файла $filename. Возможно, файл не найден" "$RED"
     read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
     main_menu
   fi
-
-  return 0
 }
 
 install_web() {
@@ -116,6 +146,7 @@ install_web() {
     print_message "Устанавливаем Web-интерфейс..." "$GREEN"
   fi
   packages_checker
+  check_keenetic_repo
 
   mkdir -p "$WEB4STATIC_DIR/files"
   URL_EDITLIST="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/web4static.php"
@@ -134,8 +165,7 @@ install_web() {
   download_file "$URL_VPN_ICON" "$PATH_VPN_ICON"
 
   echo ""
-  read -p "Введите IP-адрес роутера (по умолчанию 192.168.1.1): " user_ip
-  user_ip=${user_ip:-192.168.1.1}
+  user_ip=$(ip -f inet addr show dev br0 2>/dev/null | grep inet | sed -n 's/.*inet \([0-9.]\+\).*/\1/p')
 
   replace_path "$user_ip"
   echo ""
