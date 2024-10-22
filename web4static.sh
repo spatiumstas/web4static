@@ -69,6 +69,7 @@ print_message() {
 }
 
 packages_checker() {
+  check_keenetic_repo
   if ! opkg list-installed | grep -q "^php8-cgi" || ! opkg list-installed | grep -q "^curl" || ! opkg list-installed | grep -q "^uhttpd_kn"; then
     opkg update
     opkg install php8-cgi uhttpd_kn curl
@@ -143,7 +144,6 @@ install_web() {
   else
     print_message "Устанавливаем Web-интерфейс..." "$GREEN"
   fi
-  check_keenetic_repo
   packages_checker
 
   mkdir -p "$WEB4STATIC_DIR/files"
@@ -185,7 +185,9 @@ replace_path() {
     if grep -q "$search" "$file"; then
       sed -i "s|$search|$replace|g" "$file"
     else
-      echo "Ошибка: строка '$description' не найдена в файле $file"
+      printf "${RED}Ошибка: строка '$description' не найдена в файле $file${NC}\n"
+      read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
+      main_menu
     fi
   }
 
@@ -198,7 +200,9 @@ replace_path() {
       sed -i 's|^\(ARGS=.*\)"|\1 -I web4static.php"|' "/opt/etc/init.d/S80uhttpd"
     fi
   else
-    echo "Ошибка: строка 'ARGS=' не найдена в файле /opt/etc/init.d/S80uhttpd"
+    print_message "Ошибка: строка 'ARGS=' не найдена в файле /opt/etc/init.d/S80uhttpd" "$RED"
+    read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
+    main_menu
   fi
 }
 
@@ -228,8 +232,10 @@ script_update() {
     ln -sf $OPT_DIR/$SCRIPT $OPT_DIR/bin/web4static
     if [ "$BRANCH" = "dev" ]; then
       print_message "Скрипт успешно обновлён на $BRANCH ветку..." "$GREEN"
+      sleep 2
     else
       print_message "Скрипт успешно обновлён" "$GREEN"
+      sleep 2
     fi
     $OPT_DIR/$SCRIPT
   else
