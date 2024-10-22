@@ -112,8 +112,6 @@ check_keenetic_repo() {
         main_menu
         ;;
     esac
-    opkg update
-    echo ""
   fi
 }
 
@@ -145,8 +143,8 @@ install_web() {
   else
     print_message "Устанавливаем Web-интерфейс..." "$GREEN"
   fi
-  packages_checker
   check_keenetic_repo
+  packages_checker
 
   mkdir -p "$WEB4STATIC_DIR/files"
   URL_EDITLIST="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/web4static.php"
