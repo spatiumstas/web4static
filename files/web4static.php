@@ -1,7 +1,10 @@
 <?php
 
+$config = parse_ini_file(__DIR__ . '/files/config.ini');
+$baseUrl = $config['base_url'];
+$url = $baseUrl . '/w4s/web4static.php';
+
 $fileRun = 'files/run4Static.php';
-$url = 'http://192.168.1.1:88/w4s/web4static.php';
 
 function getFilesFromPath(string $path, string $extension = 'list', string $suffix = ''): array {
     $files = glob($path . '/*.' . $extension);

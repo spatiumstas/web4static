@@ -13,6 +13,7 @@ WEB4STATIC_DIR="/opt/share/www/w4s"
 PATH_WEB4STATIC="/opt/share/www/w4s/web4static.php"
 PATH_VPN_ICON="/opt/share/www/w4s/files/main.png"
 PATH_RUN4STATIC="/opt/share/www/w4s/files/run4Static.php"
+PATH_CONFIG="/opt/share/www/w4s/files/config.ini"
 
 print_menu() {
   printf "\033c"
@@ -153,12 +154,14 @@ install_web() {
   URL_STYLES="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/styles.css"
   URL_SCRIPT="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/script.js"
   URL_ASCII="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/ascii.txt"
+  URL_CONFIG="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/config.ini"
 
   download_file "$URL_EDITLIST" "$PATH_WEB4STATIC"
   download_file "$URL_RUN" "$PATH_RUN4STATIC"
   download_file "$URL_ASCII" "$WEB4STATIC_DIR/files/ascii.txt"
   download_file "$URL_STYLES" "$WEB4STATIC_DIR/files/styles.css"
   download_file "$URL_SCRIPT" "$WEB4STATIC_DIR/files/script.js"
+  download_file "$URL_CONFIG" "$WEB4STATIC_DIR/files/config.ini"
 
   download_file "$URL_VPN_ICON" "$PATH_VPN_ICON"
 
@@ -175,25 +178,21 @@ install_web() {
 
 replace_path() {
   local new_ip="$1"
+  local config_file="/files/config.ini"
 
-  replace_with_error_check() {
-    local search="$1"
-    local replace="$2"
+  update_config() {
+    local key="$1"
+    local value="$2"
     local file="$3"
-    local description="$4"
 
-    if grep -q "$search" "$file"; then
-      sed -i "s|$search|$replace|g" "$file"
+    if grep -q "^$key" "$file"; then
+      sed -i "s|^$key.*|$key = \"$value\"|" "$file"
     else
-      printf "${RED}Ошибка: строка '$description' не найдена в файле $file${NC}\n"
-      read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
-      main_menu
+      echo "$key = \"$value\"" >> "$file"
     fi
   }
 
-  replace_with_error_check "http://192.168.1.1:88/${WEB4STATIC_FOLDER}/${MAIN_NAME}" "http://$new_ip:88/${WEB4STATIC_FOLDER}/${MAIN_NAME}" "$PATH_WEB4STATIC" "URL"
-
-  replace_with_error_check "header('Location: http://192.168.1.1:88/${WEB4STATIC_FOLDER}/${MAIN_NAME}');" "header('Location: http://$new_ip:88/${WEB4STATIC_FOLDER}/${MAIN_NAME}');" "$PATH_RUN4STATIC" "header URL"
+  update_config "base_url" "http://$new_ip:88" "$PATH_CONFIG"
 
   if grep -q '^ARGS=' "/opt/etc/init.d/S80uhttpd"; then
     if ! grep -q ' -I web4static.php' "/opt/etc/init.d/S80uhttpd"; then
