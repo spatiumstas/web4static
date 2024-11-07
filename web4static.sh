@@ -118,9 +118,27 @@ check_keenetic_repo() {
 }
 
 packages_delete() {
-  opkg remove php8 php8-cgi uhttpd_kn curl --force-depends
-  wait
-  print_message "Пакеты pph8, php8-cgi, uhttpd_kn и curl успешно удалены" "$GREEN"
+  packages="php8 php8-cgi uhttpd_kn"
+  delete_log=$(opkg remove $packages --autoremove 2>&1)
+  removed_packages=""
+  failed_packages=""
+
+  for package in $packages; do
+    if echo "$delete_log" | grep -q "Package $package is depended upon by packages"; then
+      failed_packages="$failed_packages $package"
+    else
+      removed_packages="$removed_packages $package"
+    fi
+  done
+
+  if [ -n "$removed_packages" ]; then
+    print_message "Пакеты$removed_packages успешно удалены" "$GREEN"
+  fi
+
+  if [ -n "$failed_packages" ]; then
+    print_message "Пакет$failed_packages не были удалены из-за зависимостей" "$RED"
+  fi
+
   read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
   main_menu
 }
@@ -209,9 +227,13 @@ remove_web() {
   echo ""
   echo "Удаляю директорию $WEB4STATIC_DIR..."
   sleep 1
-  rm -r $WEB4STATIC_DIR
+  rm -r "$WEB4STATIC_DIR"
 
-  print_message "Успешно удалёно" "$GREEN"
+  if grep -q '^ARGS=' "/opt/etc/init.d/S80uhttpd"; then
+    sed -i 's| -I web4static.php||' "/opt/etc/init.d/S80uhttpd"
+  fi
+
+  print_message "Успешно удалено" "$GREEN"
   read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
   main_menu
 }
