@@ -71,35 +71,40 @@ $texts = array_map('file_get_contents', $files);
 
     <link rel="stylesheet" href="files/styles.css">
     <script src="files/script.js" defer></script>
-     <script>
-         var fileRun = '<?php echo $fileRun; ?>';
-     </script>
+    <script>
+        var fileRun = '<?php echo $fileRun; ?>';
+        document.addEventListener("DOMContentLoaded", function() {
+            const header = document.getElementById("asciiHeader");
+            header.addEventListener("click", function() {
+                location.reload();
+            });
+        });
+    </script>
 </head>
 <body class="dark-theme">
-<header>
+<header id="asciiHeader">
     <pre>
         <?php echo htmlspecialchars(file_get_contents('files/ascii.txt')); ?>
     </pre>
 </header>
-<body>
-    <main>
-        <form id="mainForm" action="" method="post">
-            <?php foreach ($files as $key => $path): ?>
-                <input type="button" onclick="showSection('<?php echo $key; ?>')" value="<?php echo $key; ?>" />
-            <?php endforeach; ?>
+<main>
+    <form id="mainForm" action="" method="post">
+        <?php foreach ($files as $key => $path): ?>
+            <input type="button" onclick="showSection('<?php echo $key; ?>')" value="<?php echo $key; ?>" />
+        <?php endforeach; ?>
 
-            <?php foreach ($files as $key => $path): ?>
-                <div id="<?php echo $key; ?>" class="form-section" style="display:none;">
-                    <div class="textarea-container">
-                        <textarea name="<?php echo $key; ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
-                    </div>
+        <?php foreach ($files as $key => $path): ?>
+            <div id="<?php echo $key; ?>" class="form-section" style="display:none;">
+                <div class="textarea-container">
+                    <textarea name="<?php echo $key; ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
                 </div>
-            <?php endforeach; ?>
-            <div class="button-container">
-                <input type="submit" value="Save & Restart" />
             </div>
-        </form>
-    </main>
+        <?php endforeach; ?>
+        <div class="button-container">
+            <input type="submit" value="Save & Restart" />
+        </div>
+    </form>
+</main>
 </body>
 <footer>
 <button onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle Dark Mode">
