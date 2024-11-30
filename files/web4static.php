@@ -41,10 +41,21 @@ $files = array_merge($ipsetFiles, $birdFiles, $nfqwsFiles, $tpwsFiles);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($_POST as $key => $content) {
         $normalizedKey = str_replace('_conf', '.conf', $key);
-        isset($files[$normalizedKey]);
-        $file = $files[$normalizedKey];
-        file_put_contents($file, $content);
-        shell_exec("tr -d '\r' < " . escapeshellarg($file) . " > " . escapeshellarg($file) . ".tmp && mv " . escapeshellarg($file) . ".tmp " . escapeshellarg($file));
+
+        if (isset($files[$normalizedKey])) {
+            $file = $files[$normalizedKey];
+
+            if (is_link($file)) {
+                $target = readlink($file);
+                if ($target !== false && is_writable($target)) {
+                    file_put_contents($target, $content);
+                }
+            } else {
+                file_put_contents($file, $content);
+            }
+            $targetFile = is_link($file) ? $target : $file;
+            shell_exec("tr -d '\r' < " . escapeshellarg($targetFile) . " > " . escapeshellarg($targetFile) . ".tmp && mv " . escapeshellarg($targetFile) . ".tmp " . escapeshellarg($targetFile));
+        }
     }
     http_response_code(200);
     exit();
