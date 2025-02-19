@@ -61,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
+$files = array_filter($files, 'strlen');
 $texts = array_map('file_get_contents', $files);
 ?>
 
