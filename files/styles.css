@@ -53,8 +53,8 @@ footer {
 }
 
 footer.dark-theme {
-    background-color: var(--background-color-dark) !important; /* Цвет фона футера в тёмной теме */
-    color: var(--primary-color); /* Цвет текста футера в тёмной теме */
+    background-color: var(--background-color-dark) !important;
+    color: var(--primary-color);
 }
 
 #theme-toggle {
@@ -64,24 +64,20 @@ footer.dark-theme {
     padding: 10px;
 }
 
-/* Цвет иконок */
 #theme-toggle svg {
-    color: #333; /* Цвет иконок в светлой теме */
+    color: #333;
     transition: color 0.3s ease;
 }
 
-/* Стили для тёмной темы */
 body.dark-theme {
-    background-color: var(--background-color-dark); /* Фон для тёмной темы */
-    color: #fff; /* Цвет текста для тёмной темы */
+    background-color: var(--background-color-dark);
+    color: #fff;
 }
 
-/* Цвет иконок в тёмной теме */
 body.dark-theme #theme-toggle svg {
     color: #f0e68c;
 }
 
-/* Переключение между иконками */
 body.dark-theme #sun-icon {
     display: none;
 }
@@ -92,21 +88,6 @@ body.dark-theme #moon-icon {
 
 body:not(.dark-theme) #moon-icon {
     display: none;
-}
-
-.header {
-    text-align: center;
-    color: #333;
-    white-space: pre;
-    margin: 0;
-    line-height: 1.2;
-    padding: 20px 0;
-}
-
-.subtitle {
-    display: inline-block;
-    font-size: 16px;
-    margin-left: 10px;
 }
 
 .form-section {
@@ -132,10 +113,16 @@ form {
     padding-right: 25px;
 }
 
+@media (max-width: 600px) {
+    html, body {
+        overflow: auto;
+    }
+}
+
 textarea {
-    max-width: 400px;
+    max-width: 500px;
     width: 100%;
-    height: 200px;
+    height: 250px;
     resize: none;
     overflow: auto;
     padding: 15px;
@@ -147,40 +134,38 @@ textarea {
 }
 
 textarea::-webkit-scrollbar {
-    display: none; /* Скрываем скроллбар */
+    display: none;
 }
 
 textarea:focus {
     border: 1px solid var(--primary-color);
-    outline: none; /* Убираем стандартный контур при фокусе */
+    outline: none;
 }
 
 textarea:hover {
     border: 1px solid var(--primary-color);
-    outline: none; /* Убираем стандартный контур при фокусе */
+    outline: none;
 }
 
 textarea::placeholder {
-    color: var(--placeholder-color); /* Цвет текста-подсказки */
-    opacity: 0.8; /* Прозрачность */
+    color: var(--placeholder-color);
+    opacity: 0.8;
 }
 
-/* Стили для тёмной темы */
 body.dark-theme textarea {
-    background-color: var(--background-color-dark); /* Цвет фона для тёмной темы */
-    color: var(--white-color); /* Цвет текста для тёмной темы */
-    border: 1px solid var(--border-textarea-color-black); /* Цвет границы для тёмной темы */
+    background-color: var(--background-color-dark);
+    color: var(--white-color);
+    border: 1px solid var(--border-textarea-color-black);
 }
 
-/* Стили для фокуса в тёмной теме */
 body.dark-theme textarea:focus {
     border: 1px solid var(--primary-color);
-    outline: none; /* Убираем стандартный контур при фокусе */
+    outline: none;
 }
 
 body.dark-theme textarea:hover {
     border: 1px solid var(--primary-color);
-    outline: none; /* Убираем стандартный контур при фокусе */
+    outline: none;
 }
 
 .button-container {
@@ -188,39 +173,36 @@ body.dark-theme textarea:hover {
     justify-content: center;
     align-items: center;
     width: 100%;
+    flex-wrap: wrap;
 }
 
-/* Стили для кнопок в светлой теме */
-input[type="reset"],
 input[type="submit"] {
     margin: 10px 0;
     padding: 10px 15px;
     border-radius: var(--border-radius);
-    border: 1px solid var(--primary-color); /* Цвет бордюра для светлой темы */
+    border: 1px solid var(--primary-color);
     cursor: pointer;
-    background-color: var(--primary-color); /* Цвет фона для светлой темы */
-    color: var(--white-color); /* Цвет текста для светлой темы */
+    background-color: var(--primary-color);
+    color: var(--white-color);
 }
 
 input[type="button"] {
     margin: 10px 0;
     padding: 10px 15px;
     border-radius: var(--border-radius);
-    border: 1px solid var(--primary-color); /* Цвет бордюра для светлой темы */
+    border: 1px solid var(--primary-color);
     background-color: var(--background-color);
     cursor: pointer;
     color: var(--black-color);
 }
 
-/* Стили для кнопок в тёмной теме */
-body.dark-theme input[type="reset"],
 body.dark-theme input[type="submit"] {
     margin: 10px 0;
     padding: 10px 15px;
     border-radius: var(--border-radius);
-    border: 1px solid var(--primary-color); /* Цвет бордюра для тёмной темы */
-    background-color: var(--primary-color); /* Цвет фона для тёмной темы */
-    color: var(--white-color); /* Цвет текста для тёмной темы */
+    border: 1px solid var(--primary-color);
+    background-color: var(--primary-color);
+    color: var(--white-color);
     cursor: pointer;
 }
 
@@ -228,25 +210,25 @@ body.dark-theme input[type="button"] {
     margin: 10px 0;
     padding: 10px 15px;
     border-radius: var(--border-radius);
-    border: 1px solid var(--primary-color); /* Цвет бордюра для тёмной темы */
-    background-color: var(--background-color-dark); /* Цвет фона для тёмной темы */
-    color: var(--white-color); /* Цвет текста для тёмной темы */
+    border: 1px solid var(--primary-color);
+    background-color: var(--background-color-dark);
+    color: var(--white-color);
     cursor: pointer;
 }
 
 input[type="button"]:hover {
-    background-color: var(--primary-color); /* Цвет при наведении для обеих тем */
-    color: var(--white-color); /* Цвет текста при наведении для обеих тем */
+    background-color: var(--primary-color);
+    color: var(--white-color);
 }
 
 body.dark-theme input[type="button"]:hover {
-    background-color: var(--primary-color); /* Цвет при наведении для обеих тем */
-    color: var(--white-color); /* Цвет текста при наведении для обеих тем */
+    background-color: var(--primary-color);
+    color: var(--white-color);
 }
 
 .button-active {
-    background-color: var(--primary-color) !important; /* Цвет при наведении для обеих тем */
-    color: var(--white-color) !important; /* Цвет текста при наведении для обеих тем */
+    background-color: var(--primary-color) !important;
+    color: var(--white-color) !important;
 }
 
 body.dark-theme .button-active {
@@ -266,12 +248,179 @@ header pre {
     text-align: center;
 }
 
-@media (max-width: 600px) {
-    pre {
-        font-size: 32px;
-    }
+.form-section .button-container {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+}
 
-    .button-container {
-        flex-direction: column;
-    }
+.form-section button {
+    padding: 8px 12px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--primary-color);
+    background-color: var(--background-color);
+    color: var(--black-color);
+    cursor: pointer;
+}
+
+.form-section button:hover {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+body.dark-theme .form-section button {
+    background-color: var(--background-color-dark);
+    color: var(--white-color);
+}
+
+body.dark-theme .form-section button:hover {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+.form-section .button-container button {
+    padding: 8px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--primary-color);
+    background-color: var(--white-color);
+    color: var(--primary-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+}
+
+.form-section .button-container button:hover {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border: 1px solid var(--primary-color);
+}
+
+body.dark-theme .form-section .button-container button {
+    background-color: var(--background-color-dark);
+    color: var(--white-color);
+}
+
+body.dark-theme .form-section .button-container button:hover {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+
+.form-section .button-container button svg {
+    transition: color 0.3s ease;
+}
+
+.form-section .button-container button[title]:hover:after {
+    content: attr(title);
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 1000;
+    white-space: nowrap;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 5px;
+}
+
+.form-section .button-container button[title]:hover:before {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px 5px 0;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.8) transparent transparent;
+}
+
+body.dark-theme .form-section .button-container button[title]:hover:after {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #000;
+}
+
+body.dark-theme .form-section .button-container button[title]:hover:before {
+    border-color: rgba(255, 255, 255, 0.9) transparent transparent;
+}
+
+.form-section .button-container button svg {
+    transition: color 0.3s ease;
+}
+
+footer {
+    border-radius: 8px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 0;
+}
+
+#theme-toggle,
+footer button,
+footer a {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#theme-toggle svg,
+footer button svg,
+footer a svg {
+    width: 24px;
+    height: 24px;
+    color: var(--primary-color);
+    transition: color 0.3s ease;
+}
+
+#theme-toggle:hover svg,
+footer button:hover svg,
+footer a:hover svg {
+    color: var(--primary-color);
+}
+
+body.dark-theme #theme-toggle svg,
+body.dark-theme footer button svg,
+body.dark-theme footer a svg {
+    color: var(--primary-color);
+}
+
+body.dark-theme #theme-toggle:hover svg,
+body.dark-theme footer button:hover svg,
+body.dark-theme footer a:hover svg {
+    color: var(--primary-color);
+}
+
+textarea:focus, textarea:hover {
+    border: 1px solid var(--primary-color);
+    outline: none;
+}
+
+.github-icon {
+    display: none;
+}
+
+body.dark-theme #github-dark {
+    display: inline;
+}
+
+body:not(.dark-theme) #github-light {
+    display: inline;
+}
+
+#asciiHeader {
+    cursor: pointer;
 }
