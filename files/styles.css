@@ -113,10 +113,16 @@ form {
     padding-right: 25px;
 }
 
+@media (max-width: 600px) {
+    html, body {
+        overflow: auto;
+    }
+}
+
 textarea {
-    max-width: 400px;
+    max-width: 500px;
     width: 100%;
-    height: 200px;
+    height: 250px;
     resize: none;
     overflow: auto;
     padding: 15px;
@@ -167,6 +173,7 @@ body.dark-theme textarea:hover {
     justify-content: center;
     align-items: center;
     width: 100%;
+    flex-wrap: wrap;
 }
 
 input[type="submit"] {
@@ -239,21 +246,6 @@ header pre {
     justify-content: center;
     align-content: center;
     text-align: center;
-}
-
-@media (max-width: 600px) {
-    .button-container input[type="button"],
-    .button-container input[type="submit"] {
-        padding: 8px 12px;
-    }
-
-    main {
-        padding: 10px;
-    }
-
-    pre {
-        font-size: 32px;
-    }
 }
 
 .form-section .button-container {

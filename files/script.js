@@ -74,8 +74,14 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e)
 applySavedTheme();
 
 function showSection(section) {
-    const buttons = document.querySelectorAll('input[type="button"]');
+    const sections = document.getElementsByClassName('form-section');
+    Array.from(sections).forEach(sec => {
+        sec.style.display = 'none';
+        const subsections = sec.querySelectorAll('.form-section');
+        subsections.forEach(sub => sub.style.display = 'none');
+    });
 
+    const buttons = document.querySelectorAll('input[type="button"]');
     buttons.forEach(button => {
         button.classList.remove('button-active');
     });
@@ -85,15 +91,13 @@ function showSection(section) {
         activeButton.classList.add('button-active');
     }
 
-    const sections = document.getElementsByClassName('form-section');
-    Array.from(sections).forEach(section => {
-        section.style.display = 'none';
-    });
-
-    document.getElementById(section).style.display = 'block';
+    const sectionElement = document.getElementById(section);
+    if (sectionElement) {
+        sectionElement.style.display = 'block';
+    }
 }
 
-document.getElementById('mainForm').addEventListener('submit', function(event) {
+document.getElementById('mainForm').addEventListener('submit', function (event) {
     event.preventDefault();
 
     const button = this.querySelector('input[type="submit"]');
@@ -168,7 +172,7 @@ function animateSave(button, state) {
 function exportFile(fileKey) {
     const textarea = document.querySelector(`textarea[name="${fileKey}"]`);
     const content = textarea.value;
-    const blob = new Blob([content], { type: 'text/plain' });
+    const blob = new Blob([content], {type: 'text/plain'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -181,9 +185,9 @@ function exportFile(fileKey) {
 
 function importFile(fileKey, input) {
     const file = input.files[0];
-    if (file && confirm(`Replace contents of ${fileKey} with the uploaded file?`)) {
+    if (file && confirm(`Перезаписать ${fileKey} загруженным файлом?`)) {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             const textarea = document.querySelector(`textarea[name="${fileKey}"]`);
             textarea.value = e.target.result;
             input.value = '';
@@ -199,4 +203,26 @@ function exportAllFiles() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+}
+
+function showSubSection(section) {
+    const subsections = document.querySelectorAll('.form-section .form-section');
+    subsections.forEach(sub => {
+        sub.style.display = 'none';
+    });
+
+    const buttons = document.querySelectorAll('.form-section input[type="button"]');
+    buttons.forEach(button => {
+        button.classList.remove('button-active');
+    });
+
+    const activeButton = Array.from(buttons).find(button => button.value === section);
+    if (activeButton) {
+        activeButton.classList.add('button-active');
+    }
+
+    const sectionElement = document.getElementById(section);
+    if (sectionElement) {
+        sectionElement.style.display = 'block';
+    }
 }

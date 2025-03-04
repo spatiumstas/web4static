@@ -264,4 +264,8 @@ script_update() {
   fi
 }
 
-main_menu
+if [ "$1" = "script_update" ]; then
+  script_update
+else
+  main_menu
+fi

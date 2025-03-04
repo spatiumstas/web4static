@@ -26,26 +26,30 @@ function getFilesByShell(string $shellCmd, string $extension = 'list', string $s
     return [];
 }
 
-$xkeenFiles = getFilesFromPath('/opt/etc/xray/configs/', 'json');
-$ipsetFiles = getFilesByShell("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/lists/'", 'list');
-$birdFiles = getFilesByShell("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'", 'list');
-$nfqwsFiles = array_merge(
-    getFilesFromPath('/opt/etc/nfqws', 'list', '-nfqws'),
-    is_file('/opt/etc/nfqws/nfqws.conf') ? ['nfqws.conf' => '/opt/etc/nfqws/nfqws.conf'] : []
-);
-$tpwsFiles = array_merge(
-    getFilesFromPath('/opt/etc/tpws', 'list', '-tpws'),
-    is_file('/opt/etc/tpws/tpws.conf') ? ['tpws.conf' => '/opt/etc/tpws/tpws.conf'] : []
-);
+$categories = [
+    'IPSET' => getFilesByShell("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/lists/'", 'list'),
+    'BIRD' => getFilesByShell("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'", 'list'),
+    'NFQWS' => array_merge(
+        getFilesFromPath('/opt/etc/nfqws', 'list', '-nfqws'),
+        is_file('/opt/etc/nfqws/nfqws.conf') ? ['nfqws.conf' => '/opt/etc/nfqws/nfqws.conf'] : []
+    ),
+    'TPWS' => array_merge(
+        getFilesFromPath('/opt/etc/tpws', 'list', '-tpws'),
+        is_file('/opt/etc/tpws/tpws.conf') ? ['tpws.conf' => '/opt/etc/tpws/tpws.conf'] : []
+    ),
+    'XKEEN' => getFilesFromPath('/opt/etc/xray/configs/', 'json')
+];
 
-$files = array_merge($ipsetFiles, $birdFiles, $nfqwsFiles, $tpwsFiles, $xkeenFiles);
+$files = [];
+foreach ($categories as $category => $categoryFiles) {
+    $files = array_merge($files, $categoryFiles);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($_POST as $key => $content) {
         $normalizedKey = str_replace('_conf', '.conf', $key);
-
         if (isset($files[$normalizedKey])) {
             $file = $files[$normalizedKey];
-
             if (is_link($file)) {
                 $target = readlink($file);
                 if ($target !== false && is_writable($target)) {
@@ -67,7 +71,6 @@ $texts = array_map('file_get_contents', $files);
 if (isset($_GET['export_all'])) {
     $tempDir = sys_get_temp_dir() . '/web4static_backup_' . time();
     mkdir($tempDir, 0777, true);
-
     foreach ($files as $key => $path) {
         $backupFile = $tempDir . '/' . $key . '.txt';
         file_put_contents($backupFile, $texts[$key]);
@@ -82,7 +85,6 @@ if (isset($_GET['export_all'])) {
     unlink($archiveName);
     exit();
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -131,25 +133,39 @@ if (isset($_GET['export_all'])) {
 </header>
 <main>
     <form id="mainForm" action="" method="post">
-        <?php foreach ($files as $key => $path): ?>
-            <input type="button" onclick="showSection('<?php echo htmlspecialchars($key); ?>')" value="<?php echo htmlspecialchars($key); ?>" />
+        <?php foreach ($categories as $category => $categoryFiles): ?>
+            <?php if (!empty($categoryFiles)): ?>
+                <input type="button" onclick="showSection('<?php echo htmlspecialchars($category); ?>')" value="<?php echo htmlspecialchars($category); ?>" />
+            <?php endif; ?>
         <?php endforeach; ?>
 
-        <?php foreach ($files as $key => $path): ?>
-            <div id="<?php echo htmlspecialchars($key); ?>" class="form-section" style="display:none;">
-                <div class="textarea-container">
-                    <textarea name="<?php echo htmlspecialchars($key); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
+        <?php foreach ($categories as $category => $categoryFiles): ?>
+            <?php if (!empty($categoryFiles)): ?>
+                <div id="<?php echo htmlspecialchars($category); ?>" class="form-section" style="display:none;">
+                    <div class="button-container">
+                        <?php foreach ($categoryFiles as $key => $path): ?>
+                            <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($key); ?>')" value="<?php echo htmlspecialchars($key); ?>" />
+                        <?php endforeach; ?>
+                    </div>
+
+                    <?php foreach ($categoryFiles as $key => $path): ?>
+                        <div id="<?php echo htmlspecialchars($key); ?>" class="form-section" style="display:none;">
+                            <div class="textarea-container">
+                                <textarea name="<?php echo htmlspecialchars($key); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
+                            </div>
+                            <div class="button-container">
+                                <input type="file" id="import-<?php echo htmlspecialchars($key); ?>" style="display:none;" onchange="importFile('<?php echo htmlspecialchars($key); ?>', this)">
+                                <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($key); ?>').click()" aria-label="Replace file" title="Replace">
+                                    <svg width="24" height="24"><use href="#swap"/></svg>
+                                </button>
+                                <button type="button" onclick="exportFile('<?php echo htmlspecialchars($key); ?>')" aria-label="Save file" title="Save">
+                                    <svg width="24" height="24"><use href="#download-file"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
-                <div class="button-container">
-                    <input type="file" id="import-<?php echo htmlspecialchars($key); ?>" style="display:none;" onchange="importFile('<?php echo htmlspecialchars($key); ?>', this)">
-                    <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($key); ?>').click()" aria-label="Replace file" title="Replace">
-                        <svg width="24" height="24"><use href="#swap"/></svg>
-                    </button>
-                    <button type="button" onclick="exportFile('<?php echo htmlspecialchars($key); ?>')" aria-label="Save file" title="Save">
-                        <svg width="24" height="24"><use href="#download-file"/></svg>
-                    </button>
-                </div>
-            </div>
+            <?php endif; ?>
         <?php endforeach; ?>
 
         <div class="button-container">

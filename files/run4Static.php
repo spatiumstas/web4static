@@ -14,9 +14,17 @@ if (!empty($birdPath)) {
     $commands[] = escapeshellcmd("$birdPath/IPset4Static/scripts/update-ipset.sh");
 }
 
-$commands[] = "/opt/etc/init.d/S51nfqws restart";
-$commands[] = "/opt/etc/init.d/S51tpws restart";
-$commands[] = "xkeen -restart";
+if (is_file('/opt/etc/init.d/S51nfqws')) {
+    $commands[] = "/opt/etc/init.d/S51nfqws restart";
+}
+
+if (is_file('/opt/etc/init.d/S51tpws')) {
+    $commands[] = "/opt/etc/init.d/S51tpws restart";
+}
+
+if (is_dir('/opt/etc/xray/configs/')) {
+    $commands[] = "xkeen -restart > /dev/null 2>&1 &";
+}
 
 if (!empty($commands)) {
     shell_exec(implode("; ", $commands));
