@@ -164,3 +164,39 @@ function animateSave(button, state) {
         button.value = 'Restarting...';
     }
 }
+
+function exportFile(fileKey) {
+    const textarea = document.querySelector(`textarea[name="${fileKey}"]`);
+    const content = textarea.value;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${fileKey}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function importFile(fileKey, input) {
+    const file = input.files[0];
+    if (file && confirm(`Replace contents of ${fileKey} with the uploaded file?`)) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const textarea = document.querySelector(`textarea[name="${fileKey}"]`);
+            textarea.value = e.target.result;
+            input.value = '';
+        };
+        reader.readAsText(file);
+    }
+}
+
+function exportAllFiles() {
+    const a = document.createElement('a');
+    a.href = window.location.pathname + '?export_all=1';
+    a.download = 'w4s_backup.tar.gz';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}

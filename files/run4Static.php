@@ -16,6 +16,7 @@ if (!empty($birdPath)) {
 
 $commands[] = "/opt/etc/init.d/S51nfqws restart";
 $commands[] = "/opt/etc/init.d/S51tpws restart";
+$commands[] = "xkeen -restart";
 
 if (!empty($commands)) {
     shell_exec(implode("; ", $commands));
