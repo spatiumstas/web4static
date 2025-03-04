@@ -161,16 +161,15 @@ if (isset($_GET['export_all'])) {
                                 <button type="button" onclick="exportFile('<?php echo htmlspecialchars($key); ?>')" aria-label="Save file" title="Save">
                                     <svg width="24" height="24"><use href="#download-file"/></svg>
                                 </button>
+                                <div class="button-container">
+                                    <input type="submit" value="Save & Restart" />
+                                </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
         <?php endforeach; ?>
-
-        <div class="button-container">
-            <input type="submit" value="Save & Restart" />
-        </div>
     </form>
 </main>
 
