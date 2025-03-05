@@ -1,10 +1,115 @@
 <?php
 
+define('WEB4STATIC_DIR', '/opt/share/www/w4s');
+define('FILES_DIR', WEB4STATIC_DIR . '/files');
+
+$w4s_version = '1.5.1';
 $config = parse_ini_file(__DIR__ . '/files/config.ini');
 $baseUrl = $config['base_url'];
 $url = $baseUrl . '/w4s/web4static.php';
-
 $fileRun = 'files/run4Static.php';
+
+function downloadFile($url, $destination) {
+    $command = "curl -s -L \"$url\" --output " . escapeshellarg($destination) . " 2>/dev/null";
+    exec($command, $output, $returnCode);
+    return $returnCode === 0 && file_exists($destination);
+}
+
+if (isset($_GET['check_update'])) {
+    $fileUrl = 'https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/main/files/web4static.php';
+    $fileContent = trim(shell_exec("curl -s $fileUrl"));
+
+    if (!$fileContent) {
+        die(json_encode(['error' => 'Failed to fetch file']));
+    }
+
+    $remoteVersion = 'unknown';
+    if (preg_match("/\\\$w4s_version\s*=\s*'([^']+)';/", $fileContent, $matches)) {
+        $remoteVersion = $matches[1];
+    }
+
+    header('Content-Type: application/json');
+    echo json_encode([
+        'current_version' => $w4s_version,
+        'remote_version' => $remoteVersion,
+    ]);
+    exit();
+}
+
+if (isset($_GET['update_script'])) {
+    $apiUrl = 'https://api.github.com/repos/spatiumstas/web4static/contents/files?ref=main';
+    $command = "curl -s -L -H 'User-Agent: web4static-updater' \"$apiUrl\"";
+    $response = shell_exec($command);
+    $files = json_decode($response, true);
+
+    $output = '';
+    $success = false;
+
+    if ($files && is_array($files)) {
+        if (!is_dir(FILES_DIR)) {
+            mkdir(FILES_DIR, 0777, true);
+        }
+
+        $allFilesDownloaded = true;
+        foreach ($files as $file) {
+            if ($file['type'] === 'file') {
+                $fileUrl = $file['download_url'];
+                $fileName = $file['name'];
+
+                if ($fileName === 'config.ini') {
+                    continue;
+                }
+
+                $destination = FILES_DIR . '/' . $fileName;
+
+                if ($fileName === 'web4static.php') {
+                    $destination = WEB4STATIC_DIR . '/web4static.php';
+                }
+
+                if (downloadFile($fileUrl, $destination)) {
+                } else {
+                    $output .= "Ошибка при скачивании файла: $fileName\n";
+                    $allFilesDownloaded = false;
+                }
+            }
+        }
+
+        if ($allFilesDownloaded) {
+            $success = true;
+        } else {
+            $output .= "Не все файлы были успешно скачаны\n";
+        }
+    } else {
+        $output = "Ошибка запроса к GitHub API:\n" . $response;
+    }
+
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => $success,
+        'output' => $output
+    ]);
+    exit();
+}
+
+if (isset($_GET['get_release_notes']) && isset($_GET['v'])) {
+    $version = htmlspecialchars($_GET['v']);
+    $apiUrl = "https://api.github.com/repos/spatiumstas/web4static/releases/tags/$version";
+    $command = "curl -s -L -H 'User-Agent: web4static-updater' \"$apiUrl\"";
+    $response = shell_exec($command);
+    $release = json_decode($response, true);
+
+    $notes = [];
+    if ($release && isset($release['body'])) {
+        $notes = explode("\n", trim($release['body']));
+        $notes = array_filter($notes, function($line) {
+            return !empty(trim($line)) && strpos($line, '#') !== 0;
+        });
+    }
+
+    header('Content-Type: application/json');
+    echo json_encode(['notes' => $notes]);
+    exit();
+}
 
 function getFilesFromPath(string $path, string $extension = 'list', string $suffix = ''): array {
     $files = glob($path . '/*.' . $extension);
@@ -108,6 +213,7 @@ if (isset($_GET['export_all'])) {
     <script>
         var fileRun = '<?php echo $fileRun; ?>';
         document.addEventListener("DOMContentLoaded", function() {
+            checkForUpdates();
             const header = document.getElementById("asciiHeader");
             header.addEventListener("click", function() {
                 location.reload();
@@ -161,12 +267,12 @@ if (isset($_GET['export_all'])) {
                                 <button type="button" onclick="exportFile('<?php echo htmlspecialchars($key); ?>')" aria-label="Save file" title="Save">
                                     <svg width="24" height="24"><use href="#download-file"/></svg>
                                 </button>
-                                <div class="button-container">
-                                    <input type="submit" value="Save & Restart" />
-                                </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
+                    <div class="button-container">
+                        <input type="submit" value="Save & Restart" />
+                    </div>
                 </div>
             <?php endif; ?>
         <?php endforeach; ?>
@@ -209,5 +315,10 @@ if (isset($_GET['export_all'])) {
             </g>
         </svg>
     </a>
+    <div id="loader" style="display: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+        </svg>
+    </div>
 </footer>
 </html>
