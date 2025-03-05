@@ -1,6 +1,6 @@
 <h1 style="text-align: center;">web4static</h1>
 
-### Веб-интерфейс для управления списками [Bird4Static](https://github.com/DennoN-RUS/Bird4Static) / [IPset4Static](https://github.com/DennoN-RUS/IPset4Static) / [nfqws](https://github.com/Anonym-tsk/nfqws-keenetic) / [tpws](https://github.com/Anonym-tsk/tpws-keenetic)
+### Веб-интерфейс для управления списками [Bird4Static](https://github.com/DennoN-RUS/Bird4Static) / [IPset4Static](https://github.com/DennoN-RUS/IPset4Static) / [nfqws](https://github.com/Anonym-tsk/nfqws-keenetic) / [tpws](https://github.com/Anonym-tsk/tpws-keenetic) / [XKeen](https://github.com/Skrill0/XKeen)
 
 ![IMG_8897-round-corners](https://github.com/user-attachments/assets/d657739a-a86d-4a99-82a9-a73f1f6b3682)
 
