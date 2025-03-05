@@ -270,13 +270,9 @@ if (isset($_GET['export_all'])) {
                             </div>
                         </div>
                     <?php endforeach; ?>
-                    <div class="button-container">
-                        <input type="submit" value="Save & Restart" />
-                    </div>
                 </div>
             <?php endif; ?>
         <?php endforeach; ?>
-
         <div class="button-container">
             <input type="submit" value="Save & Restart" />
         </div>
