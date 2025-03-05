@@ -1,6 +1,6 @@
 <?php
 
-$w4s_version = '1.5.2';
+$w4s_version = '1.5.3';
 $config = parse_ini_file(__DIR__ . '/files/config.ini');
 $baseUrl = $config['base_url'];
 $url = $baseUrl . '/w4s/web4static.php';
@@ -113,20 +113,28 @@ if (isset($_GET['get_release_notes']) && isset($_GET['v'])) {
 
 function getFilesFromPath(string $path, string $extension = 'list', string $suffix = ''): array {
     $files = glob($path . '/*.' . $extension);
-    return array_combine(
-        array_map(fn($file) => basename($file, '.' . $extension) . $suffix, $files),
-        $files
-    );
+    $result = [];
+    foreach ($files as $file) {
+        if (!is_link($file)) {
+            $key = basename($file, '.' . $extension) . $suffix;
+            $result[$key] = $file;
+        }
+    }
+    return $result;
 }
 
 function getFilesByShell(string $shellCmd, string $extension = 'list', string $suffix = ''): array {
     $path = rtrim(shell_exec($shellCmd));
     if (is_dir($path)) {
         $files = explode("\n", trim(shell_exec("ls $path/*.$extension 2>/dev/null")));
-        return array_combine(
-            array_map(fn($file) => basename($file, '.' . $extension) . $suffix, $files),
-            $files
-        );
+        $result = [];
+        foreach ($files as $file) {
+            if ($file && !is_link($file)) {
+                $key = basename($file, '.' . $extension) . $suffix;
+                $result[$key] = $file;
+            }
+        }
+        return $result;
     }
     return [];
 }
@@ -150,28 +158,20 @@ foreach ($categories as $category => $categoryFiles) {
     $files = array_merge($files, $categoryFiles);
 }
 
+$texts = array_map('file_get_contents', $files);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($_POST as $key => $content) {
         $normalizedKey = str_replace('_conf', '.conf', $key);
         if (isset($files[$normalizedKey])) {
             $file = $files[$normalizedKey];
-            if (is_link($file)) {
-                $target = readlink($file);
-                if ($target !== false && is_writable($target)) {
-                    file_put_contents($target, $content);
-                }
-            } else {
-                file_put_contents($file, $content);
-            }
-            $targetFile = is_link($file) ? $target : $file;
-            shell_exec("tr -d '\r' < " . escapeshellarg($targetFile) . " > " . escapeshellarg($targetFile) . ".tmp && mv " . escapeshellarg($targetFile) . ".tmp " . escapeshellarg($targetFile));
+            file_put_contents($file, $content);
+            shell_exec("tr -d '\r' < " . escapeshellarg($file) . " > " . escapeshellarg($file) . ".tmp && mv " . escapeshellarg($file) . ".tmp " . escapeshellarg($file));
         }
     }
     http_response_code(200);
     exit();
 }
-
-$texts = array_map('file_get_contents', $files);
 
 if (isset($_GET['export_all'])) {
     $tempDir = sys_get_temp_dir() . '/web4static_backup_' . time();
