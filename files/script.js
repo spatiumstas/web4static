@@ -254,10 +254,7 @@ function toggleUpdateIcon(currentVersion, remoteVersion, show = true) {
     const updateIcon = document.getElementById('update-icon') || document.createElement('button');
     updateIcon.id = 'update-icon';
     updateIcon.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" id="update">
-            <path fill="currentColor" d="M19.544 11.418C18.892 7.752 15.988 5 12.5 5 9.73 5 7.325 6.742 6.127 9.293 3.243 9.633 1 12.341 1 15.625 1 19.142 3.578 22 6.75 22h12.458C21.853 22 24 19.62 24 16.687c0-2.805-1.965-5.078-4.456-5.27z"/>
-            <path fill="#fff" d="M10.7 10h3.15v4.05H17L12.5 19 8 14.05h2.7V10z"/>
-        </svg>
+        <svg width="24" height="24"><use href="#update"/></svg>
     `;
     updateIcon.title = `Доступна новая версия: ${remoteVersion} (текущая: ${currentVersion})`;
     updateIcon.style.cursor = 'pointer';
@@ -299,7 +296,7 @@ function showUpdateAlert(currentVersion, remoteVersion) {
 
 function updateScript() {
     const updateIcon = document.getElementById('update-icon');
-    const loader = document.getElementById('loader');
+    const loader = document.getElementById('loader-icon');
 
     if (updateIcon) updateIcon.style.display = 'none';
     loader.style.display = 'flex';

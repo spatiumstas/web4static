@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+    <!-- Download -->
+    <symbol id="download-file" viewBox="0 0 16 16" fill="none">
+        <path d="M11.727 9.2a.8.8 0 0 0-1.054-1.204L8.8 9.635V1.798a.8.8 0 0 0-1.6 0v7.837l-1.873-1.64A.8.8 0 0 0 4.273 9.2l3.2 2.8a.8.8 0 0 0 1.054 0l3.2-2.8ZM1.6 11.398a.8.8 0 0 0-1.6 0v2.4a1.6 1.6 0 0 0 1.6 1.6h12.8a1.6 1.6 0 0 0 1.6-1.6v-2.4a.8.8 0 0 0-1.6 0v2.4H1.6v-2.4Z" fill="currentColor"/>
+    </symbol>
+
+    <!-- Swap -->
+    <symbol id="swap" viewBox="0 0 16 16" fill="none">
+        <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M3.513 8.228a.8.8 0 1 1 1.119 1.144L2.762 11.2H15.2a.8.8 0 0 1 0 1.6H2.762l1.87 1.828a.8.8 0 0 1-1.119 1.144l-3.272-3.2a.8.8 0 0 1 0-1.144l3.272-3.2Zm8.974-8a.8.8 0 0 0-1.119 1.144l1.87 1.828H.8a.8.8 0 1 0 0 1.6h12.438l-1.87 1.828a.8.8 0 0 0 1.119 1.144l3.272-3.2a.8.8 0 0 0 0-1.144l-3.272-3.2Z"
+              fill="currentColor"/>
+    </symbol>
+
+    <!-- Sun -->
+    <symbol id="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </symbol>
+
+    <!-- Moon -->
+    <symbol id="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+    </symbol>
+
+    <!-- GitHub Light -->
+    <symbol id="github-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+    </symbol>
+
+    <!-- GitHub Dark -->
+    <symbol id="github-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+    </symbol>
+
+    <!-- Loader -->
+    <symbol id="loader" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+    </symbol>
+
+    <!-- Update -->
+    <symbol id="update" viewBox="0 0 24 24" fill="none">
+        <path fill="currentColor" d="M19.544 11.418C18.892 7.752 15.988 5 12.5 5 9.73 5 7.325 6.742 6.127 9.293 3.243 9.633 1 12.341 1 15.625 1 19.142 3.578 22 6.75 22h12.458C21.853 22 24 19.62 24 16.687c0-2.805-1.965-5.078-4.456-5.27z"/>
+        <path fill="#fff" d="M10.7 10h3.15v4.05H17L12.5 19 8 14.05h2.7V10z"/>
+    </symbol>
+</svg>

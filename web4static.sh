@@ -11,7 +11,6 @@ MAIN_NAME="web4static.php"
 WEB4STATIC_FOLDER="w4s"
 WEB4STATIC_DIR="/opt/share/www/w4s"
 PATH_WEB4STATIC="/opt/share/www/w4s/web4static.php"
-PATH_VPN_ICON="/opt/share/www/w4s/files/main.png"
 PATH_RUN4STATIC="/opt/share/www/w4s/files/run4Static.php"
 PATH_CONFIG="/opt/share/www/w4s/files/config.ini"
 
@@ -167,7 +166,7 @@ install_web() {
 
   mkdir -p "$WEB4STATIC_DIR/files"
   URL_EDITLIST="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/web4static.php"
-  URL_VPN_ICON="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/main.png"
+  URL_VPN_ICON="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/icons.svg"
   URL_RUN="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/run4Static.php"
   URL_STYLES="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/styles.css"
   URL_SCRIPT="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/script.js"
@@ -180,8 +179,7 @@ install_web() {
   download_file "$URL_STYLES" "$WEB4STATIC_DIR/files/styles.css"
   download_file "$URL_SCRIPT" "$WEB4STATIC_DIR/files/script.js"
   download_file "$URL_CONFIG" "$WEB4STATIC_DIR/files/config.ini"
-
-  download_file "$URL_VPN_ICON" "$PATH_VPN_ICON"
+  download_file "$URL_VPN_ICON" "$WEB4STATIC_DIR/files/icons.svg"
 
   echo ""
   user_ip=$(ip -f inet addr show dev br0 2>/dev/null | grep inet | sed -n 's/.*inet \([0-9.]\+\).*/\1/p')
@@ -253,11 +251,10 @@ script_update() {
     ln -sf $OPT_DIR/$SCRIPT $OPT_DIR/bin/web4static
     if [ "$BRANCH" = "dev" ]; then
       print_message "Скрипт успешно обновлён на $BRANCH ветку..." "$GREEN"
-      sleep 2
     else
       print_message "Скрипт успешно обновлён" "$GREEN"
-      sleep 2
     fi
+    sleep 2
     $OPT_DIR/$SCRIPT
   else
     print_message "Ошибка при скачивании скрипта" "$RED"
