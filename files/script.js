@@ -276,11 +276,23 @@ function showUpdateAlert(currentVersion, remoteVersion) {
     fetch('web4static.php?get_release_notes&v=' + remoteVersion)
         .then(response => response.json())
         .then(data => {
-            let releaseNotes = data.notes || 'Информация об изменениях недоступна.';
-            if (Array.isArray(data.notes)) {
-                releaseNotes = data.notes.join('\n');
+            let releaseNotes = 'Информация об изменениях недоступна.';
+
+            if (data.notes) {
+                if (typeof data.notes === 'object' && !Array.isArray(data.notes)) {
+                    releaseNotes = Object.values(data.notes)
+                        .filter(note => note && note.trim())
+                        .map(note => note.trim().replace(/\r/g, ''))
+                        .join('\n');
+                } else if (Array.isArray(data.notes)) {
+                    releaseNotes = data.notes
+                        .filter(note => note && note.trim())
+                        .map(note => note.trim().replace(/\r/g, ''))
+                        .join('\n');
+                }
             }
-            const message = `Доступна новая версия: ${remoteVersion} (текущая: ${currentVersion})\n\nСписок изменений:\n${releaseNotes}\n\nОбновить?`;
+
+            const message = `Доступна новая версия: ${remoteVersion} (текущая: ${currentVersion})\n\n${releaseNotes}\n\nОбновить?`;
             if (confirm(message)) {
                 updateScript();
             }
