@@ -3,7 +3,7 @@
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
 define('FILES_DIR', WEB4STATIC_DIR . '/files');
 
-$w4s_version = '1.5.1';
+$w4s_version = '1.5.2';
 $config = parse_ini_file(__DIR__ . '/files/config.ini');
 $baseUrl = $config['base_url'];
 $url = $baseUrl . '/w4s/web4static.php';
