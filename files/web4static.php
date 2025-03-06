@@ -201,9 +201,9 @@ if (isset($_GET['export_all'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <title>web4static</title>
-    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/main/files/apple-touch-icon.png">
-    <link rel="icon" href="https://img.icons8.com/external-vectorslab-flat-vectorslab/48/external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2.png" alt="external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2" sizes="48x48" type="image/x-icon">
-    <link rel="icon" href="https://img.icons8.com/external-vectorslab-flat-vectorslab/192/external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2.png" alt="external-Vpn-ai-security-and-security-vectorslab-flat-vectorslab-2" sizes="192x192">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/main/icons/apple-touch-icon.png">
+    <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/main/icons/favicon.png" sizes="48x48" type="image/x-icon">
+    <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/main/icons/favicon.png" sizes="192x192">
 
     <link rel="stylesheet" href="files/styles.css">
     <script src="files/script.js" defer></script>

@@ -186,7 +186,6 @@ install_web() {
 
   replace_path "$user_ip"
   echo ""
-  /opt/etc/init.d/S80uhttpd restart
   print_message "Web-интерфейс установлен и доступен по адресу http://$user_ip:88/w4s" "$GREEN"
   read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
   main_menu
@@ -213,6 +212,7 @@ replace_path() {
   if grep -q '^ARGS=' "/opt/etc/init.d/S80uhttpd"; then
     if ! grep -q ' -I web4static.php' "/opt/etc/init.d/S80uhttpd"; then
       sed -i 's|^\(ARGS=.*\)"|\1 -I web4static.php"|' "/opt/etc/init.d/S80uhttpd"
+      /opt/etc/init.d/S80uhttpd restart
     fi
   else
     print_message "Ошибка: строка 'ARGS=' не найдена в файле /opt/etc/init.d/S80uhttpd" "$RED"
