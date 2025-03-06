@@ -196,14 +196,13 @@ if (isset($_GET['export_all'])) {
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <?php include 'files/icons.svg'; ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <title>web4static</title>
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/main/icons/apple-touch-icon.png">
-    <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/main/icons/favicon.png" sizes="48x48" type="image/x-icon">
-    <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/main/icons/favicon.png" sizes="192x192">
+    <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/main/icons/favicon.png" sizes="48x48" type="image/x-icon">
+    <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/main/icons/favicon.png" sizes="192x192">
 
     <link rel="stylesheet" href="files/styles.css">
     <script src="files/script.js" defer></script>
@@ -225,6 +224,7 @@ if (isset($_GET['export_all'])) {
             <?php echo htmlspecialchars(file_get_contents('files/ascii.txt')); ?>
         </pre>
     </header>
+    <?php include 'files/icons.svg'; ?>
     <main>
         <form id="mainForm" action="" method="post">
             <?php foreach ($categories as $category => $categoryFiles): ?>
