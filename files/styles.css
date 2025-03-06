@@ -117,6 +117,7 @@ form {
     html, body {
         overflow: auto;
     }
+
     header pre {
         margin: 0px;
     }
@@ -189,6 +190,15 @@ input[type="submit"] {
     color: var(--white-color);
 }
 
+input[type="submit"]:hover {
+    opacity: 0.9;
+}
+
+input[type="submit"]:disabled:hover {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
 input[type="button"] {
     margin: 10px 0;
     padding: 10px 15px;
@@ -197,16 +207,6 @@ input[type="button"] {
     background-color: var(--background-color);
     cursor: pointer;
     color: var(--black-color);
-}
-
-body.dark-theme input[type="submit"] {
-    margin: 10px 0;
-    padding: 10px 15px;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--primary-color);
-    background-color: var(--primary-color);
-    color: var(--white-color);
-    cursor: pointer;
 }
 
 body.dark-theme input[type="button"] {

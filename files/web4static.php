@@ -1,10 +1,9 @@
 <?php
 
-$w4s_version = '1.5.3';
+$w4s_version = '1.5.4';
 $config = parse_ini_file(__DIR__ . '/files/config.ini');
 $baseUrl = $config['base_url'];
 $url = $baseUrl . '/w4s/web4static.php';
-$fileRun = 'files/run4Static.php';
 
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
 define('FILES_DIR', WEB4STATIC_DIR . '/files');
@@ -13,6 +12,33 @@ function downloadFile($url, $destination) {
     $command = "curl -s -L \"$url\" --output " . escapeshellarg($destination) . " 2>/dev/null";
     exec($command, $output, $returnCode);
     return $returnCode === 0 && file_exists($destination);
+}
+
+function restartServices() {
+    $ipsetPath = trim(shell_exec("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/scripts/'"));
+    $birdPath = trim(shell_exec("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/scripts/'"));
+    $commands = [];
+
+    if (!empty($ipsetPath)) {
+        $commands[] = escapeshellcmd("$ipsetPath/update-ipset.sh");
+    }
+    if (!empty($birdPath)) {
+        $commands[] = escapeshellcmd("$birdPath/add-bird4_routes.sh");
+        $commands[] = escapeshellcmd("$birdPath/IPset4Static/scripts/update-ipset.sh");
+    }
+    if (is_file('/opt/etc/init.d/S51nfqws')) {
+        $commands[] = "/opt/etc/init.d/S51nfqws restart";
+    }
+    if (is_file('/opt/etc/init.d/S51tpws')) {
+        $commands[] = "/opt/etc/init.d/S51tpws restart";
+    }
+    if (is_dir('/opt/etc/xray/configs/')) {
+        $commands[] = "xkeen -restart > /dev/null 2>&1 &";
+    }
+
+    if (!empty($commands)) {
+        shell_exec(implode("; ", $commands));
+    }
 }
 
 if (isset($_GET['check_update'])) {
@@ -169,6 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             shell_exec("tr -d '\r' < " . escapeshellarg($file) . " > " . escapeshellarg($file) . ".tmp && mv " . escapeshellarg($file) . ".tmp " . escapeshellarg($file));
         }
     }
+    restartServices();
     http_response_code(200);
     exit();
 }
@@ -207,7 +234,6 @@ if (isset($_GET['export_all'])) {
     <link rel="stylesheet" href="files/styles.css">
     <script src="files/script.js" defer></script>
     <script>
-        var fileRun = '<?php echo $fileRun; ?>';
         document.addEventListener("DOMContentLoaded", function() {
             checkForUpdates();
             const header = document.getElementById("asciiHeader");

@@ -99,62 +99,37 @@ function showSection(section) {
 
 document.getElementById('mainForm').addEventListener('submit', function (event) {
     event.preventDefault();
-
     const button = this.querySelector('input[type="submit"]');
-
-    console.log('Форма отправлена, сохраняю...');
+    console.log('Форма отправлена, сохраняю и перезапускаю...');
     animateSave(button, 'saving');
-
     const formData = new FormData(this);
 
-    fetch(this.action, {
-        method: 'POST',
-        body: formData
-    }).then(response => {
-        console.log('Ответ от сервера получен:', response);
+    setTimeout(() => {
+        animateSave(button, 'restarting');
 
-        if (response.ok) {
-            console.log('Данные успешно сохранены, перезапуск сервиса...');
+        fetch(this.action, {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            console.log('Ответ от сервера получен:', response);
 
-            setTimeout(() => {
-                animateSave(button, 'restarting');
-
-                setTimeout(() => {
-                    fetch(fileRun, {
-                        method: 'POST'
-                    }).then(res => {
-                        console.log('Ответ от сервиса:', res);
-
-                        if (res.ok) {
-                            console.log("Перезапуск выполнен успешно");
-                        } else {
-                            console.error('Ошибка при перезапуске сервиса');
-                        }
-
-                        button.disabled = false;
-                        button.value = 'Save & Restart';
-                        button.classList.remove('loading');
-                    }).catch(err => {
-                        console.error('Ошибка при обращении к fileRun:', err);
-
-                        button.disabled = false;
-                        button.value = 'Save & Restart';
-                        button.classList.remove('loading');
-                    });
-                });
-            }, 1000);
-        } else {
-            console.error('Ошибка при сохранении данных на сервере');
+            if (response.ok) {
+                button.disabled = false;
+                button.value = 'Save & Restart';
+                button.classList.remove('loading');
+            } else {
+                console.error('Ошибка при сохранении данных');
+                button.disabled = false;
+                button.value = 'Save & Restart';
+                button.classList.remove('loading');
+            }
+        }).catch(err => {
+            console.error('Ошибка при отправке данных:', err);
             button.disabled = false;
             button.value = 'Save & Restart';
             button.classList.remove('loading');
-        }
-    }).catch(err => {
-        console.error('Ошибка при отправке данных на сервер:', err);
-        button.disabled = false;
-        button.value = 'Save & Restart';
-        button.classList.remove('loading');
-    });
+        });
+    }, 1000);
 
     return false;
 });
@@ -185,7 +160,7 @@ function exportFile(fileKey) {
 
 function importFile(fileKey, input) {
     const file = input.files[0];
-    if (file && confirm(`Перезаписать ${fileKey} загруженным файлом?`)) {
+    if (file && confirm(`Заменить содержимым ${fileKey} поле ввода?`)) {
         const reader = new FileReader();
         reader.onload = function (e) {
             const textarea = document.querySelector(`textarea[name="${fileKey}"]`);
@@ -256,7 +231,7 @@ function toggleUpdateIcon(currentVersion, remoteVersion, show = true) {
     updateIcon.innerHTML = `
         <svg width="24" height="24"><use href="#update"/></svg>
     `;
-    updateIcon.title = `Доступна новая версия: ${remoteVersion} (текущая: ${currentVersion})`;
+    updateIcon.title = `Доступно обновление`;
     updateIcon.style.cursor = 'pointer';
     updateIcon.addEventListener('click', () => showUpdateAlert(currentVersion, remoteVersion));
 
@@ -292,14 +267,14 @@ function showUpdateAlert(currentVersion, remoteVersion) {
                 }
             }
 
-            const message = `Доступна новая версия: ${remoteVersion} (текущая: ${currentVersion})\n\n${releaseNotes}\n\nОбновить?`;
+            const message = `Доступно обновление: ${remoteVersion} (текущая: ${currentVersion})\n\n${releaseNotes}\n\nОбновить?`;
             if (confirm(message)) {
                 updateScript();
             }
         })
         .catch(err => {
             console.error('Ошибка при получении списка изменений:', err);
-            const message = `Доступна новая версия: ${remoteVersion} (текущая: ${currentVersion})\n\nСписок изменений недоступен.\n\nОбновить?`;
+            const message = `Доступно обновление: ${remoteVersion} (текущая: ${currentVersion})\n\nСписок изменений недоступен.\n\nОбновить?`;
             if (confirm(message)) {
                 updateScript();
             }
@@ -317,7 +292,7 @@ function updateScript() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Веб-интерфейс успешно обновлён!\n' + data.output + '\nПерезагружаю страницу...');
+                alert('Веб-интерфейс успешно обновлён!\n' + data.output);
                 location.reload();
             } else {
                 alert('Ошибка при обновлении:\n' + data.output);

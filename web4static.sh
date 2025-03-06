@@ -45,7 +45,7 @@ main_menu() {
     main_menu
   else
     case "$choice" in
-    1) install_web "${branch:-master}" ;;
+    1) install_web "${branch:-main}" ;;
     2) remove_web ;;
     77) packages_delete ;;
     88) script_update "dev" ;;
@@ -97,21 +97,21 @@ check_keenetic_repo() {
     echo ""
     mkdir -p /opt/etc/opkg
     case "$arch" in
-      "mips")
-        echo "src/gz keendev http://bin.entware.net/mipssf-k3.4/keenetic" > /opt/etc/opkg/w4s-keenetic.conf
-        ;;
-      "mipsel")
-        echo "src/gz keendev http://bin.entware.net/mipselsf-k3.4/keenetic" > /opt/etc/opkg/w4s-keenetic.conf
-        ;;
-      "aarch64")
-        echo "src/gz keendev http://bin.entware.net/aarch64-k3.10/keenetic" > /opt/etc/opkg/w4s-keenetic.conf
-        ;;
-      *)
-        printf "${RED}Неподдерживаемая архитектура: $arch${NC}\n"
-        echo ""
-        read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
-        main_menu
-        ;;
+    "mips")
+      echo "src/gz keendev http://bin.entware.net/mipssf-k3.4/keenetic" >/opt/etc/opkg/w4s-keenetic.conf
+      ;;
+    "mipsel")
+      echo "src/gz keendev http://bin.entware.net/mipselsf-k3.4/keenetic" >/opt/etc/opkg/w4s-keenetic.conf
+      ;;
+    "aarch64")
+      echo "src/gz keendev http://bin.entware.net/aarch64-k3.10/keenetic" >/opt/etc/opkg/w4s-keenetic.conf
+      ;;
+    *)
+      printf "${RED}Неподдерживаемая архитектура: $arch${NC}\n"
+      echo ""
+      read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
+      main_menu
+      ;;
     esac
   fi
 }
@@ -142,19 +142,6 @@ packages_delete() {
   main_menu
 }
 
-download_file() {
-  local url="$1"
-  local path="$2"
-  local filename=$(basename "$path")
-  echo "Скачиваю файл $filename..."
-
-  if ! curl -s -f -o "$path" "$url"; then
-    print_message "Ошибка при скачивании файла $filename. Возможно, файл не найден" "$RED"
-    read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
-    main_menu
-  fi
-}
-
 install_web() {
   BRANCH="$1"
   if [ "$BRANCH" = "dev" ]; then
@@ -163,32 +150,47 @@ install_web() {
     print_message "Устанавливаем Web-интерфейс..." "$GREEN"
   fi
   packages_checker
-
+  create_config
   mkdir -p "$WEB4STATIC_DIR/files"
-  URL_EDITLIST="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/web4static.php"
-  URL_VPN_ICON="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/icons.svg"
-  URL_RUN="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/run4Static.php"
-  URL_STYLES="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/styles.css"
-  URL_SCRIPT="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/script.js"
-  URL_ASCII="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/ascii.txt"
-  URL_CONFIG="https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/files/config.ini"
 
-  download_file "$URL_EDITLIST" "$PATH_WEB4STATIC"
-  download_file "$URL_RUN" "$PATH_RUN4STATIC"
-  download_file "$URL_ASCII" "$WEB4STATIC_DIR/files/ascii.txt"
-  download_file "$URL_STYLES" "$WEB4STATIC_DIR/files/styles.css"
-  download_file "$URL_SCRIPT" "$WEB4STATIC_DIR/files/script.js"
-  download_file "$URL_CONFIG" "$WEB4STATIC_DIR/files/config.ini"
-  download_file "$URL_VPN_ICON" "$WEB4STATIC_DIR/files/icons.svg"
+  API_URL="https://api.github.com/repos/${USER}/${REPO}/contents/files?ref=${BRANCH}"
+  printf "Получаем список файлов из репозитория...\n\n"
+  files_list=$(curl -s -H "Accept: application/vnd.github.v3+json" -H "User-Agent: web4static-updater" "$API_URL")
 
-  echo ""
+  if [ -z "$files_list" ] || echo "$files_list" | grep -q "Not Found"; then
+    message="Ошибка при получении списка файлов из GitHub: $files_list"
+    print_message "$message" "$RED"
+    read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
+    main_menu
+  fi
+
+  echo "$files_list" | grep -o '"download_url":"[^"]*"' | sed 's/"download_url":"//' | sed 's/"//' | while read -r url; do
+    filename=$(basename "$url")
+    if [ "$filename" = "web4static.php" ]; then
+      download_file "$url" "$WEB4STATIC_DIR/web4static.php"
+    else
+      download_file "$url" "$WEB4STATIC_DIR/files/$filename"
+    fi
+  done
+
   user_ip=$(ip -f inet addr show dev br0 2>/dev/null | grep inet | sed -n 's/.*inet \([0-9.]\+\).*/\1/p')
-
   replace_path "$user_ip"
-  echo ""
   print_message "Web-интерфейс установлен и доступен по адресу http://$user_ip:88/w4s" "$GREEN"
   read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
   main_menu
+}
+
+download_file() {
+  local url="$1"
+  local path="$2"
+  local filename=$(basename "$path")
+  echo "Скачиваю файл $filename..."
+  curl -s -L "$url" -o "$path" 2>/dev/null
+  if [ $? -ne 0 ] || [ ! -f "$path" ]; then
+    print_message "Ошибка при скачивании файла $filename" "$RED"
+    read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
+    main_menu
+  fi
 }
 
 replace_path() {
@@ -203,7 +205,7 @@ replace_path() {
     if grep -q "^$key" "$file"; then
       sed -i "s|^$key.*|$key = \"$value\"|" "$file"
     else
-      echo "$key = \"$value\"" >> "$file"
+      echo "$key = \"$value\"" >>"$file"
     fi
   }
 
@@ -219,6 +221,15 @@ replace_path() {
     read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
     main_menu
   fi
+}
+
+create_config() {
+  cat <<'EOL' >"$PATH_CONFIG"
+[settings]
+base_url = "http://192.168.1.1:88"
+
+EOL
+  chmod +x "$PATH_CONFIG"
 }
 
 remove_web() {
