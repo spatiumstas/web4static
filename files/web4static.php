@@ -177,7 +177,8 @@ if (isset($_GET['export_all'])) {
     $tempDir = sys_get_temp_dir() . '/web4static_backup_' . time();
     mkdir($tempDir, 0777, true);
     foreach ($files as $key => $path) {
-        $backupFile = $tempDir . '/' . $key . '.txt';
+        $extension = pathinfo($path, PATHINFO_EXTENSION);м
+        $backupFile = $tempDir . '/' . $key . ($extension ? '.' . $extension : '');
         file_put_contents($backupFile, $texts[$key]);
     }
     $archiveName = 'w4s_backup.tar.gz';
