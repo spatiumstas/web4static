@@ -6,12 +6,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 USER="spatiumstas"
 REPO="web4static"
-MAIN_NAME="web4static.php"
-
-WEB4STATIC_FOLDER="w4s"
 WEB4STATIC_DIR="/opt/share/www/w4s"
-PATH_WEB4STATIC="/opt/share/www/w4s/web4static.php"
-PATH_RUN4STATIC="/opt/share/www/w4s/files/run4Static.php"
 PATH_CONFIG="/opt/share/www/w4s/files/config.ini"
 
 print_menu() {
@@ -150,8 +145,8 @@ install_web() {
     print_message "Устанавливаем Web-интерфейс..." "$GREEN"
   fi
   packages_checker
-  create_config
   mkdir -p "$WEB4STATIC_DIR/files"
+  create_config
 
   API_URL="https://api.github.com/repos/${USER}/${REPO}/contents/files?ref=${BRANCH}"
   printf "Получаем список файлов из репозитория...\n\n"
