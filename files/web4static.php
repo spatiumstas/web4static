@@ -1,9 +1,10 @@
 <?php
 
-$w4s_version = '1.5.4';
+$w4s_version = '1.5.5';
 $config = parse_ini_file(__DIR__ . '/files/config.ini');
 $baseUrl = $config['base_url'];
 $url = $baseUrl . '/w4s/web4static.php';
+$allowedExtensions = ['list', 'json', 'conf'];
 
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
 define('FILES_DIR', WEB4STATIC_DIR . '/files');
@@ -137,27 +138,35 @@ if (isset($_GET['get_release_notes']) && isset($_GET['v'])) {
     exit();
 }
 
-function getFilesFromPath(string $path, string $extension = 'list', string $suffix = ''): array {
-    $files = glob($path . '/*.' . $extension);
+function getFilesFromPath(string $path): array {
+    global $allowedExtensions;
     $result = [];
+    $files = glob($path . '/*');
     foreach ($files as $file) {
-        if (!is_link($file)) {
-            $key = basename($file, '.' . $extension) . $suffix;
-            $result[$key] = $file;
+        if (!is_link($file) && is_file($file)) {
+            $extension = pathinfo($file, PATHINFO_EXTENSION);
+            if (in_array($extension, $allowedExtensions)) {
+                $key = basename($file);
+                $result[$key] = $file;
+            }
         }
     }
     return $result;
 }
 
-function getFilesByShell(string $shellCmd, string $extension = 'list', string $suffix = ''): array {
+function getFilesByShell(string $shellCmd): array {
+    global $allowedExtensions;
     $path = rtrim(shell_exec($shellCmd));
     if (is_dir($path)) {
-        $files = explode("\n", trim(shell_exec("ls $path/*.$extension 2>/dev/null")));
         $result = [];
+        $files = explode("\n", trim(shell_exec("ls $path/* 2>/dev/null")));
         foreach ($files as $file) {
-            if ($file && !is_link($file)) {
-                $key = basename($file, '.' . $extension) . $suffix;
-                $result[$key] = $file;
+            if ($file && !is_link($file) && is_file($file)) {
+                $extension = pathinfo($file, PATHINFO_EXTENSION);
+                if (in_array($extension, $allowedExtensions)) {
+                    $key = basename($file);
+                    $result[$key] = $file;
+                }
             }
         }
         return $result;
@@ -166,18 +175,19 @@ function getFilesByShell(string $shellCmd, string $extension = 'list', string $s
 }
 
 $categories = [
-    'IPSET' => getFilesByShell("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/lists/'", 'list'),
-    'BIRD' => getFilesByShell("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'", 'list'),
-    'NFQWS' => array_merge(
-        getFilesFromPath('/opt/etc/nfqws', 'list', '-nfqws'),
-        is_file('/opt/etc/nfqws/nfqws.conf') ? ['nfqws.conf' => '/opt/etc/nfqws/nfqws.conf'] : []
-    ),
-    'TPWS' => array_merge(
-        getFilesFromPath('/opt/etc/tpws', 'list', '-tpws'),
-        is_file('/opt/etc/tpws/tpws.conf') ? ['tpws.conf' => '/opt/etc/tpws/tpws.conf'] : []
-    ),
-    'XKEEN' => getFilesFromPath('/opt/etc/xray/configs/', 'json')
+    'IPSET' => getFilesByShell("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/lists/'"),
+    'BIRD' => getFilesByShell("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'"),
+    'NFQWS' => getFilesFromPath('/opt/etc/nfqws'),
+    'TPWS' => getFilesFromPath('/opt/etc/tpws'),
+    'XKEEN' => getFilesFromPath('/opt/etc/xray/configs/')
 ];
+
+$files = [];
+foreach ($categories as $category => $categoryFiles) {
+    $files = array_merge($files, $categoryFiles);
+}
+
+$texts = array_map('file_get_contents', $files);
 
 $files = [];
 foreach ($categories as $category => $categoryFiles) {
@@ -188,11 +198,12 @@ $texts = array_map('file_get_contents', $files);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($_POST as $key => $content) {
-        $normalizedKey = str_replace('_conf', '.conf', $key);
-        if (isset($files[$normalizedKey])) {
-            $file = $files[$normalizedKey];
-            file_put_contents($file, $content);
-            shell_exec("tr -d '\r' < " . escapeshellarg($file) . " > " . escapeshellarg($file) . ".tmp && mv " . escapeshellarg($file) . ".tmp " . escapeshellarg($file));
+        foreach ($files as $fileKey => $filePath) {
+            if (pathinfo($fileKey, PATHINFO_FILENAME) === $key) {
+                file_put_contents($filePath, $content);
+                shell_exec("tr -d '\r' < " . escapeshellarg($filePath) . " > " . escapeshellarg($filePath) . ".tmp && mv " . escapeshellarg($filePath) . ".tmp " . escapeshellarg($filePath));
+                break;
+            }
         }
     }
     restartServices();
@@ -201,13 +212,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if (isset($_GET['export_all'])) {
-    $tempDir = sys_get_temp_dir() . '/web4static_backup_' . time();
+    $tempDir = sys_get_temp_dir() . '/w4s_backup_' . time();
     mkdir($tempDir, 0777, true);
-    foreach ($files as $key => $path) {
-        $extension = pathinfo($path, PATHINFO_EXTENSION);
-        $backupFile = $tempDir . '/' . $key . ($extension ? '.' . $extension : '');
-        file_put_contents($backupFile, $texts[$key]);
+
+    foreach ($categories as $category => $categoryFiles) {
+        if (!empty($categoryFiles)) {
+            $categoryDir = $tempDir . '/' . $category;
+            mkdir($categoryDir, 0777, true);
+            foreach ($categoryFiles as $fileName => $filePath) {
+                $backupFile = $categoryDir . '/' . $fileName;
+                file_put_contents($backupFile, file_get_contents($filePath));
+            }
+        }
     }
+
     $archiveName = 'w4s_backup.tar.gz';
     $tarCmd = "tar -czf " . escapeshellarg($archiveName) . " -C " . escapeshellarg($tempDir) . " .";
     shell_exec($tarCmd);
@@ -264,21 +282,21 @@ if (isset($_GET['export_all'])) {
                     <div id="<?php echo htmlspecialchars($category); ?>" class="form-section" style="display:none;">
                         <div class="button-container">
                             <?php foreach ($categoryFiles as $key => $path): ?>
-                                <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($key); ?>')" value="<?php echo htmlspecialchars($key); ?>" />
+                                <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($key); ?>')" value="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>" />
                             <?php endforeach; ?>
                         </div>
 
                         <?php foreach ($categoryFiles as $key => $path): ?>
                             <div id="<?php echo htmlspecialchars($key); ?>" class="form-section" style="display:none;">
                                 <div class="textarea-container">
-                                    <textarea name="<?php echo htmlspecialchars($key); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
+                                    <textarea name="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
                                 </div>
                                 <div class="button-container">
-                                    <input type="file" id="import-<?php echo htmlspecialchars($key); ?>" style="display:none;" onchange="importFile('<?php echo htmlspecialchars($key); ?>', this)">
+                                    <input type="file" id="import-<?php echo htmlspecialchars($key); ?>" style="display:none;" onchange="importFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', this)">
                                     <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($key); ?>').click()" aria-label="Replace file" title="Replace">
                                         <svg width="24" height="24"><use href="#swap"/></svg>
                                     </button>
-                                    <button type="button" onclick="exportFile('<?php echo htmlspecialchars($key); ?>')" aria-label="Save file" title="Save">
+                                    <button type="button" onclick="exportFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', '<?php echo htmlspecialchars(pathinfo($key, PATHINFO_EXTENSION)); ?>')" aria-label="Save file" title="Save">
                                         <svg width="24" height="24"><use href="#download-file"/></svg>
                                     </button>
                                 </div>

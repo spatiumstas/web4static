@@ -132,7 +132,6 @@ textarea {
     padding: 15px;
     border-radius: var(--border-radius);
     border: 1px solid var(--border-textarea-color);
-    box-sizing: border-box;
     box-shadow: none;
     scrollbar-width: none;
 }
@@ -188,6 +187,8 @@ input[type="submit"] {
     cursor: pointer;
     background-color: var(--primary-color);
     color: var(--white-color);
+    min-width: 130px;
+    text-align: center;
 }
 
 input[type="submit"]:hover {

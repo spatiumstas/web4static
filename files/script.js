@@ -144,14 +144,14 @@ function animateSave(button, state) {
     }
 }
 
-function exportFile(fileKey) {
+function exportFile(fileKey, extension) {
     const textarea = document.querySelector(`textarea[name="${fileKey}"]`);
     const content = textarea.value;
     const blob = new Blob([content], {type: 'text/plain'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${fileKey}.txt`;
+    a.download = `${fileKey}.${extension}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -191,7 +191,7 @@ function showSubSection(section) {
         button.classList.remove('button-active');
     });
 
-    const activeButton = Array.from(buttons).find(button => button.value === section);
+    const activeButton = Array.from(buttons).find(button => button.getAttribute('onclick') === `showSubSection('${section}')`);
     if (activeButton) {
         activeButton.classList.add('button-active');
     }
