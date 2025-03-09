@@ -1,12 +1,11 @@
-<h1 style="text-align: center;">web4static</h1>
+## Веб-интерфейс для управления списками [Bird4Static](https://github.com/DennoN-RUS/Bird4Static) / [IPset4Static](https://github.com/DennoN-RUS/IPset4Static) / [nfqws](https://github.com/Anonym-tsk/nfqws-keenetic) / [tpws](https://github.com/Anonym-tsk/tpws-keenetic) / [XKeen](https://github.com/Skrill0/XKeen)
 
-### Веб-интерфейс для управления списками [Bird4Static](https://github.com/DennoN-RUS/Bird4Static) / [IPset4Static](https://github.com/DennoN-RUS/IPset4Static) / [nfqws](https://github.com/Anonym-tsk/nfqws-keenetic) / [tpws](https://github.com/Anonym-tsk/tpws-keenetic) / [XKeen](https://github.com/Skrill0/XKeen)
+![IMG_0671-round-corners](https://github.com/user-attachments/assets/8b0e44b3-bf50-464f-b389-04a7e8f8f29c)
 
-![IMG_8897-round-corners](https://github.com/user-attachments/assets/d657739a-a86d-4a99-82a9-a73f1f6b3682)
 
-# Установка:
+## Установка
 
-1. Из SSH ввести команду
+1. В `SSH` ввести команду
 ```shell
 opkg update && opkg install curl && curl -L -s "https://raw.githubusercontent.com/spatiumstas/web4static/main/install.sh" > /tmp/install.sh && sh /tmp/install.sh
 ```
