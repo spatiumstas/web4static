@@ -112,35 +112,34 @@ document.getElementById('mainForm').addEventListener('submit', function (event) 
             body: formData
         }).then(response => {
             console.log('Ответ от сервера получен:', response);
-
             if (response.ok) {
-                button.disabled = false;
-                button.value = 'Save & Restart';
-                button.classList.remove('loading');
+                animateSave(button, 'success');
             } else {
                 console.error('Ошибка при сохранении данных');
-                button.disabled = false;
-                button.value = 'Save & Restart';
-                button.classList.remove('loading');
+                button.value = 'Error';
             }
         }).catch(err => {
             console.error('Ошибка при отправке данных:', err);
-            button.disabled = false;
-            button.value = 'Save & Restart';
-            button.classList.remove('loading');
+            button.value = 'Error';
+        }).finally(() => {
+            setTimeout(() => {
+                button.value = 'Save & Restart';
+                button.classList.remove('loading');
+                button.disabled = false;
+            }, 1500);
         });
     }, 1000);
-
-    return false;
 });
 
 function animateSave(button, state) {
+    button.disabled = true;
+    button.classList.add('loading');
     if (state === 'saving') {
         button.value = 'Saving...';
-        button.disabled = true;
-        button.classList.add('loading');
     } else if (state === 'restarting') {
         button.value = 'Restarting...';
+    } else if (state === 'success') {
+        button.value = 'Success!';
     }
 }
 
