@@ -1,5 +1,4 @@
 <?php
-$w4s_version = '1.5.6';
 $config = parse_ini_file(__DIR__ . '/config.ini');
 $baseUrl = $config['base_url'];
 $url = $baseUrl . '/w4s/web4static.php';
