@@ -150,11 +150,21 @@ install_web() {
 
   API_URL="https://api.github.com/repos/${USER}/${REPO}/contents/files?ref=${BRANCH}"
   printf "Получаем список файлов из репозитория...\n\n"
-  files_list=$(curl -s -H "Accept: application/vnd.github.v3+json" -H "User-Agent: web4static-updater" "$API_URL")
 
-  if [ -z "$files_list" ] || echo "$files_list" | grep -q "Not Found"; then
-    message="Ошибка при получении списка файлов из GitHub: $files_list"
-    print_message "$message" "$RED"
+  files_list=$(curl -s --connect-timeout 5 --max-time 10 \
+    -H "Accept: application/vnd.github.v3+json" \
+    -H "User-Agent: web4static-updater" "$API_URL")
+
+  if [ $? -ne 0 ] || [ -z "$files_list" ]; then
+    print_message "Ошибка: не удалось подключиться к GitHub API." "$RED"
+    read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
+    main_menu
+  fi
+
+  error_message=$(echo "$files_list" | grep -Po '"message":.*?[^\\]",' | awk -F'"' '{print $4}')
+  if [ -n "$error_message" ]; then
+    print_message "Ошибка при получении списка файлов с GitHub" "$RED"
+    print_message "$error_message" "$RED"
     read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
     main_menu
   fi
@@ -170,7 +180,14 @@ install_web() {
 
   user_ip=$(ip -f inet addr show dev br0 2>/dev/null | grep inet | sed -n 's/.*inet \([0-9.]\+\).*/\1/p')
   replace_path "$user_ip"
-  print_message "Web-интерфейс установлен и доступен по адресу http://$user_ip:88/w4s" "$GREEN"
+  file_count=$(find "$WEB4STATIC_DIR/files" -type f 2>/dev/null | wc -l)
+
+  if [ "$file_count" -ge 3 ] && [ -f "$WEB4STATIC_DIR/web4static.php" ]; then
+    print_message "Web-интерфейс установлен и доступен по адресу http://$user_ip:88/w4s" "$GREEN"
+  else
+    print_message "Ошибка: не все файлы были установлены." "$RED"
+  fi
+
   read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
   main_menu
 }
@@ -179,10 +196,10 @@ download_file() {
   local url="$1"
   local path="$2"
   local filename=$(basename "$path")
-  echo "Скачиваю файл $filename..."
+  echo "Скачиваю $filename..."
   curl -s -L "$url" -o "$path" 2>/dev/null
   if [ $? -ne 0 ] || [ ! -f "$path" ]; then
-    print_message "Ошибка при скачивании файла $filename" "$RED"
+    print_message "Ошибка при скачивании $filename" "$RED"
     read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
     main_menu
   fi
