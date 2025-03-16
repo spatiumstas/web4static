@@ -32,11 +32,12 @@ function restartServices() {
         $commands[] = "/opt/etc/init.d/S51tpws restart";
     }
     if (is_dir('/opt/etc/xray/configs/')) {
-        $commands[] = "xkeen -restart > /dev/null 2>&1 &";
+        $commands[] = "xkeen -restart";
     }
 
     if (!empty($commands)) {
-        shell_exec(implode("; ", $commands));
+        $cmd = "sh -c '" . implode(" ; ", $commands) . "' >/dev/null 2>&1 & echo $!";
+        shell_exec($cmd);
     }
 }
 
@@ -55,7 +56,7 @@ function checkUpdate() {
 
     header('Content-Type: application/json');
     echo json_encode([
-        'current_version' => $GLOBALS['w4s_version'],
+        'local_version' => $GLOBALS['w4s_version'],
         'remote_version' => $remoteVersion,
     ]);
     exit();

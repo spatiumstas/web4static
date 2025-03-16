@@ -206,13 +206,13 @@ function checkForUpdates() {
         .then(response => response.json())
         .then(data => {
             console.log('Check update response:', data);
-            const currentNum = versionToNumber(data.current_version);
+            const localNum = versionToNumber(data.local_version);
             const remoteNum = versionToNumber(data.remote_version);
 
-            if (remoteNum > currentNum) {
-                toggleUpdateIcon(data.current_version, data.remote_version, true);
+            if (remoteNum > localNum) {
+                toggleUpdateIcon(data.local_version, data.remote_version, true);
             } else {
-                toggleUpdateIcon(data.current_version, data.remote_version, false);
+                toggleUpdateIcon(data.local_version, data.remote_version, false);
             }
         })
         .catch(err => console.error('Ошибка при проверке обновлений:', err));
@@ -224,7 +224,7 @@ function versionToNumber(version) {
     return parseInt(parts[0]) * 10000 + parseInt(parts[1] || 0) * 100 + parseInt(parts[2] || 0);
 }
 
-function toggleUpdateIcon(currentVersion, remoteVersion, show = true) {
+function toggleUpdateIcon(local_version, remoteVersion, show = true) {
     const updateIcon = document.getElementById('update-icon') || document.createElement('button');
     updateIcon.id = 'update-icon';
     updateIcon.innerHTML = `
@@ -232,7 +232,7 @@ function toggleUpdateIcon(currentVersion, remoteVersion, show = true) {
     `;
     updateIcon.title = `Доступно обновление`;
     updateIcon.style.cursor = 'pointer';
-    updateIcon.addEventListener('click', () => showUpdateAlert(currentVersion, remoteVersion));
+    updateIcon.addEventListener('click', () => showUpdateAlert(local_version, remoteVersion));
 
     const footer = document.querySelector('footer');
     if (show) {
@@ -246,7 +246,7 @@ function toggleUpdateIcon(currentVersion, remoteVersion, show = true) {
     }
 }
 
-function showUpdateAlert(currentVersion, remoteVersion) {
+function showUpdateAlert(local_version, remoteVersion) {
     fetch('web4static.php?get_release_notes&v=' + remoteVersion)
         .then(response => response.json())
         .then(data => {
@@ -266,14 +266,14 @@ function showUpdateAlert(currentVersion, remoteVersion) {
                 }
             }
 
-            const message = `Доступно обновление: ${remoteVersion} (текущая: ${currentVersion})\n\n${releaseNotes}\n\nОбновить?`;
+            const message = `Доступно обновление: ${remoteVersion} (текущая: ${local_version})\n\n${releaseNotes}\n\nОбновить?`;
             if (confirm(message)) {
                 updateScript();
             }
         })
         .catch(err => {
             console.error('Ошибка при получении списка изменений:', err);
-            const message = `Доступно обновление: ${remoteVersion} (текущая: ${currentVersion})\n\nСписок изменений недоступен.\n\nОбновить?`;
+            const message = `Доступно обновление: ${remoteVersion} (текущая: ${local_version})\n\nСписок изменений недоступен.\n\nОбновить?`;
             if (confirm(message)) {
                 updateScript();
             }
@@ -305,4 +305,40 @@ function updateScript() {
             loader.style.display = 'none';
             if (updateIcon) updateIcon.style.display = 'flex';
         });
+}
+
+function saveAndApplyTextareaSize(textarea) {
+    const size = {
+        width: textarea.style.width || getComputedStyle(textarea).width,
+        height: textarea.style.height || getComputedStyle(textarea).height
+    };
+    localStorage.setItem('textarea_size', JSON.stringify(size));
+
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(t => {
+        t.style.width = size.width;
+        t.style.height = size.height;
+    });
+}
+
+function restoreTextareaSizes() {
+    const savedSize = localStorage.getItem('textarea_size');
+    if (savedSize) {
+        const {width, height} = JSON.parse(savedSize);
+        const textareas = document.querySelectorAll('textarea');
+        textareas.forEach(textarea => {
+            textarea.style.width = width;
+            textarea.style.height = height;
+        });
+    }
+}
+
+function setupTextareaResizeListeners() {
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        const observer = new ResizeObserver(() => {
+            saveAndApplyTextareaSize(textarea);
+        });
+        observer.observe(textarea);
+    });
 }

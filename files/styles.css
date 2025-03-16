@@ -8,12 +8,16 @@
     --border-textarea-color-black: #4d545f;
     --border-radius: 20px;
     --font-family: Roboto, sans-serif;
-    --placeholder-color: #aaa
+    --placeholder-color: #aaa;
 }
 
-html, body {
-    font-family: var(--font-family), serif;
+html {
     height: 100%;
+}
+
+body {
+    font-family: var(--font-family), serif;
+    min-height: 100%;
     margin: 0;
     display: flex;
     flex-direction: column;
@@ -25,7 +29,7 @@ html, body {
 }
 
 main {
-    flex: 1;
+    flex: 1 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -35,9 +39,13 @@ main {
 footer {
     border-radius: 8px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-shrink: 0;
     width: 100%;
+    padding: 25px 0;
 }
 
 .footer {
@@ -103,7 +111,43 @@ form {
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 10px;
+}
+
+@media (min-width: 1024px) {
+    html, body {
+        zoom: 1.05;
+    }
+}
+
+@media (max-width: 600px) {
+    html, body {
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        position: relative !important;
+        width: 100vw;
+    }
+
+    header pre {
+        margin: 0;
+    }
+
+    .textarea-container {
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+    }
+}
+
+textarea {
+    width: 100%;
+    height: 250px;
+    resize: both;
+    overflow: auto;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-textarea-color);
+    box-shadow: none;
+    scrollbar-width: none;
 }
 
 .textarea-container {
@@ -111,29 +155,6 @@ form {
     justify-content: center;
     padding-left: 25px;
     padding-right: 25px;
-}
-
-@media (max-width: 600px) {
-    html, body {
-        overflow: auto;
-    }
-
-    header pre {
-        margin: 0px;
-    }
-}
-
-textarea {
-    max-width: 500px;
-    width: 100%;
-    height: 250px;
-    resize: none;
-    overflow: auto;
-    padding: 15px;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-textarea-color);
-    box-shadow: none;
-    scrollbar-width: none;
 }
 
 textarea::-webkit-scrollbar {
@@ -180,7 +201,7 @@ body.dark-theme textarea:hover {
 }
 
 input[type="submit"] {
-    margin: 10px 0;
+    margin: 20px 0;
     padding: 10px 15px;
     border-radius: var(--border-radius);
     border: 1px solid var(--primary-color);
@@ -357,17 +378,6 @@ body.dark-theme .form-section .button-container button[title]:hover:before {
 
 .form-section .button-container button svg {
     transition: color 0.3s ease;
-}
-
-footer {
-    border-radius: 8px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
-    padding: 10px 0;
 }
 
 #theme-toggle,
