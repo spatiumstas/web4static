@@ -116,7 +116,7 @@ form {
 
 @media (min-width: 1024px) {
     html, body {
-        zoom: 1.05;
+        zoom: 1.1;
     }
 }
 
@@ -481,4 +481,35 @@ body.dark-theme #github-dark-icon {
 
 body.dark-theme #loader svg {
     color: var(--primary-color);
+}
+
+.group-button-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.delete-group-btn {
+    width: 25px !important;
+    height: 25px !important;
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    border: 1px solid var(--primary-color);
+}
+
+.delete-group-btn svg
+.add-group-btn svg {
+    color: var(--primary-color);
+    width: 24px;
+    height: 24px;
+}
+
+.delete-group-btn:hover
+.add-group-btn:hover {
+    background: var(--primary-color);
+}
+
+.delete-group-btn:hover svg
+.add-group-btn:hover svg {
+    color: var(--white-color);
 }

@@ -342,3 +342,49 @@ function setupTextareaResizeListeners() {
         observer.observe(textarea);
     });
 }
+
+function deleteGroup(groupName) {
+    if (confirm(`Удалить группу ${groupName}?`)) {
+        fetch('web4static.php?delete_group=' + encodeURIComponent(groupName), {
+            method: 'POST'
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert(`Группа ${groupName} успешно удалена!`);
+                    location.reload();
+                } else {
+                    alert('Ошибка при удалении группы');
+                }
+            })
+            .catch(err => {
+                console.error('Ошибка при удалении группы:', err);
+                alert('Ошибка при удалении группы');
+            });
+    }
+}
+
+function createGroup() {
+    const groupName = prompt('Введите название новой группы:');
+    if (!groupName) {
+        return;
+    }
+    if (!/^[a-zA-Z0-9_-]+$/.test(groupName.trim())) {
+        alert('Название группы может содержать только буквы, цифры, подчеркивания и дефисы!');
+        return;
+    }
+    fetch('web4static.php?create_group=' + encodeURIComponent(groupName.trim()), {
+        method: 'POST'
+    })
+        .then(response => {
+            if (response.ok) {
+                alert(`Группа ${groupName.trim()} успешно создана!`);
+                location.reload();
+            } else {
+                alert('Ошибка при создании группы');
+            }
+        })
+        .catch(err => {
+            console.error('Ошибка при создании группы:', err);
+            alert('Ошибка при создании группы');
+        });
+}

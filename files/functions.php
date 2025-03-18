@@ -178,9 +178,42 @@ function exportAllFiles($categories) {
 function handlePostRequest($files) {
     foreach ($_POST as $key => $content) {
         foreach ($files as $fileKey => $filePath) {
-            if (pathinfo($fileKey, PATHINFO_FILENAME) === $key) {
-                file_put_contents($filePath, $content);
-                shell_exec("tr -d '\r' < " . escapeshellarg($filePath) . " > " . escapeshellarg($filePath) . ".tmp && mv " . escapeshellarg($filePath) . ".tmp " . escapeshellarg($filePath));
+            $fileName = pathinfo($fileKey, PATHINFO_FILENAME);
+            if ($fileName === $key) {
+                if (array_key_exists($fileKey, $GLOBALS['categories']['object-group'])) {
+                    $oldLines = explode("\n", trim($files[$fileKey]));
+                    $newLines = explode("\n", trim($content));
+
+                    $oldDomains = array_filter($oldLines, function($line) {
+                        return !empty(trim($line)) && strpos(trim($line), '#') !== 0;
+                    });
+                    $newDomains = array_filter($newLines, function($line) {
+                        return !empty(trim($line)) && strpos(trim($line), '#') !== 0;
+                    });
+
+                    $oldDomains = array_map('trim', array_values($oldDomains));
+                    $newDomains = array_map('trim', array_values($newDomains));
+
+                    $toInclude = array_diff($newDomains, $oldDomains);
+                    $toExclude = array_diff($oldDomains, $newDomains);
+
+                    $commands = [];
+                    foreach ($toInclude as $domain) {
+                        $commands[] = "/bin/ndmc -c \"object-group fqdn $key include $domain\"";
+                    }
+                    foreach ($toExclude as $domain) {
+                        $commands[] = "/bin/ndmc -c \"no object-group fqdn $key include $domain\"";
+                    }
+
+                    if (!empty($commands)) {
+                        foreach ($commands as $cmd) {
+                            shell_exec($cmd);
+                        }
+                    }
+                } else {
+                    file_put_contents($filePath, $content);
+                    shell_exec("tr -d '\r' < " . escapeshellarg($filePath) . " > " . escapeshellarg($filePath) . ".tmp && mv " . escapeshellarg($filePath) . ".tmp " . escapeshellarg($filePath));
+                }
                 break;
             }
         }
@@ -188,4 +221,32 @@ function handlePostRequest($files) {
     restartServices();
     http_response_code(200);
     exit();
+}
+
+function getObjectGroupLists() {
+    $output = shell_exec('/bin/ndmc -c "show object-group fqdn"');
+    if (!empty($output)) {
+        $lines = explode("\n", trim($output));
+        $currentGroup = null;
+        $result = [];
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (preg_match('/group-name:\s*(\S+)/', $line, $matches)) {
+                $currentGroup = $matches[1];
+                $result[$currentGroup] = [];
+            } elseif (preg_match('/fqdn:\s*(\S+)/', $line, $matches) && $currentGroup) {
+                $result[$currentGroup][] = $matches[1];
+            }
+        }
+
+        $lists = [];
+        foreach ($result as $groupName => $domains) {
+            $fileName = "$groupName.list";
+            $lists[$fileName] = implode("\n", $domains);
+        }
+
+        return $lists;
+    }
+    return [];
 }

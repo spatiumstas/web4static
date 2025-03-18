@@ -1,6 +1,6 @@
 <?php
 
-$w4s_version = '1.6';
+$w4s_version = '1.6.1';
 require_once __DIR__ . '/files/functions.php';
 
 if (isset($_GET['check_update'])) {
@@ -15,20 +15,49 @@ if (isset($_GET['get_release_notes']) && isset($_GET['v'])) {
     getReleaseNotes(htmlspecialchars($_GET['v']));
 }
 
+if (isset($_GET['delete_group'])) {
+    $groupName = htmlspecialchars($_GET['delete_group']);
+    shell_exec("/bin/ndmc -c \"no object-group fqdn $groupName\"");
+    http_response_code(200);
+    exit();
+}
+
+if (isset($_GET['create_group'])) {
+    $groupName = htmlspecialchars($_GET['create_group']);
+    shell_exec("/bin/ndmc -c \"object-group fqdn $groupName\"");
+    shell_exec("/bin/ndmc -c \"opkg object-group fqdn $groupName enable\"");
+    http_response_code(200);
+    exit();
+}
+
 $categories = [
     'IPSET' => getLists("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/lists/'", true),
     'BIRD' => getLists("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'", true),
     'NFQWS' => getLists('/opt/etc/nfqws'),
     'TPWS' => getLists('/opt/etc/tpws'),
-    'XKEEN' => getLists('/opt/etc/xray/configs/')
+    'XKEEN' => getLists('/opt/etc/xray/configs/'),
+    'object-group' => getObjectGroupLists()
 ];
 
 $files = [];
 foreach ($categories as $category => $categoryFiles) {
-    $files = array_merge($files, $categoryFiles);
+    if ($category === 'object-group') {
+        foreach ($categoryFiles as $fileName => $content) {
+            $files[$fileName] = $content;
+        }
+    } else {
+        $files = array_merge($files, $categoryFiles);
+    }
 }
 
-$texts = array_map('file_get_contents', $files);
+$texts = [];
+foreach ($files as $fileName => $data) {
+    if (array_key_exists($fileName, $categories['object-group'])) {
+        $texts[$fileName] = $data;
+    } else {
+        $texts[$fileName] = file_get_contents($data);
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     handlePostRequest($files);
@@ -55,6 +84,8 @@ if (isset($_GET['export_all'])) {
     <script src="files/script.js" defer></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            restoreTextareaSizes();
+            setupTextareaResizeListeners();
             checkForUpdates();
             const header = document.getElementById("asciiHeader");
             header.addEventListener("click", function() {
@@ -84,8 +115,22 @@ if (isset($_GET['export_all'])) {
                     <div id="<?php echo htmlspecialchars($category); ?>" class="form-section" style="display:none;">
                         <div class="button-container">
                             <?php foreach ($categoryFiles as $key => $path): ?>
-                                <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($key); ?>')" value="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>" />
+                                <div class="group-button-wrapper">
+                                    <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($key); ?>')" value="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>" />
+                                    <?php if ($category === 'object-group'): ?>
+                                        <button type="button" class="delete-group-btn" onclick="deleteGroup('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>')" aria-label="Delete group">
+                                            <svg width="16" height="16"><use href="#x"/></svg>
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
                             <?php endforeach; ?>
+                            <?php if ($category === 'object-group'): ?>
+                                <div class="group-button-wrapper">
+                                    <button type="button" class="add-group-btn" onclick="createGroup()" aria-label="Add new group">
+                                        <svg width="24" height="24"><use href="#plus"/></svg>
+                                    </button>
+                                </div>
+                            <?php endif; ?>
                         </div>
 
                         <?php foreach ($categoryFiles as $key => $path): ?>
