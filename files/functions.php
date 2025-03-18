@@ -224,6 +224,14 @@ function handlePostRequest($files) {
 }
 
 function getObjectGroupLists() {
+    if (!file_exists('/bin/ndmc')) {
+        return [];
+    }
+
+    $versionOutput = shell_exec('/bin/ndmc -c "show version" | grep \'title\' | awk -F": " \'{print $2}\' 2>/dev/null');
+    if (!$versionOutput || version_compare(trim($versionOutput), '4.3', '<')) {
+        return [];
+    }
     $output = shell_exec('/bin/ndmc -c "show object-group fqdn"');
     if (!empty($output)) {
         $lines = explode("\n", trim($output));
