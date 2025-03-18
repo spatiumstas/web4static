@@ -3,6 +3,7 @@ $config = parse_ini_file(__DIR__ . '/config.ini');
 $baseUrl = $config['base_url'];
 $url = $baseUrl . '/w4s/web4static.php';
 $allowedExtensions = ['list', 'json', 'conf'];
+$rci = "http://localhost:79/rci/";
 
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
 define('FILES_DIR', WEB4STATIC_DIR . '/files');
@@ -175,7 +176,25 @@ function exportAllFiles($categories) {
     exit();
 }
 
+function sendRciRequest($commands) {
+    global $rci;
+    $data = ['parse' => $commands];
+    $options = [
+        'http' => [
+            'method' => 'POST',
+            'header' => "Content-Type: application/json\r\n",
+            'content' => json_encode($data),
+            'ignore_errors' => true,
+        ],
+    ];
+    $context = stream_context_create($options);
+    $response = file_get_contents($rci, false, $context);
+    return json_decode($response, true);
+}
+
 function handlePostRequest($files) {
+    $commands = [];
+
     foreach ($_POST as $key => $content) {
         foreach ($files as $fileKey => $filePath) {
             $fileName = pathinfo($fileKey, PATHINFO_FILENAME);
@@ -197,18 +216,12 @@ function handlePostRequest($files) {
                     $toInclude = array_diff($newDomains, $oldDomains);
                     $toExclude = array_diff($oldDomains, $newDomains);
 
-                    $commands = [];
                     foreach ($toInclude as $domain) {
-                        $commands[] = "/bin/ndmc -c \"object-group fqdn $key include $domain\"";
-                    }
-                    foreach ($toExclude as $domain) {
-                        $commands[] = "/bin/ndmc -c \"no object-group fqdn $key include $domain\"";
+                        $commands[] = "object-group fqdn $key include $domain";
                     }
 
-                    if (!empty($commands)) {
-                        foreach ($commands as $cmd) {
-                            shell_exec($cmd);
-                        }
+                    foreach ($toExclude as $domain) {
+                        $commands[] = "no object-group fqdn $key include $domain";
                     }
                 } else {
                     file_put_contents($filePath, $content);
@@ -218,43 +231,50 @@ function handlePostRequest($files) {
             }
         }
     }
+
+    if (!empty($commands)) {
+        $response = sendRciRequest($commands);
+        if ($response && is_array($response)) {
+            foreach ($response['status'] as $status) {
+            }
+        } else {
+            http_response_code(500);
+            exit();
+        }
+    }
+
     restartServices();
     http_response_code(200);
     exit();
 }
 
 function getObjectGroupLists() {
+    global $rci;
     if (!file_exists('/bin/ndmc')) {
         return [];
     }
 
-    $versionOutput = shell_exec('/bin/ndmc -c "show version" | grep \'title\' | awk -F": " \'{print $2}\' 2>/dev/null');
-    if (!$versionOutput || version_compare(trim($versionOutput), '4.3', '<')) {
+    $command = "/bin/ndmc -c 'show version' | grep 'title' | awk -F': ' '{print \$2}' 2>/dev/null";
+    $versionOutput = trim(shell_exec($command));
+    if (!$versionOutput || version_compare(strtok($versionOutput, ' ') ?? '0.0', '4.3', '<')) {
         return [];
     }
-    $output = shell_exec('/bin/ndmc -c "show object-group fqdn"');
-    if (!empty($output)) {
-        $lines = explode("\n", trim($output));
-        $currentGroup = null;
-        $result = [];
 
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if (preg_match('/group-name:\s*(\S+)/', $line, $matches)) {
-                $currentGroup = $matches[1];
-                $result[$currentGroup] = [];
-            } elseif (preg_match('/fqdn:\s*(\S+)/', $line, $matches) && $currentGroup) {
-                $result[$currentGroup][] = $matches[1];
-            }
-        }
+    $request = "$rci/show/object-group/fqdn";
+    $response = file_get_contents($request);
+    $data = json_decode($response, true);
 
-        $lists = [];
-        foreach ($result as $groupName => $domains) {
-            $fileName = "$groupName.list";
+    $lists = [];
+    if (is_array($data) && isset($data['group']) && !empty($data['group'])) {
+        foreach ($data['group'] as $group) {
+            $fileName = "{$group['group-name']}.list";
+            $domains = array_map(function ($entry) {
+                return $entry['fqdn'];
+            }, $group['entry'] ?? []);
             $lists[$fileName] = implode("\n", $domains);
         }
-
-        return $lists;
+    } else {
+        $lists = ['' => ''];
     }
-    return [];
+    return $lists;
 }
