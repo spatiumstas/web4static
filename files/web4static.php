@@ -1,27 +1,22 @@
 <?php
-
 $w4s_version = '1.6.1';
 require_once __DIR__ . '/files/functions.php';
 
 if (isset($_GET['check_update'])) {
     checkUpdate();
 }
-
 if (isset($_GET['update_script'])) {
     updateScript();
 }
-
 if (isset($_GET['get_release_notes']) && isset($_GET['v'])) {
     getReleaseNotes(htmlspecialchars($_GET['v']));
 }
-
 if (isset($_GET['delete_group'])) {
     $groupName = htmlspecialchars($_GET['delete_group']);
     shell_exec("/bin/ndmc -c \"no object-group fqdn $groupName\"");
     http_response_code(200);
     exit();
 }
-
 if (isset($_GET['create_group'])) {
     $groupName = htmlspecialchars($_GET['create_group']);
     shell_exec("/bin/ndmc -c \"object-group fqdn $groupName\"");
@@ -66,7 +61,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if (isset($_GET['export_all'])) {
     exportAllFiles($categories);
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -79,7 +73,6 @@ if (isset($_GET['export_all'])) {
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/main/icons/apple-touch-icon.png">
     <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/main/icons/favicon.png" sizes="48x48" type="image/x-icon">
     <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/main/icons/favicon.png" sizes="192x192">
-
     <link rel="stylesheet" href="files/styles.css">
     <script src="files/script.js" defer></script>
     <script>
@@ -93,7 +86,6 @@ if (isset($_GET['export_all'])) {
             });
         });
     </script>
-</svg>
 </head>
 <body class="dark-theme">
     <header id="asciiHeader">
@@ -105,13 +97,13 @@ if (isset($_GET['export_all'])) {
     <main>
         <form id="mainForm" action="" method="post">
             <?php foreach ($categories as $category => $categoryFiles): ?>
-                <?php if (!empty($categoryFiles)): ?>
+                <?php if ($category !== 'object-group' && !empty($categoryFiles) || $category === 'object-group'): ?>
                     <input type="button" onclick="showSection('<?php echo htmlspecialchars($category); ?>')" value="<?php echo htmlspecialchars($category); ?>" />
                 <?php endif; ?>
             <?php endforeach; ?>
 
             <?php foreach ($categories as $category => $categoryFiles): ?>
-                <?php if (!empty($categoryFiles)): ?>
+                <?php if ($category !== 'object-group' && !empty($categoryFiles) || $category === 'object-group'): ?>
                     <div id="<?php echo htmlspecialchars($category); ?>" class="form-section" style="display:none;">
                         <div class="button-container">
                             <?php foreach ($categoryFiles as $key => $path): ?>
@@ -132,6 +124,23 @@ if (isset($_GET['export_all'])) {
                                 </div>
                             <?php endif; ?>
                         </div>
+
+                        <?php if ($category === 'object-group' && empty($categoryFiles)): ?>
+                            <div id="new_group" class="form-section">
+                                <div class="textarea-container">
+                                    <textarea name="object-group[new_group.list]"></textarea>
+                                </div>
+                                <div class="button-container">
+                                    <input type="file" id="import-new_group" style="display:none;" accept=".txt,.list,.json,.conf" onchange="importFile('new_group', this)">
+                                    <button type="button" onclick="document.getElementById('import-new_group').click()" aria-label="Replace file" title="Replace">
+                                        <svg width="24" height="24"><use href="#swap"/></svg>
+                                    </button>
+                                    <button type="button" onclick="exportFile('new_group', 'list')" aria-label="Save file" title="Save">
+                                        <svg width="24" height="24"><use href="#download-file"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        <?php endif; ?>
 
                         <?php foreach ($categoryFiles as $key => $path): ?>
                             <div id="<?php echo htmlspecialchars($key); ?>" class="form-section" style="display:none;">

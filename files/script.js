@@ -350,7 +350,7 @@ function deleteGroup(groupName) {
         })
             .then(response => {
                 if (response.ok) {
-                    alert(`Группа ${groupName} успешно удалена!`);
+                    alert(`Группа ${groupName} удалена!`);
                     location.reload();
                 } else {
                     alert('Ошибка при удалении группы');

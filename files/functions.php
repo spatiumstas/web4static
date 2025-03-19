@@ -273,8 +273,6 @@ function getObjectGroupLists() {
             }, $group['entry'] ?? []);
             $lists[$fileName] = implode("\n", $domains);
         }
-    } else {
-        $lists = ['' => ''];
     }
     return $lists;
 }
