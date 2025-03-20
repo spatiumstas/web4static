@@ -377,7 +377,7 @@ function createGroup() {
     })
         .then(response => {
             if (response.ok) {
-                alert(`Группа ${groupName.trim()} успешно создана!`);
+                alert(`Группа ${groupName.trim()} создана!`);
                 location.reload();
             } else {
                 alert('Ошибка при создании группы');

@@ -3,7 +3,7 @@ $config = parse_ini_file(__DIR__ . '/config.ini');
 $baseUrl = $config['base_url'];
 $url = $baseUrl . '/w4s/web4static.php';
 $allowedExtensions = ['list', 'json', 'conf'];
-$rci = "http://localhost:79/rci/";
+$rci = "http://localhost:79/rci";
 
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
 define('FILES_DIR', WEB4STATIC_DIR . '/files');
@@ -199,7 +199,7 @@ function handlePostRequest($files) {
         foreach ($files as $fileKey => $filePath) {
             $fileName = pathinfo($fileKey, PATHINFO_FILENAME);
             if ($fileName === $key) {
-                if (array_key_exists($fileKey, $GLOBALS['categories']['object-group'])) {
+                if (is_array($GLOBALS['categories']['object-group']) && array_key_exists($fileKey, $GLOBALS['categories']['object-group'])) {
                     $oldLines = explode("\n", trim($files[$fileKey]));
                     $newLines = explode("\n", trim($content));
 
@@ -232,7 +232,7 @@ function handlePostRequest($files) {
         }
     }
 
-    if (!empty($commands)) {
+    if (!empty($commands) && is_array($GLOBALS['categories']['object-group'])) {
         $response = sendRciRequest($commands);
         if ($response && is_array($response)) {
             foreach ($response['status'] as $status) {
@@ -251,13 +251,13 @@ function handlePostRequest($files) {
 function getObjectGroupLists() {
     global $rci;
     if (!file_exists('/bin/ndmc')) {
-        return [];
+        return false;
     }
 
     $command = "/bin/ndmc -c 'show version' | grep 'title' | awk -F': ' '{print \$2}' 2>/dev/null";
     $versionOutput = trim(shell_exec($command));
     if (!$versionOutput || version_compare(strtok($versionOutput, ' ') ?? '0.0', '4.3', '<')) {
-        return [];
+        return false;
     }
 
     $request = "$rci/show/object-group/fqdn";

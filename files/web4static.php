@@ -37,17 +37,21 @@ $categories = [
 $files = [];
 foreach ($categories as $category => $categoryFiles) {
     if ($category === 'object-group') {
-        foreach ($categoryFiles as $fileName => $content) {
-            $files[$fileName] = $content;
+        if (is_array($categoryFiles)) {
+            foreach ($categoryFiles as $fileName => $content) {
+                $files[$fileName] = $content;
+            }
         }
     } else {
-        $files = array_merge($files, $categoryFiles);
+        if (is_array($categoryFiles)) {
+            $files = array_merge($files, $categoryFiles);
+        }
     }
 }
 
 $texts = [];
 foreach ($files as $fileName => $data) {
-    if (array_key_exists($fileName, $categories['object-group'])) {
+    if (is_array($categories['object-group']) && array_key_exists($fileName, $categories['object-group'])) {
         $texts[$fileName] = $data;
     } else {
         $texts[$fileName] = file_get_contents($data);
@@ -97,25 +101,27 @@ if (isset($_GET['export_all'])) {
     <main>
         <form id="mainForm" action="" method="post">
             <?php foreach ($categories as $category => $categoryFiles): ?>
-                <?php if ($category !== 'object-group' && !empty($categoryFiles) || $category === 'object-group'): ?>
+                <?php if ($category !== 'object-group' && !empty($categoryFiles) || $category === 'object-group' && $categoryFiles !== false): ?>
                     <input type="button" onclick="showSection('<?php echo htmlspecialchars($category); ?>')" value="<?php echo htmlspecialchars($category); ?>" />
                 <?php endif; ?>
             <?php endforeach; ?>
 
             <?php foreach ($categories as $category => $categoryFiles): ?>
-                <?php if ($category !== 'object-group' && !empty($categoryFiles) || $category === 'object-group'): ?>
+                <?php if ($category !== 'object-group' && !empty($categoryFiles) || $category === 'object-group' && $categoryFiles !== false): ?>
                     <div id="<?php echo htmlspecialchars($category); ?>" class="form-section" style="display:none;">
                         <div class="button-container">
-                            <?php foreach ($categoryFiles as $key => $path): ?>
-                                <div class="group-button-wrapper">
-                                    <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($key); ?>')" value="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>" />
-                                    <?php if ($category === 'object-group'): ?>
-                                        <button type="button" class="delete-group-btn" onclick="deleteGroup('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>')" aria-label="Delete group">
-                                            <svg width="16" height="16"><use href="#x"/></svg>
-                                        </button>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endforeach; ?>
+                            <?php if (is_array($categoryFiles)): ?>
+                                <?php foreach ($categoryFiles as $key => $path): ?>
+                                    <div class="group-button-wrapper">
+                                        <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($key); ?>')" value="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>" />
+                                        <?php if ($category === 'object-group'): ?>
+                                            <button type="button" class="delete-group-btn" onclick="deleteGroup('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>')" aria-label="Delete group">
+                                                <svg width="16" height="16"><use href="#x"/></svg>
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                             <?php if ($category === 'object-group'): ?>
                                 <div class="group-button-wrapper">
                                     <button type="button" class="add-group-btn" onclick="createGroup()" aria-label="Add new group">
@@ -125,7 +131,7 @@ if (isset($_GET['export_all'])) {
                             <?php endif; ?>
                         </div>
 
-                        <?php if ($category === 'object-group' && empty($categoryFiles)): ?>
+                        <?php if ($category === 'object-group' && empty($categoryFiles) && $categoryFiles !== false): ?>
                             <div id="new_group" class="form-section">
                                 <div class="textarea-container">
                                     <textarea name="object-group[new_group.list]"></textarea>
@@ -142,22 +148,24 @@ if (isset($_GET['export_all'])) {
                             </div>
                         <?php endif; ?>
 
-                        <?php foreach ($categoryFiles as $key => $path): ?>
-                            <div id="<?php echo htmlspecialchars($key); ?>" class="form-section" style="display:none;">
-                                <div class="textarea-container">
-                                    <textarea name="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
+                        <?php if (is_array($categoryFiles)): ?>
+                            <?php foreach ($categoryFiles as $key => $path): ?>
+                                <div id="<?php echo htmlspecialchars($key); ?>" class="form-section" style="display:none;">
+                                    <div class="textarea-container">
+                                        <textarea name="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
+                                    </div>
+                                    <div class="button-container">
+                                        <input type="file" id="import-<?php echo htmlspecialchars($key); ?>" style="display:none;" accept=".txt,.list,.json,.conf" onchange="importFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', this)">
+                                        <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($key); ?>').click()" aria-label="Replace file" title="Replace">
+                                            <svg width="24" height="24"><use href="#swap"/></svg>
+                                        </button>
+                                        <button type="button" onclick="exportFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', '<?php echo htmlspecialchars(pathinfo($key, PATHINFO_EXTENSION)); ?>')" aria-label="Save file" title="Save">
+                                            <svg width="24" height="24"><use href="#download-file"/></svg>
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="button-container">
-                                    <input type="file" id="import-<?php echo htmlspecialchars($key); ?>" style="display:none;" accept=".txt,.list,.json,.conf" onchange="importFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', this)">
-                                    <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($key); ?>').click()" aria-label="Replace file" title="Replace">
-                                        <svg width="24" height="24"><use href="#swap"/></svg>
-                                    </button>
-                                    <button type="button" onclick="exportFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', '<?php echo htmlspecialchars(pathinfo($key, PATHINFO_EXTENSION)); ?>')" aria-label="Save file" title="Save">
-                                        <svg width="24" height="24"><use href="#download-file"/></svg>
-                                    </button>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
             <?php endforeach; ?>
