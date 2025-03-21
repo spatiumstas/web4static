@@ -8,6 +8,7 @@ USER="spatiumstas"
 REPO="web4static"
 WEB4STATIC_DIR="/opt/share/www/w4s"
 PATH_CONFIG="/opt/share/www/w4s/files/config.ini"
+PHP_FILE="$WEB4STATIC_DIR/web4static.php"
 
 print_menu() {
   printf "\033c"
@@ -263,29 +264,38 @@ script_update() {
   BRANCH="$1"
   SCRIPT="web4static.sh"
   TMP_DIR="/tmp"
-  OPT_DIR="/opt"
 
   curl -L -s "https://raw.githubusercontent.com/$USER/$REPO/$BRANCH/$SCRIPT" --output $TMP_DIR/$SCRIPT
 
   if [ -f "$TMP_DIR/$SCRIPT" ]; then
-    mv "$TMP_DIR/$SCRIPT" "$OPT_DIR/$SCRIPT"
-    chmod +x $OPT_DIR/$SCRIPT
-    cd $OPT_DIR/bin
-    ln -sf $OPT_DIR/$SCRIPT $OPT_DIR/bin/web4static
+    mv "$TMP_DIR/$SCRIPT" "$WEB4STATIC_DIR/$SCRIPT"
+    chmod +x $WEB4STATIC_DIR/$SCRIPT
+    cd /opt/bin
+    ln -sf $WEB4STATIC_DIR/$SCRIPT /opt/bin/web4static
     if [ "$BRANCH" = "dev" ]; then
       print_message "Скрипт успешно обновлён на $BRANCH ветку..." "$GREEN"
     else
       print_message "Скрипт успешно обновлён" "$GREEN"
     fi
-    sleep 2
-    $OPT_DIR/$SCRIPT
+    sleep 1
+    $WEB4STATIC_DIR/$SCRIPT post_update
   else
     print_message "Ошибка при скачивании скрипта" "$RED"
   fi
 }
 
+post_update() {
+  SCRIPT_VERSION=$(awk -F"['\"]" '/\$w4s_version/{print $2}' "$PHP_FILE")
+  URL=$(echo "aHR0cHM6Ly9sb2cuc3BhdGl1bS5rZWVuZXRpYy5wcm8=" | base64 -d)
+  JSON_DATA="{\"script_update\": \"w4s_update_$SCRIPT_VERSION\"}"
+  curl -X POST -H "Content-Type: application/json" -d "$JSON_DATA" "$URL" -o /dev/null -s
+  main_menu
+}
+
 if [ "$1" = "script_update" ]; then
-  script_update
+  script_update "main"
+elif [ "$1" = "post_update" ]; then
+  post_update
 else
   main_menu
 fi

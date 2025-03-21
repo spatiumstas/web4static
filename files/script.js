@@ -268,26 +268,26 @@ function showUpdateAlert(local_version, remoteVersion) {
 
             const message = `Доступно обновление: ${remoteVersion} (текущая: ${local_version})\n\n${releaseNotes}\n\nОбновить?`;
             if (confirm(message)) {
-                updateScript();
+                updateScript(remoteVersion);
             }
         })
         .catch(err => {
             console.error('Ошибка при получении списка изменений:', err);
             const message = `Доступно обновление: ${remoteVersion} (текущая: ${local_version})\n\nСписок изменений недоступен.\n\nОбновить?`;
             if (confirm(message)) {
-                updateScript();
+                updateScript(remoteVersion);
             }
         });
 }
 
-function updateScript() {
+function updateScript(remoteVersion) {
     const updateIcon = document.getElementById('update-icon');
     const loader = document.getElementById('loader-icon');
 
     if (updateIcon) updateIcon.style.display = 'none';
     loader.style.display = 'flex';
 
-    fetch('web4static.php?update_script')
+    fetch(`web4static.php?update_script&remote_version=${encodeURIComponent(remoteVersion)}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
