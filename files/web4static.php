@@ -1,5 +1,5 @@
 <?php
-$w4s_version = '1.6.1';
+$w4s_version = '1.6.2';
 require_once __DIR__ . '/files/functions.php';
 
 if (isset($_GET['check_update'])) {
@@ -22,6 +22,18 @@ if (isset($_GET['create_group'])) {
     shell_exec("/bin/ndmc -c \"object-group fqdn $groupName\"");
     shell_exec("/bin/ndmc -c \"opkg object-group fqdn $groupName enable\"");
     http_response_code(200);
+    exit();
+}
+
+if (isset($_GET['opkg_update'])) {
+    $output = '';
+    $success = true;
+
+    $updateOutput = shell_exec("opkg update && opkg upgrade");
+    $output = "$updateOutput";
+
+    header('Content-Type: application/json');
+    echo json_encode(['success' => $success, 'output' => $output]);
     exit();
 }
 
@@ -180,13 +192,16 @@ if (isset($_GET['export_all'])) {
             <svg id="sun-icon" width="24" height="24"><use href="#sun"/></svg>
             <svg id="moon-icon" width="24" height="24" style="display:none;"><use href="#moon"/></svg>
         </button>
-        <button type="button" onclick="exportAllFiles()" aria-label="Save all lists" title="Save all lists">
+        <button type="button" onclick="exportAllFiles()" aria-label="Save all lists" title="Сохранить все списки">
             <svg width="24" height="24"><use href="#download-file"/></svg>
         </button>
         <a href="https://github.com/spatiumstas/web4static" target="_blank">
             <svg id="github-light-icon" class="github-icon" width="24" height="24"><use href="#github-light"/></svg>
             <svg id="github-dark-icon" class="github-icon" width="24" height="24"><use href="#github-dark"/></svg>
         </a>
+        <button id="opkg-icon" onclick="opkgUpdate()" aria-label="Update opkg" title="Обновить пакеты">
+            <svg width="24" height="24"><use href="#opkg"/></svg>
+        </button>
         <div id="loader-icon" style="display: none;">
             <svg width="24" height="24"><use href="#loader"/></svg>
         </div>

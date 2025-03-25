@@ -388,3 +388,22 @@ function createGroup() {
             alert('Ошибка при создании группы');
         });
 }
+
+function opkgUpdate() {
+    const loader = document.getElementById('loader-icon');
+    const opkgIcon = document.getElementById('opkg-icon');
+
+    opkgIcon.style.display = 'none';
+    loader.style.display = 'flex';
+
+    fetch('web4static.php?opkg_update', {
+        method: 'POST'
+    })
+        .then(response => response.json())
+        .then(data => {
+            loader.style.display = 'none';
+            opkgIcon.style.display = 'flex';
+
+            alert(data.output);
+        });
+}
