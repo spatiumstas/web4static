@@ -26,14 +26,13 @@ if (isset($_GET['create_group'])) {
 }
 
 if (isset($_GET['opkg_update'])) {
-    $output = '';
-    $success = true;
+    $output = [];
 
-    $updateOutput = shell_exec("opkg update && opkg upgrade");
-    $output = "$updateOutput";
+    exec("opkg update && opkg upgrade 2>&1", $output);
+    $outputString = implode("\n", $output);
 
     header('Content-Type: application/json');
-    echo json_encode(['success' => $success, 'output' => $output]);
+    echo json_encode(['success' => true, 'output' => $outputString]);
     exit();
 }
 

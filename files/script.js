@@ -390,6 +390,9 @@ function createGroup() {
 }
 
 function opkgUpdate() {
+    if (!confirm('Обновить OPKG пакеты?')) {
+        return;
+    }
     const loader = document.getElementById('loader-icon');
     const opkgIcon = document.getElementById('opkg-icon');
 
@@ -404,6 +407,7 @@ function opkgUpdate() {
             loader.style.display = 'none';
             opkgIcon.style.display = 'flex';
 
-            alert(data.output);
+            alert('Результат выполнения:\n' + data.output);
+            console.log(data.output)
         });
 }
