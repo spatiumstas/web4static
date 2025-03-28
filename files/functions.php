@@ -3,7 +3,7 @@ $config = parse_ini_file(__DIR__ . '/config.ini');
 $baseUrl = $config['base_url'];
 $url = $baseUrl . '/w4s/web4static.php';
 $allowedExtensions = ['list', 'json', 'conf'];
-$rci = "http://localhost:79/rci";
+$rci = "http://localhost:79/rci/";
 
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
 define('FILES_DIR', WEB4STATIC_DIR . '/files');
@@ -278,7 +278,10 @@ function getObjectGroupLists() {
             $fileName = "{$group['group-name']}.list";
             $domains = array_map(function ($entry) {
                 return $entry['fqdn'];
-            }, $group['entry'] ?? []);
+            }, array_filter($group['entry'] ?? [], function ($entry) {
+                return isset($entry['type']) && $entry['type'] === 'config';
+            }));
+
             $lists[$fileName] = implode("\n", $domains);
         }
     }
