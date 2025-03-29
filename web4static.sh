@@ -147,7 +147,6 @@ install_web() {
   fi
   packages_checker
   mkdir -p "$WEB4STATIC_DIR/files"
-  create_config
 
   API_URL="https://api.github.com/repos/${USER}/${REPO}/contents/files?ref=${BRANCH}"
   printf "Получаем список файлов из репозитория...\n\n"
@@ -207,26 +206,10 @@ download_file() {
 }
 
 replace_path() {
-  local new_ip="$1"
-  local config_file="/files/config.ini"
-
-  update_config() {
-    local key="$1"
-    local value="$2"
-    local file="$3"
-
-    if grep -q "^$key" "$file"; then
-      sed -i "s|^$key.*|$key = \"$value\"|" "$file"
-    else
-      echo "$key = \"$value\"" >>"$file"
-    fi
-  }
-
-  update_config "base_url" "http://$new_ip:88" "$PATH_CONFIG"
-
   if grep -q '^ARGS=' "/opt/etc/init.d/S80uhttpd"; then
     if ! grep -q ' -I web4static.php' "/opt/etc/init.d/S80uhttpd"; then
       sed -i 's|^\(ARGS=.*\)"|\1 -I web4static.php"|' "/opt/etc/init.d/S80uhttpd"
+      echo ""
       /opt/etc/init.d/S80uhttpd restart
     fi
   else
@@ -234,15 +217,6 @@ replace_path() {
     read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
     main_menu
   fi
-}
-
-create_config() {
-  cat <<'EOL' >"$PATH_CONFIG"
-[settings]
-base_url = "http://192.168.1.1:88"
-
-EOL
-  chmod +x "$PATH_CONFIG"
 }
 
 remove_web() {

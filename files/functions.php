@@ -1,7 +1,4 @@
 <?php
-$config = parse_ini_file(__DIR__ . '/config.ini');
-$baseUrl = $config['base_url'];
-$url = $baseUrl . '/w4s/web4static.php';
 $allowedExtensions = ['list', 'json', 'conf'];
 $rci = "http://localhost:79/rci/";
 
@@ -142,7 +139,7 @@ function getLists(string $path, bool $useShell = false): array {
     global $allowedExtensions;
     $result = [];
     if ($useShell) {
-        $path = rtrim(shell_exec($path));
+        $path = rtrim(shell_exec($path) ?? '');
         $files = explode("\n", trim(shell_exec("ls $path/* 2>/dev/null")));
     } else {
         $files = glob($path . '/*');

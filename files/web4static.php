@@ -1,5 +1,5 @@
 <?php
-$w4s_version = '1.6.3';
+$w4s_version = '1.6.4';
 require_once __DIR__ . '/files/functions.php';
 
 if (isset($_GET['check_update'])) {

@@ -22,7 +22,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
-    overflow-y: hidden;
+    overflow-y: auto;
     text-rendering: optimizeLegibility;
     border-radius: var(--border-radius);
     align-items: center;
@@ -338,42 +338,6 @@ body.dark-theme .form-section .button-container button:hover {
 
 .form-section .button-container button svg {
     transition: color 0.3s ease;
-}
-
-.form-section .button-container button[title]:hover:after {
-    content: attr(title);
-    position: absolute;
-    background-color: rgba(0, 0, 0, 0.8);
-    color: #fff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    z-index: 1000;
-    white-space: nowrap;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-bottom: 5px;
-}
-
-.form-section .button-container button[title]:hover:before {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-width: 5px 5px 0;
-    border-style: solid;
-    border-color: rgba(0, 0, 0, 0.8) transparent transparent;
-}
-
-body.dark-theme .form-section .button-container button[title]:hover:after {
-    background-color: rgba(255, 255, 255, 0.9);
-    color: #000;
-}
-
-body.dark-theme .form-section .button-container button[title]:hover:before {
-    border-color: rgba(255, 255, 255, 0.9) transparent transparent;
 }
 
 .form-section .button-container button svg {
