@@ -12,28 +12,23 @@ function downloadFile($url, $destination) {
 }
 
 function restartServices() {
-    $ipsetPath = trim(shell_exec("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/scripts/'"));
-    $birdPath = trim(shell_exec("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/scripts/'"));
     $commands = [];
+    $ipset = trim(shell_exec("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/scripts/'"));
+    $bird  = trim(shell_exec("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/scripts/'"));
 
-    if (!empty($ipsetPath)) {
-        $commands[] = escapeshellcmd("$ipsetPath/update-ipset.sh");
-    }
-    if (!empty($birdPath)) {
-        $commands[] = escapeshellcmd("$birdPath/add-bird4_routes.sh");
-        $commands[] = escapeshellcmd("$birdPath/IPset4Static/scripts/update-ipset.sh");
-    }
-    if (is_file('/opt/etc/init.d/S51nfqws')) {
-        $commands[] = "/opt/etc/init.d/S51nfqws restart";
-    }
-    if (is_file('/opt/etc/init.d/S51tpws')) {
-        $commands[] = "/opt/etc/init.d/S51tpws restart";
-    }
-    if (is_dir('/opt/etc/xray/configs/')) {
-        $commands[] = "xkeen -restart";
-    }
+    $commands = array_merge($commands,
+        $ipset ? [escapeshellcmd("$ipset/update-ipset.sh")] : [],
+        $bird ? [
+            escapeshellcmd("$bird/add-bird4_routes.sh"),
+            escapeshellcmd("$bird/IPset4Static/scripts/update-ipset.sh")
+        ] : [],
+        is_file('/opt/etc/init.d/S51nfqws') ? ['/opt/etc/init.d/S51nfqws restart'] : [],
+        is_file('/opt/etc/init.d/S51tpws') ? ['/opt/etc/init.d/S51tpws restart'] : [],
+        is_dir('/opt/etc/xray/configs/') ? ['xkeen -restart'] : [],
+        is_dir('/opt/etc/sing-box/') ? ['/opt/etc/init.d/S99sing-box restart'] : []
+    );
 
-    if (!empty($commands)) {
+    if ($commands) {
         $cmd = "sh -c '" . implode(" ; ", $commands) . "' >/dev/null 2>&1 & echo $!";
         shell_exec($cmd);
     }

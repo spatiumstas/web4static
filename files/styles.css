@@ -335,7 +335,6 @@ body.dark-theme .form-section .button-container button:hover {
     color: var(--white-color);
 }
 
-
 .form-section .button-container button svg {
     transition: color 0.3s ease;
 }

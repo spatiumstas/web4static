@@ -1,5 +1,5 @@
 <?php
-$w4s_version = '1.6.4';
+$w4s_version = '1.7';
 require_once __DIR__ . '/files/functions.php';
 
 if (isset($_GET['check_update'])) {
@@ -42,6 +42,7 @@ $categories = [
     'NFQWS' => getLists('/opt/etc/nfqws'),
     'TPWS' => getLists('/opt/etc/tpws'),
     'XKEEN' => getLists('/opt/etc/xray/configs/'),
+    'sing-box' => getLists('/opt/etc/sing-box/'),
     'object-group' => getObjectGroupLists()
 ];
 
@@ -92,6 +93,18 @@ if (isset($_GET['export_all'])) {
     <script src="files/script.js" defer></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            const textareas = document.querySelectorAll('textarea');
+            textareas.forEach(textarea => {
+                const fileKey = textarea.name;
+                const formatButton = document.querySelector(`.format-json-btn[onclick="formatJson('${fileKey}')"]`);
+
+                if (formatButton) {
+                    toggleJsonButton(textarea, formatButton);
+                    textarea.addEventListener('input', () => {
+                        toggleJsonButton(textarea, formatButton);
+                    });
+                }
+            });
             restoreTextareaSizes();
             setupTextareaResizeListeners();
             checkForUpdates();
@@ -172,6 +185,8 @@ if (isset($_GET['export_all'])) {
                                         </button>
                                         <button type="button" onclick="exportFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', '<?php echo htmlspecialchars(pathinfo($key, PATHINFO_EXTENSION)); ?>')" aria-label="Save file" title="Save">
                                             <svg width="24" height="24"><use href="#download-file"/></svg>
+                                        </button>
+                                        <button type="button" class="format-json-btn" onclick="formatJson('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>')" aria-label="Format JSON" title="Format JSON" style="display: none;"><svg width="24" height="24"><use href="#json"/></svg>
                                         </button>
                                     </div>
                                 </div>

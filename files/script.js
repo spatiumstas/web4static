@@ -411,3 +411,43 @@ function opkgUpdate() {
             console.log(data.output)
         });
 }
+
+function isJson(text) {
+    const trimmed = text.trim();
+    if (!trimmed) return false;
+
+    if (
+        (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+        (trimmed.startsWith('[') && trimmed.endsWith(']'))
+    ) {
+        try {
+            JSON.parse(trimmed);
+            return true;
+        } catch (e) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function toggleJsonButton(textarea, button) {
+    const content = textarea.value;
+    if (isJson(content)) {
+        button.style.display = 'flex';
+    } else {
+        button.style.display = 'none';
+    }
+}
+
+function formatJson(fileKey) {
+    const textarea = document.querySelector(`textarea[name="${fileKey}"]`);
+    const content = textarea.value.trim();
+
+    try {
+        const parsedJson = JSON.parse(content);
+        const formattedJson = JSON.stringify(parsedJson, null, 2);
+        textarea.value = formattedJson;
+    } catch (error) {
+        alert('Неверный формат JSON\n' + error.message);
+    }
+}
