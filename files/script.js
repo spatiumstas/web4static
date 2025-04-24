@@ -225,24 +225,13 @@ function versionToNumber(version) {
 }
 
 function toggleUpdateIcon(local_version, remoteVersion, show = true) {
-    const updateIcon = document.getElementById('update-icon') || document.createElement('button');
-    updateIcon.id = 'update-icon';
-    updateIcon.innerHTML = `
-        <svg width="24" height="24"><use href="#update"/></svg>
-    `;
-    updateIcon.title = `Доступно обновление`;
-    updateIcon.style.cursor = 'pointer';
-    updateIcon.addEventListener('click', () => showUpdateAlert(local_version, remoteVersion));
+    const updateIcon = document.getElementById('update-w4s-icon');
 
-    const footer = document.querySelector('footer');
     if (show) {
-        if (!document.getElementById('update-icon')) {
-            footer.appendChild(updateIcon);
-        }
+        updateIcon.style.display = 'flex';
+        updateIcon.onclick = () => showUpdateAlert(local_version, remoteVersion);
     } else {
-        if (document.getElementById('update-icon')) {
-            updateIcon.remove();
-        }
+        updateIcon.style.display = 'none';
     }
 }
 
@@ -409,6 +398,7 @@ function opkgUpdate() {
 
             alert('Результат выполнения:\n' + data.output);
             console.log(data.output)
+            location.reload();
         });
 }
 
