@@ -215,9 +215,11 @@ function importFile(fileKey, input, category = '') {
 }
 
 function exportAllFiles() {
+    const date = new Date().toISOString().slice(0, 10);
+    const archiveName = `w4s_backup_${date}.tar.gz`;
     const a = document.createElement('a');
     a.href = window.location.pathname + '?export_all=1';
-    a.download = 'w4s_backup.tar.gz';
+    a.download = archiveName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

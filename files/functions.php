@@ -156,6 +156,9 @@ function exportAllFiles($categories) {
     mkdir($tempDir, 0777, true);
 
     foreach ($categories as $category => $categoryFiles) {
+        if ($category === 'object-group') {
+            continue;
+        }
         if (!empty($categoryFiles)) {
             $categoryDir = $tempDir . '/' . $category;
             mkdir($categoryDir, 0777, true);
@@ -171,7 +174,9 @@ function exportAllFiles($categories) {
     shell_exec($tarCmd);
     shell_exec("rm -rf " . escapeshellarg($tempDir));
     header('Content-Type: application/gzip');
-    header('Content-Disposition: attachment; filename="' . $archiveName . '"');
+    header('Content-Disposition: attachment');
+    header('Content-Length: ' . filesize($archiveName));
+    header('Cache-Control: no-cache, must-revalidate');
     readfile($archiveName);
     unlink($archiveName);
     exit();
