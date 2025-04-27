@@ -206,7 +206,7 @@ if (isset($_GET['export_all'])) {
     </main>
 
     <footer>
-        <button onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle Dark Mode">
+        <button onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle Dark Mode" title="Сменить тему">
             <svg id="sun-icon" width="24" height="24"><use href="#sun"/></svg>
             <svg id="moon-icon" width="24" height="24" style="display:none;"><use href="#moon"/></svg>
         </button>
@@ -217,8 +217,11 @@ if (isset($_GET['export_all'])) {
             <svg id="github-light-icon" class="github-icon" width="24" height="24"><use href="#github-light"/></svg>
             <svg id="github-dark-icon" class="github-icon" width="24" height="24"><use href="#github-dark"/></svg>
         </a>
-        <button id="opkg-icon" onclick="opkgUpdate()" aria-label="Update opkg" title="Обновить пакеты">
+        <button id="opkg-icon" onclick="opkgUpdate()" aria-label="Update opkg" title="Обновить OPKG пакеты">
             <svg width="24" height="24"><use href="#opkg"/></svg>
+        </button>
+        <button id="update-w4s-icon" style="display: none;" aria-label="Update W4S" title="Доступно обновление W4S">
+            <svg><use href="#update-w4s"/></svg>
         </button>
         <div id="loader-icon" style="display: none;">
             <svg width="24" height="24"><use href="#loader"/></svg>

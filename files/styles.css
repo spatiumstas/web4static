@@ -279,6 +279,7 @@ header pre {
     gap: 10px;
     justify-content: center;
     margin-top: 10px;
+    min-height: 60px;
 }
 
 .form-section button {
