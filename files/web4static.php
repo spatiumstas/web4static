@@ -42,9 +42,10 @@ $categories = [
     'BIRD' => getLists("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'", true),
     'NFQWS' => getLists('/opt/etc/nfqws'),
     'TPWS' => getLists('/opt/etc/tpws'),
-    'XKEEN' => getLists('/opt/etc/xray/configs/'),
-    'sing-box' => getLists('/opt/etc/sing-box/'),
-    'object-group' => getObjectGroupLists()
+    'XKEEN' => getLists('/opt/etc/xray/configs'),
+    'sing-box' => getLists('/opt/etc/sing-box'),
+    'object-group' => getObjectGroupLists(),
+    'HydraRoute' => getLists('/opt/etc/HydraRoute'),
 ];
 
 $files = [];

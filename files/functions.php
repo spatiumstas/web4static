@@ -25,7 +25,8 @@ function restartServices() {
         is_file('/opt/etc/init.d/S51nfqws') ? ['/opt/etc/init.d/S51nfqws restart'] : [],
         is_file('/opt/etc/init.d/S51tpws') ? ['/opt/etc/init.d/S51tpws restart'] : [],
         is_dir('/opt/etc/xray/configs/') ? ['xkeen -restart'] : [],
-        is_dir('/opt/etc/sing-box/') ? ['/opt/etc/init.d/S99sing-box restart'] : []
+        is_dir('/opt/etc/sing-box/') ? ['/opt/etc/init.d/S99sing-box restart'] : [],
+        is_dir('/opt/etc/HydraRoute') ? ['/opt/etc/init.d/S99hrneo restart'] : [],
     );
 
     if ($commands) {
