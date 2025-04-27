@@ -1,5 +1,6 @@
 <?php
 $w4s_version = '1.7';
+$cache_buster = $w4s_version;
 require_once __DIR__ . '/files/functions.php';
 
 if (isset($_GET['check_update'])) {
@@ -85,15 +86,14 @@ if (isset($_GET['export_all'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta name="theme-color" content="#FFF">
+    <meta name="theme-color" content="#fff">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>web4static</title>
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/main/icons/apple-touch-icon.png">
-    <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/main/icons/favicon.png" sizes="48x48" type="image/x-icon">
-    <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/main/icons/favicon.png" sizes="192x192">
-    <link rel="stylesheet" href="files/styles.css">
-    <link rel="manifest" href="files/manifest.json">
-    <script src="files/script.js" defer></script>
+    <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/main/icons/favicon.png">
+    <link rel="stylesheet" href="files/styles.css?v=<?php echo $cache_buster; ?>">
+    <link rel="manifest" href="files/manifest.json?v=<?php echo $cache_buster; ?>">
+    <script src="files/script.js?v=<?php echo $cache_buster; ?>" defer></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const textareas = document.querySelectorAll('textarea');
