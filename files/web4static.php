@@ -1,5 +1,6 @@
 <?php
-$w4s_version = '1.7';
+$w4s_version = '1.8';
+$cache_buster = $w4s_version;
 require_once __DIR__ . '/files/functions.php';
 
 if (isset($_GET['check_update'])) {
@@ -41,9 +42,10 @@ $categories = [
     'BIRD' => getLists("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'", true),
     'NFQWS' => getLists('/opt/etc/nfqws'),
     'TPWS' => getLists('/opt/etc/tpws'),
-    'XKEEN' => getLists('/opt/etc/xray/configs/'),
-    'sing-box' => getLists('/opt/etc/sing-box/'),
-    'object-group' => getObjectGroupLists()
+    'XKEEN' => getLists('/opt/etc/xray/configs'),
+    'sing-box' => getLists('/opt/etc/sing-box'),
+    'object-group' => getObjectGroupLists(),
+    'HydraRoute' => getLists('/opt/etc/HydraRoute'),
 ];
 
 $files = [];
@@ -85,12 +87,14 @@ if (isset($_GET['export_all'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta name="theme-color" content="#fff">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>web4static</title>
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/main/icons/apple-touch-icon.png">
-    <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/main/icons/favicon.png" sizes="48x48" type="image/x-icon">
-    <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/main/icons/favicon.png" sizes="192x192">
-    <link rel="stylesheet" href="files/styles.css">
-    <script src="files/script.js" defer></script>
+    <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/main/icons/favicon.png">
+    <link rel="stylesheet" href="files/styles.css?v=<?php echo $cache_buster; ?>">
+    <link rel="manifest" href="files/manifest.json?v=<?php echo $cache_buster; ?>">
+    <script src="files/script.js?v=<?php echo $cache_buster; ?>" defer></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const textareas = document.querySelectorAll('textarea');
@@ -137,7 +141,7 @@ if (isset($_GET['export_all'])) {
                             <?php if (is_array($categoryFiles)): ?>
                                 <?php foreach ($categoryFiles as $key => $path): ?>
                                     <div class="group-button-wrapper">
-                                        <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($key); ?>')" value="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>" />
+                                        <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>')" value="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>" />
                                         <?php if ($category === 'object-group'): ?>
                                             <button type="button" class="delete-group-btn" onclick="deleteGroup('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>')" aria-label="Delete group">
                                                 <svg width="16" height="16"><use href="#x"/></svg>
@@ -158,14 +162,14 @@ if (isset($_GET['export_all'])) {
                         <?php if ($category === 'object-group' && empty($categoryFiles) && $categoryFiles !== false): ?>
                             <div id="new_group" class="form-section">
                                 <div class="textarea-container">
-                                    <textarea name="object-group[new_group.list]"></textarea>
+                                    <textarea name="object-group/new_group.list"></textarea>
                                 </div>
                                 <div class="button-container">
-                                    <input type="file" id="import-new_group" style="display:none;" accept=".txt,.list,.json,.conf" onchange="importFile('new_group', this)">
+                                    <input type="file" id="import-new_group" style="display:none;" accept=".txt,.list,.json,.conf" onchange="importFile('new_group', this, 'object-group')">
                                     <button type="button" onclick="document.getElementById('import-new_group').click()" aria-label="Replace file" title="Replace">
                                         <svg width="24" height="24"><use href="#swap"/></svg>
                                     </button>
-                                    <button type="button" onclick="exportFile('new_group', 'list')" aria-label="Save file" title="Save">
+                                    <button type="button" onclick="exportFile('new_group', 'list', 'object-group')" aria-label="Save file" title="Save">
                                         <svg width="24" height="24"><use href="#download-file"/></svg>
                                     </button>
                                 </div>
@@ -174,19 +178,20 @@ if (isset($_GET['export_all'])) {
 
                         <?php if (is_array($categoryFiles)): ?>
                             <?php foreach ($categoryFiles as $key => $path): ?>
-                                <div id="<?php echo htmlspecialchars($key); ?>" class="form-section" style="display:none;">
+                                <div id="<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>" class="form-section" style="display:none;">
                                     <div class="textarea-container">
-                                        <textarea name="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
+                                        <textarea name="<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
                                     </div>
                                     <div class="button-container">
-                                        <input type="file" id="import-<?php echo htmlspecialchars($key); ?>" style="display:none;" accept=".txt,.list,.json,.conf" onchange="importFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', this)">
-                                        <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($key); ?>').click()" aria-label="Replace file" title="Replace">
+                                        <input type="file" id="import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>" style="display:none;" accept=".txt,.list,.json,.conf" onchange="importFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', this, '<?php echo htmlspecialchars($category); ?>')">
+                                        <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>').click()" aria-label="Replace file" title="Replace">
                                             <svg width="24" height="24"><use href="#swap"/></svg>
                                         </button>
-                                        <button type="button" onclick="exportFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', '<?php echo htmlspecialchars(pathinfo($key, PATHINFO_EXTENSION)); ?>')" aria-label="Save file" title="Save">
+                                        <button type="button" onclick="exportFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', '<?php echo htmlspecialchars(pathinfo($key, PATHINFO_EXTENSION)); ?>', '<?php echo htmlspecialchars($category); ?>')" aria-label="Save file" title="Save">
                                             <svg width="24" height="24"><use href="#download-file"/></svg>
                                         </button>
-                                        <button type="button" class="format-json-btn" onclick="formatJson('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>')" aria-label="Format JSON" title="Format JSON" style="display: none;"><svg width="24" height="24"><use href="#json"/></svg>
+                                        <button type="button" class="format-json-btn" onclick="formatJson('<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>')" aria-label="Format JSON" title="Format JSON" style="display: none;">
+                                            <svg width="24" height="24"><use href="#json"/></svg>
                                         </button>
                                     </div>
                                 </div>
@@ -202,7 +207,7 @@ if (isset($_GET['export_all'])) {
     </main>
 
     <footer>
-        <button onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle Dark Mode">
+        <button onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle Dark Mode" title="Сменить тему">
             <svg id="sun-icon" width="24" height="24"><use href="#sun"/></svg>
             <svg id="moon-icon" width="24" height="24" style="display:none;"><use href="#moon"/></svg>
         </button>
@@ -213,8 +218,11 @@ if (isset($_GET['export_all'])) {
             <svg id="github-light-icon" class="github-icon" width="24" height="24"><use href="#github-light"/></svg>
             <svg id="github-dark-icon" class="github-icon" width="24" height="24"><use href="#github-dark"/></svg>
         </a>
-        <button id="opkg-icon" onclick="opkgUpdate()" aria-label="Update opkg" title="Обновить пакеты">
+        <button id="opkg-icon" onclick="opkgUpdate()" aria-label="Update opkg" title="Обновить OPKG пакеты">
             <svg width="24" height="24"><use href="#opkg"/></svg>
+        </button>
+        <button id="update-w4s-icon" style="display: none;" aria-label="Update W4S" title="Доступно обновление W4S">
+            <svg><use href="#update-w4s"/></svg>
         </button>
         <div id="loader-icon" style="display: none;">
             <svg width="24" height="24"><use href="#loader"/></svg>

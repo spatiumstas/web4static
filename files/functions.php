@@ -25,7 +25,8 @@ function restartServices() {
         is_file('/opt/etc/init.d/S51nfqws') ? ['/opt/etc/init.d/S51nfqws restart'] : [],
         is_file('/opt/etc/init.d/S51tpws') ? ['/opt/etc/init.d/S51tpws restart'] : [],
         is_dir('/opt/etc/xray/configs/') ? ['xkeen -restart'] : [],
-        is_dir('/opt/etc/sing-box/') ? ['/opt/etc/init.d/S99sing-box restart'] : []
+        is_dir('/opt/etc/sing-box/') ? ['/opt/etc/init.d/S99sing-box restart'] : [],
+        is_dir('/opt/etc/HydraRoute') ? ['/opt/etc/init.d/S99hrneo restart'] : [],
     );
 
     if ($commands) {
@@ -155,6 +156,9 @@ function exportAllFiles($categories) {
     mkdir($tempDir, 0777, true);
 
     foreach ($categories as $category => $categoryFiles) {
+        if ($category === 'object-group') {
+            continue;
+        }
         if (!empty($categoryFiles)) {
             $categoryDir = $tempDir . '/' . $category;
             mkdir($categoryDir, 0777, true);
@@ -170,7 +174,9 @@ function exportAllFiles($categories) {
     shell_exec($tarCmd);
     shell_exec("rm -rf " . escapeshellarg($tempDir));
     header('Content-Type: application/gzip');
-    header('Content-Disposition: attachment; filename="' . $archiveName . '"');
+    header('Content-Disposition: attachment');
+    header('Content-Length: ' . filesize($archiveName));
+    header('Cache-Control: no-cache, must-revalidate');
     readfile($archiveName);
     unlink($archiveName);
     exit();
@@ -196,10 +202,19 @@ function handlePostRequest($files) {
     $commands = [];
 
     foreach ($_POST as $key => $content) {
+        $parts = explode('/', $key);
+        if (count($parts) === 2) {
+            $category = $parts[0];
+            $fileName = $parts[1];
+        } else {
+            $category = '';
+            $fileName = $key;
+        }
+
         foreach ($files as $fileKey => $filePath) {
-            $fileName = pathinfo($fileKey, PATHINFO_FILENAME);
-            if ($fileName === $key) {
-                if (is_array($GLOBALS['categories']['object-group']) && array_key_exists($fileKey, $GLOBALS['categories']['object-group'])) {
+            $baseFileName = pathinfo($fileKey, PATHINFO_FILENAME);
+            if ($baseFileName === $fileName && ($category === '' || array_key_exists($fileKey, $GLOBALS['categories'][$category] ?? []))) {
+                if ($category === 'object-group' && array_key_exists($fileKey, $GLOBALS['categories']['object-group'])) {
                     $oldLines = explode("\n", trim($files[$fileKey]));
                     $newLines = explode("\n", trim($content));
 
@@ -217,15 +232,16 @@ function handlePostRequest($files) {
                     $toExclude = array_diff($oldDomains, $newDomains);
 
                     foreach ($toInclude as $domain) {
-                        $commands[] = "object-group fqdn $key include $domain";
+                        $commands[] = "object-group fqdn $fileName include $domain";
                     }
 
                     foreach ($toExclude as $domain) {
-                        $commands[] = "no object-group fqdn $key include $domain";
+                        $commands[] = "no object-group fqdn $fileName include $domain";
                     }
                 } else {
                     file_put_contents($filePath, $content);
-                    shell_exec("tr -d '\r' < " . escapeshellarg($filePath) . " > " . escapeshellarg($filePath) . ".tmp && mv " . escapeshellarg($filePath) . ".tmp " . escapeshellarg($filePath));
+                    $tmpFile = $filePath . '.tmp';
+                    shell_exec("tr -d '\r' < " . escapeshellarg($filePath) . " > " . escapeshellarg($tmpFile) . " && mv " . escapeshellarg($tmpFile) . " " . escapeshellarg($filePath));
                 }
                 break;
             }

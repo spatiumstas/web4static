@@ -11,6 +11,32 @@ function toggleTheme() {
     }
 
     updateIconDisplay();
+    updateBarColor();
+}
+
+function updateBarColor() {
+    const rootStyles = getComputedStyle(document.documentElement);
+    const lightThemeColor = rootStyles.getPropertyValue('--background-color').trim();
+    const darkThemeColor = rootStyles.getPropertyValue('--background-color-dark').trim();
+
+    let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    let statusBarStyleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+
+    if (themeColorMeta) themeColorMeta.remove();
+    if (statusBarStyleMeta) statusBarStyleMeta.remove();
+
+    themeColorMeta = document.createElement('meta');
+    themeColorMeta.setAttribute('name', 'theme-color');
+
+    statusBarStyleMeta = document.createElement('meta');
+    statusBarStyleMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
+
+    const isDarkTheme = document.body.classList.contains('dark-theme');
+    themeColorMeta.setAttribute("content", isDarkTheme ? darkThemeColor : lightThemeColor);
+    statusBarStyleMeta.setAttribute("content", isDarkTheme ? "black-translucent" : "default");
+
+    document.head.appendChild(themeColorMeta);
+    document.head.appendChild(statusBarStyleMeta);
 }
 
 function updateIconDisplay() {
@@ -43,6 +69,7 @@ function applySavedTheme() {
     }
 
     updateIconDisplay();
+    updateBarColor();
 }
 
 function detectSystemTheme() {
@@ -54,6 +81,7 @@ function detectSystemTheme() {
     }
 
     updateIconDisplay();
+    updateBarColor();
 }
 
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
@@ -69,11 +97,13 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e)
     }
 
     updateIconDisplay();
+    updateBarColor();
 });
 
 applySavedTheme();
 
 function showSection(section) {
+    console.log('Showing section:', section);
     const sections = document.getElementsByClassName('form-section');
     Array.from(sections).forEach(sec => {
         sec.style.display = 'none';
@@ -94,6 +124,8 @@ function showSection(section) {
     const sectionElement = document.getElementById(section);
     if (sectionElement) {
         sectionElement.style.display = 'block';
+    } else {
+        console.error('Section not found:', section);
     }
 }
 
@@ -143,26 +175,38 @@ function animateSave(button, state) {
     }
 }
 
-function exportFile(fileKey, extension) {
-    const textarea = document.querySelector(`textarea[name="${fileKey}"]`);
+function exportFile(fileKey, extension, category = '') {
+    const textareaName = category ? `${category}/${fileKey}` : fileKey;
+    console.log('Exporting file:', textareaName);
+    const textarea = document.querySelector(`textarea[name="${textareaName}"]`);
+    if (!textarea) {
+        console.error('Textarea not found for:', textareaName);
+        return;
+    }
     const content = textarea.value;
     const blob = new Blob([content], {type: 'text/plain'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${fileKey}.${extension}`;
+    const fileName = category ? `${category}/${fileKey}.${extension}` : `${fileKey}.${extension}`;
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
 
-function importFile(fileKey, input) {
+function importFile(fileKey, input, category = '') {
     const file = input.files[0];
-    if (file && confirm(`Заменить содержимым ${fileKey} поле ввода?`)) {
+    const textareaName = category ? `${category}/${fileKey}` : fileKey;
+    if (file && confirm(`Заменить содержимым ${textareaName} поле ввода?`)) {
         const reader = new FileReader();
         reader.onload = function (e) {
-            const textarea = document.querySelector(`textarea[name="${fileKey}"]`);
+            const textarea = document.querySelector(`textarea[name="${textareaName}"]`);
+            if (!textarea) {
+                console.error('Textarea not found for:', textareaName);
+                return;
+            }
             textarea.value = e.target.result;
             input.value = '';
         };
@@ -171,15 +215,18 @@ function importFile(fileKey, input) {
 }
 
 function exportAllFiles() {
+    const date = new Date().toISOString().slice(0, 10);
+    const archiveName = `w4s_backup_${date}.tar.gz`;
     const a = document.createElement('a');
     a.href = window.location.pathname + '?export_all=1';
-    a.download = 'w4s_backup.tar.gz';
+    a.download = archiveName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
 }
 
 function showSubSection(section) {
+    console.log('Showing subsection:', section);
     const subsections = document.querySelectorAll('.form-section .form-section');
     subsections.forEach(sub => {
         sub.style.display = 'none';
@@ -193,11 +240,15 @@ function showSubSection(section) {
     const activeButton = Array.from(buttons).find(button => button.getAttribute('onclick') === `showSubSection('${section}')`);
     if (activeButton) {
         activeButton.classList.add('button-active');
+    } else {
+        console.warn('Active button not found for subsection:', section);
     }
 
     const sectionElement = document.getElementById(section);
     if (sectionElement) {
         sectionElement.style.display = 'block';
+    } else {
+        console.error('Subsection not found:', section);
     }
 }
 
@@ -225,24 +276,13 @@ function versionToNumber(version) {
 }
 
 function toggleUpdateIcon(local_version, remoteVersion, show = true) {
-    const updateIcon = document.getElementById('update-icon') || document.createElement('button');
-    updateIcon.id = 'update-icon';
-    updateIcon.innerHTML = `
-        <svg width="24" height="24"><use href="#update"/></svg>
-    `;
-    updateIcon.title = `Доступно обновление`;
-    updateIcon.style.cursor = 'pointer';
-    updateIcon.addEventListener('click', () => showUpdateAlert(local_version, remoteVersion));
+    const updateIcon = document.getElementById('update-w4s-icon');
 
-    const footer = document.querySelector('footer');
     if (show) {
-        if (!document.getElementById('update-icon')) {
-            footer.appendChild(updateIcon);
-        }
+        updateIcon.style.display = 'flex';
+        updateIcon.onclick = () => showUpdateAlert(local_version, remoteVersion);
     } else {
-        if (document.getElementById('update-icon')) {
-            updateIcon.remove();
-        }
+        updateIcon.style.display = 'none';
     }
 }
 
@@ -409,6 +449,7 @@ function opkgUpdate() {
 
             alert('Результат выполнения:\n' + data.output);
             console.log(data.output)
+            location.reload();
         });
 }
 
@@ -439,8 +480,13 @@ function toggleJsonButton(textarea, button) {
     }
 }
 
-function formatJson(fileKey) {
-    const textarea = document.querySelector(`textarea[name="${fileKey}"]`);
+function formatJson(textareaName) {
+    console.log('Formatting JSON for:', textareaName);
+    const textarea = document.querySelector(`textarea[name="${textareaName}"]`);
+    if (!textarea) {
+        console.error('Textarea not found for:', textareaName);
+        return;
+    }
     const content = textarea.value.trim();
 
     try {

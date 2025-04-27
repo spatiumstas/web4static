@@ -1,0 +1,17 @@
+{
+  "name": "web4static",
+  "short_name": "web4static",
+  "start_url": "/w4s/",
+  "display": "standalone",
+  "background_color": "#1b2434",
+  "theme_color": "#fff",
+  "orientation": "any",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/spatiumstas/web4static/main/icons/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
