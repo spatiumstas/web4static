@@ -1,5 +1,5 @@
 <?php
-$w4s_version = '1.7';
+$w4s_version = '1.8';
 $cache_buster = $w4s_version;
 require_once __DIR__ . '/files/functions.php';
 
@@ -141,7 +141,7 @@ if (isset($_GET['export_all'])) {
                             <?php if (is_array($categoryFiles)): ?>
                                 <?php foreach ($categoryFiles as $key => $path): ?>
                                     <div class="group-button-wrapper">
-                                        <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($key); ?>')" value="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>" />
+                                        <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>')" value="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>" />
                                         <?php if ($category === 'object-group'): ?>
                                             <button type="button" class="delete-group-btn" onclick="deleteGroup('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>')" aria-label="Delete group">
                                                 <svg width="16" height="16"><use href="#x"/></svg>
@@ -162,14 +162,14 @@ if (isset($_GET['export_all'])) {
                         <?php if ($category === 'object-group' && empty($categoryFiles) && $categoryFiles !== false): ?>
                             <div id="new_group" class="form-section">
                                 <div class="textarea-container">
-                                    <textarea name="object-group[new_group.list]"></textarea>
+                                    <textarea name="object-group/new_group.list"></textarea>
                                 </div>
                                 <div class="button-container">
-                                    <input type="file" id="import-new_group" style="display:none;" accept=".txt,.list,.json,.conf" onchange="importFile('new_group', this)">
+                                    <input type="file" id="import-new_group" style="display:none;" accept=".txt,.list,.json,.conf" onchange="importFile('new_group', this, 'object-group')">
                                     <button type="button" onclick="document.getElementById('import-new_group').click()" aria-label="Replace file" title="Replace">
                                         <svg width="24" height="24"><use href="#swap"/></svg>
                                     </button>
-                                    <button type="button" onclick="exportFile('new_group', 'list')" aria-label="Save file" title="Save">
+                                    <button type="button" onclick="exportFile('new_group', 'list', 'object-group')" aria-label="Save file" title="Save">
                                         <svg width="24" height="24"><use href="#download-file"/></svg>
                                     </button>
                                 </div>
@@ -178,19 +178,20 @@ if (isset($_GET['export_all'])) {
 
                         <?php if (is_array($categoryFiles)): ?>
                             <?php foreach ($categoryFiles as $key => $path): ?>
-                                <div id="<?php echo htmlspecialchars($key); ?>" class="form-section" style="display:none;">
+                                <div id="<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>" class="form-section" style="display:none;">
                                     <div class="textarea-container">
-                                        <textarea name="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
+                                        <textarea name="<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
                                     </div>
                                     <div class="button-container">
-                                        <input type="file" id="import-<?php echo htmlspecialchars($key); ?>" style="display:none;" accept=".txt,.list,.json,.conf" onchange="importFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', this)">
-                                        <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($key); ?>').click()" aria-label="Replace file" title="Replace">
+                                        <input type="file" id="import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>" style="display:none;" accept=".txt,.list,.json,.conf" onchange="importFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', this, '<?php echo htmlspecialchars($category); ?>')">
+                                        <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>').click()" aria-label="Replace file" title="Replace">
                                             <svg width="24" height="24"><use href="#swap"/></svg>
                                         </button>
-                                        <button type="button" onclick="exportFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', '<?php echo htmlspecialchars(pathinfo($key, PATHINFO_EXTENSION)); ?>')" aria-label="Save file" title="Save">
+                                        <button type="button" onclick="exportFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', '<?php echo htmlspecialchars(pathinfo($key, PATHINFO_EXTENSION)); ?>', '<?php echo htmlspecialchars($category); ?>')" aria-label="Save file" title="Save">
                                             <svg width="24" height="24"><use href="#download-file"/></svg>
                                         </button>
-                                        <button type="button" class="format-json-btn" onclick="formatJson('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>')" aria-label="Format JSON" title="Format JSON" style="display: none;"><svg width="24" height="24"><use href="#json"/></svg>
+                                        <button type="button" class="format-json-btn" onclick="formatJson('<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>')" aria-label="Format JSON" title="Format JSON" style="display: none;">
+                                            <svg width="24" height="24"><use href="#json"/></svg>
                                         </button>
                                     </div>
                                 </div>

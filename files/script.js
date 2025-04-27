@@ -103,6 +103,7 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e)
 applySavedTheme();
 
 function showSection(section) {
+    console.log('Showing section:', section);
     const sections = document.getElementsByClassName('form-section');
     Array.from(sections).forEach(sec => {
         sec.style.display = 'none';
@@ -123,6 +124,8 @@ function showSection(section) {
     const sectionElement = document.getElementById(section);
     if (sectionElement) {
         sectionElement.style.display = 'block';
+    } else {
+        console.error('Section not found:', section);
     }
 }
 
@@ -172,26 +175,38 @@ function animateSave(button, state) {
     }
 }
 
-function exportFile(fileKey, extension) {
-    const textarea = document.querySelector(`textarea[name="${fileKey}"]`);
+function exportFile(fileKey, extension, category = '') {
+    const textareaName = category ? `${category}/${fileKey}` : fileKey;
+    console.log('Exporting file:', textareaName);
+    const textarea = document.querySelector(`textarea[name="${textareaName}"]`);
+    if (!textarea) {
+        console.error('Textarea not found for:', textareaName);
+        return;
+    }
     const content = textarea.value;
     const blob = new Blob([content], {type: 'text/plain'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${fileKey}.${extension}`;
+    const fileName = category ? `${category}/${fileKey}.${extension}` : `${fileKey}.${extension}`;
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
 
-function importFile(fileKey, input) {
+function importFile(fileKey, input, category = '') {
     const file = input.files[0];
-    if (file && confirm(`Заменить содержимым ${fileKey} поле ввода?`)) {
+    const textareaName = category ? `${category}/${fileKey}` : fileKey;
+    if (file && confirm(`Заменить содержимым ${textareaName} поле ввода?`)) {
         const reader = new FileReader();
         reader.onload = function (e) {
-            const textarea = document.querySelector(`textarea[name="${fileKey}"]`);
+            const textarea = document.querySelector(`textarea[name="${textareaName}"]`);
+            if (!textarea) {
+                console.error('Textarea not found for:', textareaName);
+                return;
+            }
             textarea.value = e.target.result;
             input.value = '';
         };
@@ -209,6 +224,7 @@ function exportAllFiles() {
 }
 
 function showSubSection(section) {
+    console.log('Showing subsection:', section);
     const subsections = document.querySelectorAll('.form-section .form-section');
     subsections.forEach(sub => {
         sub.style.display = 'none';
@@ -222,11 +238,15 @@ function showSubSection(section) {
     const activeButton = Array.from(buttons).find(button => button.getAttribute('onclick') === `showSubSection('${section}')`);
     if (activeButton) {
         activeButton.classList.add('button-active');
+    } else {
+        console.warn('Active button not found for subsection:', section);
     }
 
     const sectionElement = document.getElementById(section);
     if (sectionElement) {
         sectionElement.style.display = 'block';
+    } else {
+        console.error('Subsection not found:', section);
     }
 }
 
@@ -458,8 +478,13 @@ function toggleJsonButton(textarea, button) {
     }
 }
 
-function formatJson(fileKey) {
-    const textarea = document.querySelector(`textarea[name="${fileKey}"]`);
+function formatJson(textareaName) {
+    console.log('Formatting JSON for:', textareaName);
+    const textarea = document.querySelector(`textarea[name="${textareaName}"]`);
+    if (!textarea) {
+        console.error('Textarea not found for:', textareaName);
+        return;
+    }
     const content = textarea.value.trim();
 
     try {
