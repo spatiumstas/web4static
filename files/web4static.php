@@ -90,7 +90,7 @@ if (isset($_GET['export_all'])) {
     <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/main/icons/favicon.png" sizes="48x48" type="image/x-icon">
     <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/main/icons/favicon.png" sizes="192x192">
     <link rel="stylesheet" href="files/styles.css">
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="files/manifest.json">
     <script src="files/script.js" defer></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
