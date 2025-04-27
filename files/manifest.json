@@ -3,8 +3,8 @@
   "short_name": "web4static",
   "start_url": "/w4s/",
   "display": "standalone",
-  "background_color": "#0175C2",
-  "theme_color": "#FFFFFF",
+  "background_color": "#1b2434",
+  "theme_color": "#fff",
   "orientation": "any",
   "prefer_related_applications": false,
   "icons": [

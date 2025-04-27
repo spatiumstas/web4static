@@ -11,6 +11,32 @@ function toggleTheme() {
     }
 
     updateIconDisplay();
+    updateBarColor();
+}
+
+function updateBarColor() {
+    const rootStyles = getComputedStyle(document.documentElement);
+    const lightThemeColor = rootStyles.getPropertyValue('--background-color').trim();
+    const darkThemeColor = rootStyles.getPropertyValue('--background-color-dark').trim();
+
+    let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    let statusBarStyleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+
+    if (themeColorMeta) themeColorMeta.remove();
+    if (statusBarStyleMeta) statusBarStyleMeta.remove();
+
+    themeColorMeta = document.createElement('meta');
+    themeColorMeta.setAttribute('name', 'theme-color');
+
+    statusBarStyleMeta = document.createElement('meta');
+    statusBarStyleMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
+
+    const isDarkTheme = document.body.classList.contains('dark-theme');
+    themeColorMeta.setAttribute("content", isDarkTheme ? darkThemeColor : lightThemeColor);
+    statusBarStyleMeta.setAttribute("content", isDarkTheme ? "black-translucent" : "default");
+
+    document.head.appendChild(themeColorMeta);
+    document.head.appendChild(statusBarStyleMeta);
 }
 
 function updateIconDisplay() {
@@ -43,6 +69,7 @@ function applySavedTheme() {
     }
 
     updateIconDisplay();
+    updateBarColor();
 }
 
 function detectSystemTheme() {
@@ -54,6 +81,7 @@ function detectSystemTheme() {
     }
 
     updateIconDisplay();
+    updateBarColor();
 }
 
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
@@ -69,6 +97,7 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e)
     }
 
     updateIconDisplay();
+    updateBarColor();
 });
 
 applySavedTheme();
