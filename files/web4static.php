@@ -206,7 +206,7 @@ if (isset($_GET['export_all'])) {
         </form>
     </main>
 
-    <footer>
+    <footer class="dark-theme">
         <button onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle Dark Mode" title="Сменить тему">
             <svg id="sun-icon" width="24" height="24"><use href="#sun"/></svg>
             <svg id="moon-icon" width="24" height="24" style="display:none;"><use href="#moon"/></svg>
