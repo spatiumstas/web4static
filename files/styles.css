@@ -509,18 +509,18 @@ body.dark-theme #github-dark-icon {
     height: 100%;
     background-color: var(--white-color);
     border-radius: 5px;
-    animation: moveProgress 1.5s infinite linear;
+    animation: moveProgress 1.5s infinite ease-in-out;
 }
 
 @keyframes moveProgress {
     0% {
-        transform: translateX(-100%);
+        transform: translateX(-15%);
     }
     50% {
-        transform: translateX(366%);
+        transform: translateX(400%);
     }
     100% {
-        transform: translateX(-100%);
+        transform: translateX(-15%);
     }
 }
 
