@@ -323,8 +323,15 @@ function manageUpdatePanel({showPanel = false, showText = false, showProgressBar
     const updatePanel = document.getElementById('update-w4s-panel');
     const updateSpan = updatePanel.querySelector('span');
     const progressBar = updatePanel.querySelector('.progress-bar');
+    const footer = document.querySelector('footer');
 
     setElementVisibility(updatePanel, showPanel);
+
+    if (showPanel) {
+        footer.classList.add('panel-above');
+    } else {
+        footer.classList.remove('panel-above');
+    }
 
     setElementVisibility(updateSpan, showText);
     setElementVisibility(progressBar, showProgressBar);
