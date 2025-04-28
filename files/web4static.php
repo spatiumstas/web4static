@@ -1,5 +1,5 @@
 <?php
-$w4s_version = '1.8';
+$w4s_version = '1.8.1';
 $cache_buster = $w4s_version;
 require_once __DIR__ . '/files/functions.php';
 
@@ -45,7 +45,7 @@ $categories = [
     'XKEEN' => getLists('/opt/etc/xray/configs'),
     'sing-box' => getLists('/opt/etc/sing-box'),
     'object-group' => getObjectGroupLists(),
-    'HydraRoute' => getLists('/opt/etc/HydraRoute'),
+    'HydraRoute' => getLists(['/opt/etc/HydraRoute', '/opt/etc/AdGuardHome']),
 ];
 
 $files = [];
