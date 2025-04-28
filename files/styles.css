@@ -46,6 +46,7 @@ footer {
     flex-shrink: 0;
     width: 100%;
     padding: 25px 0;
+    padding-bottom: 40px;
 }
 
 .footer {
@@ -476,4 +477,64 @@ body.dark-theme #loader svg {
 .delete-group-btn:hover svg
 .add-group-btn:hover svg {
     color: var(--white-color);
+}
+
+#update-w4s-panel {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    padding: 8px 20px;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+    width: 145px;
+}
+
+#update-w4s-panel span {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+#update-w4s-panel .progress-bar {
+    width: 145px;
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+
+#update-w4s-panel .progress-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 30px;
+    height: 100%;
+    background-color: var(--white-color);
+    border-radius: 5px;
+    animation: moveProgress 1.5s infinite linear;
+}
+
+@keyframes moveProgress {
+    0% {
+        transform: translateX(-100%);
+    }
+    50% {
+        transform: translateX(366%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+body.dark-theme #update-w4s-panel:hover {
+    background-color: #2a82b8;
 }

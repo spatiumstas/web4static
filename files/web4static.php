@@ -221,11 +221,9 @@ if (isset($_GET['export_all'])) {
         <button id="opkg-icon" onclick="opkgUpdate()" aria-label="Update opkg" title="Обновить OPKG пакеты">
             <svg width="24" height="24"><use href="#opkg"/></svg>
         </button>
-        <button id="update-w4s-icon" style="display: none;" aria-label="Update W4S" title="Доступно обновление W4S">
-            <svg><use href="#update-w4s"/></svg>
-        </button>
-        <div id="loader-icon" style="display: none;">
-            <svg width="24" height="24"><use href="#loader"/></svg>
+        <div id="update-w4s-panel" style="display: none;">
+            <span>Доступно обновление</span>
+            <div class="progress-bar" style="display: none;"></div>
         </div>
     </footer>
 </body>
