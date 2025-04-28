@@ -1,3 +1,5 @@
+/** Theme **/
+
 function toggleTheme() {
     document.body.classList.toggle('dark-theme');
 
@@ -102,33 +104,6 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e)
 
 applySavedTheme();
 
-function showSection(section) {
-    console.log('Showing section:', section);
-    const sections = document.getElementsByClassName('form-section');
-    Array.from(sections).forEach(sec => {
-        sec.style.display = 'none';
-        const subsections = sec.querySelectorAll('.form-section');
-        subsections.forEach(sub => sub.style.display = 'none');
-    });
-
-    const buttons = document.querySelectorAll('input[type="button"]');
-    buttons.forEach(button => {
-        button.classList.remove('button-active');
-    });
-
-    const activeButton = Array.from(buttons).find(button => button.value === section);
-    if (activeButton) {
-        activeButton.classList.add('button-active');
-    }
-
-    const sectionElement = document.getElementById(section);
-    if (sectionElement) {
-        sectionElement.style.display = 'block';
-    } else {
-        console.error('Section not found:', section);
-    }
-}
-
 document.getElementById('mainForm').addEventListener('submit', function (event) {
     event.preventDefault();
     const button = this.querySelector('input[type="submit"]');
@@ -172,6 +147,34 @@ function animateSave(button, state) {
         button.value = 'Restarting...';
     } else if (state === 'success') {
         button.value = 'Success!';
+    }
+}
+
+/** Actions **/
+function showSection(section) {
+    console.log('Showing section:', section);
+    const sections = document.getElementsByClassName('form-section');
+    Array.from(sections).forEach(sec => {
+        sec.style.display = 'none';
+        const subsections = sec.querySelectorAll('.form-section');
+        subsections.forEach(sub => sub.style.display = 'none');
+    });
+
+    const buttons = document.querySelectorAll('input[type="button"]');
+    buttons.forEach(button => {
+        button.classList.remove('button-active');
+    });
+
+    const activeButton = Array.from(buttons).find(button => button.value === section);
+    if (activeButton) {
+        activeButton.classList.add('button-active');
+    }
+
+    const sectionElement = document.getElementById(section);
+    if (sectionElement) {
+        sectionElement.style.display = 'block';
+    } else {
+        console.error('Section not found:', section);
     }
 }
 
@@ -252,6 +255,57 @@ function showSubSection(section) {
     }
 }
 
+/** Updates **/
+let isUpdating = false;
+
+function versionToNumber(version) {
+    if (!version || version === 'unknown') return 0;
+    const parts = version.replace('v', '').split('.');
+    return parseInt(parts[0]) * 10000 + parseInt(parts[1] || 0) * 100 + parseInt(parts[2] || 0);
+}
+
+function setElementVisibility(element, isVisible) {
+    if (element) {
+        element.style.display = isVisible ? 'flex' : 'none';
+    }
+}
+
+function opkgUpdate() {
+    if (!confirm('Обновить OPKG пакеты?')) {
+        return;
+    }
+    isUpdating = true;
+
+    const updatePanel = document.getElementById('update-w4s-panel');
+    const opkgIcon = document.getElementById('opkg-icon');
+    const wasPanelVisible = updatePanel.style.display !== 'none';
+
+    toggleProgressBar(true);
+
+    fetch('web4static.php?opkg_update')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.output);
+            } else {
+                alert('Ошибка при обновлении:\n' + data.output);
+            }
+        })
+        .catch(err => {
+            console.error('Ошибка при обновлении OPKG:', err);
+            alert('Ошибка при обновлении OPKG пакетов');
+        })
+        .finally(() => {
+            toggleProgressBar(false, {
+                wasPanelVisible,
+                showElement: opkgIcon,
+                onClickAfterHide: () => showUpdateAlert(local_version, remoteVersion)
+            });
+            isUpdating = false;
+            location.reload();
+        });
+}
+
 function checkForUpdates() {
     fetch('web4static.php?check_update')
         .then(response => response.json())
@@ -260,38 +314,76 @@ function checkForUpdates() {
             const localNum = versionToNumber(data.local_version);
             const remoteNum = versionToNumber(data.remote_version);
 
-            if (remoteNum > localNum) {
-                toggleUpdateIcon(data.local_version, data.remote_version, true);
-            } else {
-                toggleUpdateIcon(data.local_version, data.remote_version, false);
-            }
+            toggleUpdateIcon(data.local_version, data.remote_version, remoteNum > localNum);
         })
         .catch(err => console.error('Ошибка при проверке обновлений:', err));
 }
 
-function versionToNumber(version) {
-    if (!version || version === 'unknown') return 0;
-    const parts = version.replace('v', '').split('.');
-    return parseInt(parts[0]) * 10000 + parseInt(parts[1] || 0) * 100 + parseInt(parts[2] || 0);
+function manageUpdatePanel({showPanel = false, showText = false, showProgressBar = false, text = 'Доступно обновление', onClick = null}) {
+    const updatePanel = document.getElementById('update-w4s-panel');
+    const updateSpan = updatePanel.querySelector('span');
+    const progressBar = updatePanel.querySelector('.progress-bar');
+    const footer = document.querySelector('footer');
+
+    setElementVisibility(updatePanel, showPanel);
+
+    if (showPanel) {
+        footer.classList.add('panel-above');
+    } else {
+        footer.classList.remove('panel-above');
+    }
+
+    setElementVisibility(updateSpan, showText);
+    setElementVisibility(progressBar, showProgressBar);
+
+    if (showText) {
+        updateSpan.textContent = text;
+    }
+    updatePanel.onclick = onClick;
 }
 
-function toggleUpdateIcon(local_version, remoteVersion, show = true) {
-    const updateIcon = document.getElementById('update-w4s-icon');
-
+function toggleProgressBar(show, {hideElement = null, showElement = null, wasPanelVisible = false, onClickAfterHide = null} = {}) {
     if (show) {
-        updateIcon.style.display = 'flex';
-        updateIcon.onclick = () => showUpdateAlert(local_version, remoteVersion);
+
+        manageUpdatePanel({
+            showPanel: true,
+            showText: false,
+            showProgressBar: true
+        });
+        setElementVisibility(hideElement, false);
     } else {
-        updateIcon.style.display = 'none';
+
+        setElementVisibility(showElement, true);
+
+        if (wasPanelVisible) {
+            manageUpdatePanel({
+                showPanel: true,
+                showText: true,
+                showProgressBar: false,
+                text: 'Доступно обновление',
+                onClick: onClickAfterHide
+            });
+        } else {
+            manageUpdatePanel({showPanel: false});
+        }
     }
 }
 
-function showUpdateAlert(local_version, remoteVersion) {
+function toggleUpdateIcon(localVersion, remoteVersion, show = true) {
+    manageUpdatePanel({
+        showPanel: show,
+        showText: show,
+        showProgressBar: false,
+        text: 'Доступно обновление',
+        onClick: show ? () => showUpdateAlert(localVersion, remoteVersion) : null
+    });
+}
+
+function showUpdateAlert(localVersion, remoteVersion) {
     fetch('web4static.php?get_release_notes&v=' + remoteVersion)
         .then(response => response.json())
         .then(data => {
             let releaseNotes = 'Информация об изменениях недоступна.';
-
             if (data.notes) {
                 if (typeof data.notes === 'object' && !Array.isArray(data.notes)) {
                     releaseNotes = Object.values(data.notes)
@@ -306,14 +398,14 @@ function showUpdateAlert(local_version, remoteVersion) {
                 }
             }
 
-            const message = `Доступно обновление: ${remoteVersion} (текущая: ${local_version})\n\n${releaseNotes}\n\nОбновить?`;
+            const message = `Доступно обновление: ${remoteVersion} (текущая: ${localVersion})\n\n${releaseNotes}\n\nОбновить?`;
             if (confirm(message)) {
                 updateScript(remoteVersion);
             }
         })
         .catch(err => {
             console.error('Ошибка при получении списка изменений:', err);
-            const message = `Доступно обновление: ${remoteVersion} (текущая: ${local_version})\n\nСписок изменений недоступен.\n\nОбновить?`;
+            const message = `Доступно обновление: ${remoteVersion} (текущая: ${localVersion})\n\nСписок изменений недоступен.\n\nОбновить?`;
             if (confirm(message)) {
                 updateScript(remoteVersion);
             }
@@ -321,32 +413,38 @@ function showUpdateAlert(local_version, remoteVersion) {
 }
 
 function updateScript(remoteVersion) {
-    const updateIcon = document.getElementById('update-icon');
-    const loader = document.getElementById('loader-icon');
+    if (isUpdating) {
+        alert('Дождитесь завершения текущего обновления.');
+        return;
+    }
+    isUpdating = true;
 
-    if (updateIcon) updateIcon.style.display = 'none';
-    loader.style.display = 'flex';
+    toggleProgressBar(true);
 
     fetch(`web4static.php?update_script&remote_version=${encodeURIComponent(remoteVersion)}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 alert('Веб-интерфейс успешно обновлён!\n' + data.output);
-                location.reload();
             } else {
                 alert('Ошибка при обновлении:\n' + data.output);
             }
-            loader.style.display = 'none';
-            if (updateIcon) updateIcon.style.display = 'flex';
         })
         .catch(err => {
             console.error('Ошибка при обновлении:', err);
             alert('Ошибка при обновлении веб-интерфейса');
-            loader.style.display = 'none';
-            if (updateIcon) updateIcon.style.display = 'flex';
+        })
+        .finally(() => {
+            toggleProgressBar(false, {
+                wasPanelVisible: true,
+                onClickAfterHide: () => showUpdateAlert(local_version, remoteVersion)
+            });
+            isUpdating = false;
+            location.reload();
         });
 }
 
+/** Textarea **/
 function saveAndApplyTextareaSize(textarea) {
     const size = {
         width: textarea.style.width || getComputedStyle(textarea).width,
@@ -383,6 +481,7 @@ function setupTextareaResizeListeners() {
     });
 }
 
+/** Object-Group **/
 function deleteGroup(groupName) {
     if (confirm(`Удалить группу ${groupName}?`)) {
         fetch('web4static.php?delete_group=' + encodeURIComponent(groupName), {
@@ -429,30 +528,7 @@ function createGroup() {
         });
 }
 
-function opkgUpdate() {
-    if (!confirm('Обновить OPKG пакеты?')) {
-        return;
-    }
-    const loader = document.getElementById('loader-icon');
-    const opkgIcon = document.getElementById('opkg-icon');
-
-    opkgIcon.style.display = 'none';
-    loader.style.display = 'flex';
-
-    fetch('web4static.php?opkg_update', {
-        method: 'POST'
-    })
-        .then(response => response.json())
-        .then(data => {
-            loader.style.display = 'none';
-            opkgIcon.style.display = 'flex';
-
-            alert('Результат выполнения:\n' + data.output);
-            console.log(data.output)
-            location.reload();
-        });
-}
-
+/** JSON **/
 function isJson(text) {
     const trimmed = text.trim();
     if (!trimmed) return false;

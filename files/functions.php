@@ -24,9 +24,10 @@ function restartServices() {
         ] : [],
         is_file('/opt/etc/init.d/S51nfqws') ? ['/opt/etc/init.d/S51nfqws restart'] : [],
         is_file('/opt/etc/init.d/S51tpws') ? ['/opt/etc/init.d/S51tpws restart'] : [],
-        is_dir('/opt/etc/xray/configs/') ? ['xkeen -restart'] : [],
-        is_dir('/opt/etc/sing-box/') ? ['/opt/etc/init.d/S99sing-box restart'] : [],
-        is_dir('/opt/etc/HydraRoute') ? ['/opt/etc/init.d/S99hrneo restart'] : [],
+        is_dir('/opt/etc/xray/configs') ? ['xkeen -restart'] : [],
+        is_file('/opt/etc/init.d/S99sing-box') ? ['/opt/etc/init.d/S99sing-box restart'] : [],
+        is_file('/opt/etc/init.d/S99hrneo') ? ['/opt/etc/init.d/S99hrneo restart'] : [],
+        is_dir('/opt/etc/AdGuardHome') ? ['agh restart'] : [],
     );
 
     if ($commands) {
@@ -131,20 +132,27 @@ function getReleaseNotes($version) {
     exit();
 }
 
-function getLists(string $path, bool $useShell = false): array {
+function getLists($paths, bool $useShell = false): array {
     global $allowedExtensions;
     $result = [];
-    if ($useShell) {
-        $path = rtrim(shell_exec($path) ?? '');
-        $files = explode("\n", trim(shell_exec("ls $path/* 2>/dev/null")));
-    } else {
-        $files = glob($path . '/*');
+
+    if (is_string($paths)) {
+        $paths = [$paths];
     }
-    foreach ($files as $file) {
-        if ($file && !is_link($file) && is_file($file)) {
-            $extension = pathinfo($file, PATHINFO_EXTENSION);
-            if (in_array($extension, $allowedExtensions)) {
-                $result[basename($file)] = $file;
+
+    foreach ($paths as $path) {
+        if ($useShell) {
+            $path = rtrim(shell_exec($path) ?? '');
+            $files = explode("\n", trim(shell_exec("ls $path/* 2>/dev/null")));
+        } else {
+            $files = glob($path . '/*');
+        }
+        foreach ($files as $file) {
+            if ($file && !is_link($file) && is_file($file)) {
+                $extension = pathinfo($file, PATHINFO_EXTENSION);
+                if (in_array($extension, $allowedExtensions)) {
+                    $result[$path . '/' . basename($file)] = $file;
+                }
             }
         }
     }

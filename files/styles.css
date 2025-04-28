@@ -26,6 +26,7 @@ body {
     text-rendering: optimizeLegibility;
     border-radius: var(--border-radius);
     align-items: center;
+    background-color: var(--background-color);
 }
 
 main {
@@ -46,6 +47,11 @@ footer {
     flex-shrink: 0;
     width: 100%;
     padding: 25px 0;
+    position: fixed;
+    bottom: env(safe-area-inset-bottom);
+    left: 0;
+    background-color: var(--background-color);
+    transition: bottom 0.3s ease;
 }
 
 .footer {
@@ -61,8 +67,11 @@ footer {
 }
 
 footer.dark-theme {
-    background-color: var(--background-color-dark) !important;
-    color: var(--primary-color);
+    background-color: var(--background-color-dark);
+}
+
+footer.panel-above {
+    bottom: calc(env(safe-area-inset-bottom) + 20px);
 }
 
 #theme-toggle {
@@ -79,7 +88,7 @@ footer.dark-theme {
 
 body.dark-theme {
     background-color: var(--background-color-dark);
-    color: #fff;
+    color: var(--white-color);
 }
 
 body.dark-theme #theme-toggle svg {
@@ -418,22 +427,6 @@ body.dark-theme #github-dark-icon {
     justify-content: center;
 }
 
-#loader-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 5px;
-    margin: 0 5px;
-    opacity: 0.7;
-}
-
-#loader-icon svg {
-    width: 24px;
-    height: 24px;
-    color: var(--primary-color);
-    animation: spin 1s linear infinite;
-}
-
 @keyframes spin {
     0% {
         transform: rotate(0deg);
@@ -441,10 +434,6 @@ body.dark-theme #github-dark-icon {
     100% {
         transform: rotate(360deg);
     }
-}
-
-body.dark-theme #loader svg {
-    color: var(--primary-color);
 }
 
 .group-button-wrapper {
@@ -476,4 +465,65 @@ body.dark-theme #loader svg {
 .delete-group-btn:hover svg
 .add-group-btn:hover svg {
     color: var(--white-color);
+}
+
+#update-w4s-panel {
+    position: fixed;
+    bottom: env(safe-area-inset-bottom);
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    padding: 8px 20px;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+    width: 145px;
+    transition: transform 0.3s ease;
+}
+
+#update-w4s-panel span {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+#update-w4s-panel .progress-bar {
+    width: 145px;
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+
+#update-w4s-panel .progress-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 30px;
+    height: 100%;
+    background-color: var(--white-color);
+    border-radius: 5px;
+    animation: moveProgress 1.5s infinite linear;
+}
+
+@keyframes moveProgress {
+    0% {
+        transform: translateX(-100%);
+    }
+    50% {
+        transform: translateX(366%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+#update-w4s-panel:hover {
+    opacity: 0.9;
 }

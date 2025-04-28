@@ -1,5 +1,5 @@
 <?php
-$w4s_version = '1.8';
+$w4s_version = '1.8.1';
 $cache_buster = $w4s_version;
 require_once __DIR__ . '/files/functions.php';
 
@@ -45,7 +45,7 @@ $categories = [
     'XKEEN' => getLists('/opt/etc/xray/configs'),
     'sing-box' => getLists('/opt/etc/sing-box'),
     'object-group' => getObjectGroupLists(),
-    'HydraRoute' => getLists('/opt/etc/HydraRoute'),
+    'HydraRoute' => getLists(['/opt/etc/HydraRoute', '/opt/etc/AdGuardHome']),
 ];
 
 $files = [];
@@ -206,7 +206,7 @@ if (isset($_GET['export_all'])) {
         </form>
     </main>
 
-    <footer>
+    <footer class="dark-theme">
         <button onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle Dark Mode" title="Сменить тему">
             <svg id="sun-icon" width="24" height="24"><use href="#sun"/></svg>
             <svg id="moon-icon" width="24" height="24" style="display:none;"><use href="#moon"/></svg>
@@ -221,11 +221,9 @@ if (isset($_GET['export_all'])) {
         <button id="opkg-icon" onclick="opkgUpdate()" aria-label="Update opkg" title="Обновить OPKG пакеты">
             <svg width="24" height="24"><use href="#opkg"/></svg>
         </button>
-        <button id="update-w4s-icon" style="display: none;" aria-label="Update W4S" title="Доступно обновление W4S">
-            <svg><use href="#update-w4s"/></svg>
-        </button>
-        <div id="loader-icon" style="display: none;">
-            <svg width="24" height="24"><use href="#loader"/></svg>
+        <div id="update-w4s-panel" style="display: none;">
+            <span>Доступно обновление</span>
+            <div class="progress-bar" style="display: none;"></div>
         </div>
     </footer>
 </body>
