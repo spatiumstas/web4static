@@ -97,6 +97,9 @@ if (isset($_GET['export_all'])) {
     <script src="files/script.js?v=<?php echo $cache_buster; ?>" defer></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            if (window.navigator.standalone === true) {
+                document.body.classList.add("pwa-mode");
+            }
             const textareas = document.querySelectorAll('textarea');
             textareas.forEach(textarea => {
                 const fileKey = textarea.name;
@@ -226,5 +229,6 @@ if (isset($_GET['export_all'])) {
             <div class="progress-bar" style="display: none;"></div>
         </div>
     </footer>
+    <div class="pwa-safe-area"></div>
 </body>
 </html>

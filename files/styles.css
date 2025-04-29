@@ -46,12 +46,10 @@ footer {
     gap: 10px;
     flex-shrink: 0;
     width: 100%;
-    padding: 25px 0;
-    position: fixed;
-    bottom: env(safe-area-inset-bottom);
-    left: 0;
+    padding: 15px;
+    height: 34px;
     background-color: var(--background-color);
-    transition: bottom 0.3s ease;
+    transition: margin-bottom 0.3s ease;
 }
 
 .footer {
@@ -71,7 +69,7 @@ footer.dark-theme {
 }
 
 footer.panel-above {
-    bottom: calc(env(safe-area-inset-bottom) + 20px);
+    margin-bottom: 40px;
 }
 
 #theme-toggle {
@@ -126,6 +124,11 @@ form {
 @media (min-width: 1024px) {
     html, body {
         zoom: 1.05;
+        overflow-x: hidden !important
+    }
+
+    footer {
+        padding-bottom: 18px;
     }
 }
 
@@ -280,7 +283,7 @@ header pre {
     justify-content: center;
     align-content: center;
     text-align: center;
-    margin: 0px;
+    margin: 0;
 }
 
 .form-section .button-container {
@@ -450,19 +453,19 @@ body.dark-theme #github-dark-icon {
     border: 1px solid var(--primary-color);
 }
 
-.delete-group-btn svg
+.delete-group-btn svg,
 .add-group-btn svg {
     color: var(--primary-color);
     width: 24px;
     height: 24px;
 }
 
-.delete-group-btn:hover
+.delete-group-btn:hover,
 .add-group-btn:hover {
     background: var(--primary-color);
 }
 
-.delete-group-btn:hover svg
+.delete-group-btn:hover svg,
 .add-group-btn:hover svg {
     color: var(--white-color);
 }
@@ -526,4 +529,27 @@ body.dark-theme #github-dark-icon {
 
 #update-w4s-panel:hover {
     opacity: 0.9;
+}
+
+.pwa-safe-area {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 12px;
+    background-color: var(--background-color);
+    z-index: 1001;
+}
+
+body.pwa-mode .pwa-safe-area {
+    display: block;
+}
+
+body.dark-theme .pwa-safe-area {
+    background-color: var(--background-color-dark);
+}
+
+body.pwa-mode #update-w4s-panel {
+    bottom: calc(env(safe-area-inset-bottom) + 12px);
 }
