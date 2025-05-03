@@ -121,6 +121,13 @@ if (isset($_GET['export_all'])) {
             });
         });
     </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQ728ZNW5B"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-TQ728ZNW5B');
+    </script>
 </head>
 <body class="dark-theme">
     <header id="asciiHeader">

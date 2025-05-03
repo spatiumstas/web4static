@@ -13,6 +13,8 @@
 
 html {
     height: 100%;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 body {
@@ -123,6 +125,17 @@ form {
 
 @media (min-width: 1024px) {
     html, body {
+        zoom: 1.1;
+        overflow-x: hidden !important
+    }
+
+    footer {
+        padding-bottom: 18px;
+    }
+}
+
+@media (min-width: 1281px) {
+    html, body {
         zoom: 1.05;
         overflow-x: hidden !important
     }
@@ -144,6 +157,10 @@ form {
         margin: 0;
     }
 
+    textarea {
+        width: 100% !important;
+    }
+
     .textarea-container {
         padding-left: 5px !important;
         padding-right: 5px !important;
@@ -151,7 +168,7 @@ form {
 }
 
 textarea {
-    width: 100%;
+    width: 80%;
     height: 250px;
     resize: both;
     overflow: auto;
@@ -455,7 +472,6 @@ body.dark-theme #github-dark-icon {
 
 .delete-group-btn svg,
 .add-group-btn svg {
-    color: var(--primary-color);
     width: 24px;
     height: 24px;
 }
