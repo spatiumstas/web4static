@@ -239,6 +239,7 @@ input[type="submit"] {
     color: var(--white-color);
     min-width: 130px;
     text-align: center;
+    transition: transform 0.1s ease;
 }
 
 input[type="submit"]:hover {
@@ -258,6 +259,7 @@ input[type="button"] {
     background-color: var(--background-color);
     cursor: pointer;
     color: var(--black-color);
+    transition: transform 0.1s ease;
 }
 
 body.dark-theme input[type="button"] {
@@ -278,6 +280,10 @@ input[type="button"]:hover {
 body.dark-theme input[type="button"]:hover {
     background-color: var(--primary-color);
     color: var(--white-color);
+}
+
+input[type="submit"]:active, input[type="button"]:active, button:active {
+    transform: scale(0.95);
 }
 
 .button-active {

@@ -1,5 +1,5 @@
 <?php
-$w4s_version = '1.8.1';
+$w4s_version = '1.8.2';
 $cache_buster = $w4s_version;
 require_once __DIR__ . '/files/functions.php';
 
@@ -100,18 +100,23 @@ if (isset($_GET['export_all'])) {
             if (window.navigator.standalone === true) {
                 document.body.classList.add("pwa-mode");
             }
-            const textareas = document.querySelectorAll('textarea');
-            textareas.forEach(textarea => {
+        document.querySelectorAll('textarea').forEach(textarea => {
                 const fileKey = textarea.name;
                 const formatButton = document.querySelector(`.format-json-btn[onclick="formatJson('${fileKey}')"]`);
-
                 if (formatButton) {
                     toggleJsonButton(textarea, formatButton);
-                    textarea.addEventListener('input', () => {
-                        toggleJsonButton(textarea, formatButton);
-                    });
                 }
             });
+            document.addEventListener('input', (e) => {
+                if (e.target.tagName === 'TEXTAREA') {
+                    const fileKey = e.target.name;
+                    const formatButton = document.querySelector(`.format-json-btn[onclick="formatJson('${fileKey}')"]`);
+                    if (formatButton) {
+                        toggleJsonButton(e.target, formatButton);
+                    }
+                }
+            });
+            applySavedTheme();
             restoreTextareaSizes();
             setupTextareaResizeListeners();
             checkForUpdates();
@@ -120,13 +125,6 @@ if (isset($_GET['export_all'])) {
                 location.reload();
             });
         });
-    </script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQ728ZNW5B"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-TQ728ZNW5B');
     </script>
 </head>
 <body class="dark-theme">

@@ -167,22 +167,23 @@ function exportAllFiles($categories) {
         if ($category === 'object-group') {
             continue;
         }
-        if (!empty($categoryFiles)) {
+        if (!empty($categoryFiles) && is_array($categoryFiles)) {
             $categoryDir = $tempDir . '/' . $category;
             mkdir($categoryDir, 0777, true);
             foreach ($categoryFiles as $fileName => $filePath) {
-                $backupFile = $categoryDir . '/' . $fileName;
+                $baseFileName = basename($filePath);
+                $backupFile = $categoryDir . '/' . $baseFileName;
                 file_put_contents($backupFile, file_get_contents($filePath));
             }
         }
     }
 
-    $archiveName = 'w4s_backup.tar.gz';
+    $archiveName = sys_get_temp_dir() . '/w4s_backup_' . date('Y-m-d') . '.tar.gz';
     $tarCmd = "tar -czf " . escapeshellarg($archiveName) . " -C " . escapeshellarg($tempDir) . " .";
     shell_exec($tarCmd);
     shell_exec("rm -rf " . escapeshellarg($tempDir));
     header('Content-Type: application/gzip');
-    header('Content-Disposition: attachment');
+    header('Content-Disposition: attachment; filename="w4s_backup_' . date('Y-m-d') . '.tar.gz"');
     header('Content-Length: ' . filesize($archiveName));
     header('Cache-Control: no-cache, must-revalidate');
     readfile($archiveName);
