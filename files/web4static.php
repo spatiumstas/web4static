@@ -1,5 +1,5 @@
 <?php
-$w4s_version = '1.8.2';
+$w4s_version = '1.8.3';
 $cache_buster = $w4s_version;
 require_once __DIR__ . '/files/functions.php';
 
@@ -37,16 +37,7 @@ if (isset($_GET['opkg_update'])) {
     exit();
 }
 
-$categories = [
-    'IPSET' => getLists("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/lists/'", true),
-    'BIRD' => getLists("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'", true),
-    'NFQWS' => getLists('/opt/etc/nfqws'),
-    'TPWS' => getLists('/opt/etc/tpws'),
-    'XKEEN' => getLists('/opt/etc/xray/configs'),
-    'sing-box' => getLists('/opt/etc/sing-box'),
-    'object-group' => getObjectGroupLists(),
-    'HydraRoute' => getLists(['/opt/etc/HydraRoute', '/opt/etc/AdGuardHome']),
-];
+$categories = getCategories();
 
 $files = [];
 foreach ($categories as $category => $categoryFiles) {

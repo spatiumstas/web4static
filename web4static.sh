@@ -74,6 +74,12 @@ packages_checker() {
   fi
 }
 
+exit_function() {
+  echo ""
+  read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
+  main_menu
+}
+
 get_architecture() {
   arch=$(opkg print-architecture | grep -oE 'mips-3|mipsel-3|aarch64-3' | head -n 1)
 
@@ -105,8 +111,7 @@ check_keenetic_repo() {
     *)
       printf "${RED}Неподдерживаемая архитектура: $arch${NC}\n"
       echo ""
-      read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
-      main_menu
+      exit_function
       ;;
     esac
   fi
@@ -134,8 +139,7 @@ packages_delete() {
     print_message "Пакет$failed_packages не были удалены из-за зависимостей" "$RED"
   fi
 
-  read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
-  main_menu
+  exit_function
 }
 
 install_web() {
@@ -157,16 +161,14 @@ install_web() {
 
   if [ $? -ne 0 ] || [ -z "$files_list" ]; then
     print_message "Ошибка: не удалось подключиться к GitHub API." "$RED"
-    read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
-    main_menu
+    exit_function
   fi
 
   error_message=$(echo "$files_list" | grep -Po '"message":.*?[^\\]",' | awk -F'"' '{print $4}')
   if [ -n "$error_message" ]; then
     print_message "Ошибка при получении списка файлов с GitHub" "$RED"
     print_message "$error_message" "$RED"
-    read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
-    main_menu
+    exit_function
   fi
 
   echo "$files_list" | grep -o '"download_url":"[^"]*"' | sed 's/"download_url":"//' | sed 's/"//' | while read -r url; do
@@ -188,8 +190,7 @@ install_web() {
     print_message "Ошибка: не все файлы были установлены." "$RED"
   fi
 
-  read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
-  main_menu
+  exit_function
 }
 
 download_file() {
@@ -200,8 +201,7 @@ download_file() {
   curl -s -L "$url" -o "$path" 2>/dev/null
   if [ $? -ne 0 ] || [ ! -f "$path" ]; then
     print_message "Ошибка при скачивании $filename" "$RED"
-    read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
-    main_menu
+    exit_function
   fi
 }
 
@@ -214,8 +214,7 @@ replace_path() {
     fi
   else
     print_message "Ошибка: строка 'ARGS=' не найдена в файле /opt/etc/init.d/S80uhttpd" "$RED"
-    read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
-    main_menu
+    exit_function
   fi
 }
 
@@ -230,8 +229,7 @@ remove_web() {
   fi
 
   print_message "Успешно удалено" "$GREEN"
-  read -n 1 -s -r -p "Для возврата нажмите любую клавишу..."
-  main_menu
+  exit_function
 }
 
 script_update() {
@@ -255,6 +253,7 @@ script_update() {
     $WEB4STATIC_DIR/$SCRIPT post_update
   else
     print_message "Ошибка при скачивании скрипта" "$RED"
+    exit_function
   fi
 }
 

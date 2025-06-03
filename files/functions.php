@@ -5,30 +5,109 @@ $rci = "http://localhost:79/rci/";
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
 define('FILES_DIR', WEB4STATIC_DIR . '/files');
 
+$SERVICES = [
+    'IPSET' => [
+        'path' => "readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/lists/'",
+        'useShell' => true,
+        'services' => function() {
+            $ipset = trim(shell_exec("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/scripts/'"));
+            return $ipset ? [escapeshellcmd("$ipset/update-ipset.sh")] : [];
+        }
+    ],
+    'BIRD' => [
+        'path' => "readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'",
+        'useShell' => true,
+        'services' => function() {
+            $bird = trim(shell_exec("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/scripts/'"));
+            return $bird ? [
+                escapeshellcmd("$bird/add-bird4_routes.sh"),
+                escapeshellcmd("$bird/IPset4Static/scripts/update-ipset.sh")
+            ] : [];
+        }
+    ],
+    'NFQWS' => [
+        'path' => '/opt/etc/nfqws',
+        'useShell' => false,
+        'services' => function() {
+            return is_file('/opt/etc/init.d/S51nfqws') ? ['/opt/etc/init.d/S51nfqws restart'] : [];
+        }
+    ],
+    'TPWS' => [
+        'path' => '/opt/etc/tpws',
+        'useShell' => false,
+        'services' => function() {
+            return is_file('/opt/etc/init.d/S51tpws') ? ['/opt/etc/init.d/S51tpws restart'] : [];
+        }
+    ],
+    'XKEEN' => [
+        'path' => '/opt/etc/xray/configs',
+        'useShell' => false,
+        'services' => function() {
+            return is_dir('/opt/etc/xray/configs') ? ['xkeen -restart'] : [];
+        }
+    ],
+    'sing-box' => [
+        'path' => '/opt/etc/sing-box',
+        'useShell' => false,
+        'services' => function() {
+            return is_file('/opt/etc/init.d/S99sing-box') ? ['/opt/etc/init.d/S99sing-box restart'] : [];
+        }
+    ],
+    'HydraRoute' => [
+        'path' => ['/opt/etc/HydraRoute', '/opt/etc/AdGuardHome'],
+        'useShell' => false,
+        'services' => function() {
+            return is_dir('/opt/etc/AdGuardHome') ? ['agh restart'] : [];
+        }
+    ],
+    'object-group' => [
+        'path' => null,
+        'useShell' => false,
+        'services' => function() {
+            return [];
+        }
+    ]
+];
+
 function downloadFile($url, $destination) {
     $command = "curl -s -L \"$url\" --output " . escapeshellarg($destination) . " 2>/dev/null";
     exec($command, $output, $returnCode);
     return $returnCode === 0 && file_exists($destination);
 }
 
-function restartServices() {
-    $commands = [];
-    $ipset = trim(shell_exec("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/scripts/'"));
-    $bird  = trim(shell_exec("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/scripts/'"));
+function getCategories() {
+    global $SERVICES;
+    $categories = [];
+    
+    foreach ($SERVICES as $category => $config) {
+        if ($category === 'object-group') {
+            $categories[$category] = getObjectGroupLists();
+        } else {
+            $categories[$category] = getLists($config['path'], $config['useShell']);
+        }
+    }
+    
+    return $categories;
+}
 
-    $commands = array_merge($commands,
-        $ipset ? [escapeshellcmd("$ipset/update-ipset.sh")] : [],
-        $bird ? [
-            escapeshellcmd("$bird/add-bird4_routes.sh"),
-            escapeshellcmd("$bird/IPset4Static/scripts/update-ipset.sh")
-        ] : [],
-        is_file('/opt/etc/init.d/S51nfqws') ? ['/opt/etc/init.d/S51nfqws restart'] : [],
-        is_file('/opt/etc/init.d/S51tpws') ? ['/opt/etc/init.d/S51tpws restart'] : [],
-        is_dir('/opt/etc/xray/configs') ? ['xkeen -restart'] : [],
-        is_file('/opt/etc/init.d/S99sing-box') ? ['/opt/etc/init.d/S99sing-box restart'] : [],
-        is_file('/opt/etc/init.d/S99hrneo') ? ['/opt/etc/init.d/S99hrneo restart'] : [],
-        is_dir('/opt/etc/AdGuardHome') ? ['agh restart'] : [],
-    );
+function restartServices($changedCategories = null) {
+    global $SERVICES;
+    $commands = [];
+
+
+    if ($changedCategories && is_array($changedCategories)) {
+        foreach ($changedCategories as $category) {
+            if (isset($SERVICES[$category])) {
+                $commands = array_merge($commands, $SERVICES[$category]['services']());
+            }
+        }
+    }
+
+    if (empty($commands)) {
+        foreach ($SERVICES as $config) {
+            $commands = array_merge($commands, $config['services']());
+        }
+    }
 
     if ($commands) {
         $cmd = "sh -c '" . implode(" ; ", $commands) . "' >/dev/null 2>&1 & echo $!";
@@ -209,6 +288,11 @@ function sendRciRequest($commands) {
 
 function handlePostRequest($files) {
     $commands = [];
+    $changedCategories = [];
+
+    if (isset($_POST['changed_categories'])) {
+        $changedCategories = json_decode($_POST['changed_categories'], true);
+    }
 
     foreach ($_POST as $key => $content) {
         $parts = explode('/', $key);
@@ -268,7 +352,7 @@ function handlePostRequest($files) {
         }
     }
 
-    restartServices();
+    restartServices($changedCategories);
     http_response_code(200);
     exit();
 }

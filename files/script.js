@@ -1,6 +1,6 @@
 /** Theme **/
 
-const themeCache = { theme: localStorage.getItem('theme') || 'dark' };
+const themeCache = {theme: localStorage.getItem('theme') || 'dark'};
 
 function toggleTheme() {
     document.body.classList.toggle('dark-theme');
@@ -88,12 +88,90 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e)
     updateThemeUI();
 });
 
+/** Compare files **/
+const fileVersions = new Map();
+
+function saveFileVersion(textarea) {
+    const fileKey = textarea.name;
+    fileVersions.set(fileKey, textarea.value);
+}
+
+function compareFileVersions(oldVersion, newVersion) {
+    const oldLines = oldVersion.split('\n');
+    const newLines = newVersion.split('\n');
+
+    const changes = {
+        added: [],
+        removed: [],
+        modified: []
+    };
+
+    const oldLinesMap = new Map(oldLines.map((line, index) => [line, index]));
+    const newLinesMap = new Map(newLines.map((line, index) => [line, index]));
+
+    for (const [line, newIndex] of newLinesMap) {
+        if (!oldLinesMap.has(line)) {
+            changes.added.push({line, lineNumber: newIndex + 1});
+        }
+    }
+
+    for (const [line, oldIndex] of oldLinesMap) {
+        if (!newLinesMap.has(line)) {
+            changes.removed.push({line, lineNumber: oldIndex + 1});
+        }
+    }
+
+    return changes;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('textarea').forEach(textarea => {
+        saveFileVersion(textarea);
+
+        textarea.addEventListener('input', function () {
+            saveFileVersion(this);
+        });
+    });
+});
+
 document.getElementById('mainForm').addEventListener('submit', function (event) {
     event.preventDefault();
     const button = this.querySelector('input[type="submit"]');
-    console.log('Форма отправлена, сохраняю и перезапускаю...');
-    animateSave(button, 'saving');
+    console.log('Форма отправлена, сохраняю...');
+
     const formData = new FormData(this);
+    const changesByCategory = {};
+    const changedCategories = new Set();
+
+    document.querySelectorAll('textarea').forEach(textarea => {
+        const fileKey = textarea.name;
+        const newContent = textarea.value;
+        const oldContent = textarea.defaultValue;
+
+        if (newContent !== oldContent) {
+            const [category, fileName] = fileKey.split('/');
+            changedCategories.add(category);
+
+            if (!changesByCategory[category]) {
+                changesByCategory[category] = [];
+            }
+            changesByCategory[category].push(fileName || fileKey);
+        }
+    });
+
+    for (const [category, files] of Object.entries(changesByCategory)) {
+        if (files.length > 0) {
+            console.log(`Изменения в ${category}: ${files.join(', ')}. Перезапускаю сервис`);
+        }
+    }
+
+    if (changedCategories.size === 0) {
+        console.log('Нет изменений. Перезапускаю все сервисы');
+    }
+
+    formData.append('changed_categories', JSON.stringify(Array.from(changedCategories)));
+
+    animateSave(button, 'saving');
 
     setTimeout(() => {
         animateSave(button, 'restarting');
@@ -105,6 +183,9 @@ document.getElementById('mainForm').addEventListener('submit', function (event) 
             console.log('Ответ от сервера получен:', response);
             if (response.ok) {
                 animateSave(button, 'success');
+                document.querySelectorAll('textarea').forEach(textarea => {
+                    textarea.defaultValue = textarea.value;
+                });
             } else {
                 console.error('Ошибка при сохранении данных');
                 button.value = 'Error';
@@ -238,6 +319,13 @@ function showSubSection(section) {
         console.error('Subsection not found:', section);
     }
 }
+
+document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.code === 'KeyS') {
+        e.preventDefault();
+        document.querySelector('input[type="submit"]').click();
+    }
+});
 
 /** Updates **/
 let isUpdating = false;
@@ -541,10 +629,10 @@ function toggleJsonButton(textarea, button) {
 }
 
 function formatJson(textareaName) {
-    console.log('Formatting JSON for:', textareaName);
+    console.log('Formatting JSON:', textareaName);
     const textarea = document.querySelector(`textarea[name="${textareaName}"]`);
     if (!textarea) {
-        console.error('Textarea not found for:', textareaName);
+        console.error('Textarea не найдено:', textareaName);
         return;
     }
     const content = textarea.value.trim();
