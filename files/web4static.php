@@ -1,5 +1,5 @@
 <?php
-$w4s_version = '1.8.3';
+$w4s_version = '1.8.4';
 $cache_buster = $w4s_version;
 require_once __DIR__ . '/files/functions.php';
 

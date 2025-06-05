@@ -7,8 +7,9 @@ NC='\033[0m'
 USER="spatiumstas"
 REPO="web4static"
 WEB4STATIC_DIR="/opt/share/www/w4s"
-PATH_CONFIG="/opt/share/www/w4s/files/config.ini"
 PHP_FILE="$WEB4STATIC_DIR/web4static.php"
+UHTTPD_CONF="/opt/etc/uhttpd.conf"
+PHP_INI="/opt/etc/php.ini"
 
 print_menu() {
   printf "\033c"
@@ -62,6 +63,10 @@ print_message() {
   local border=$(printf '%0.s-' $(seq 1 $((${#message} + 2))))
   printf "${color}\n+${border}+\n| ${message} |\n+${border}+\n${NC}\n"
   sleep 1
+}
+
+get_user_ip() {
+  ip -f inet addr show dev br0 2>/dev/null | grep inet | sed -n 's/.*inet \([0-9.]\+\).*/\1/p'
 }
 
 packages_checker() {
@@ -180,12 +185,17 @@ install_web() {
     fi
   done
 
-  user_ip=$(ip -f inet addr show dev br0 2>/dev/null | grep inet | sed -n 's/.*inet \([0-9.]\+\).*/\1/p')
+  user_ip=$(get_user_ip)
   replace_path "$user_ip"
   file_count=$(find "$WEB4STATIC_DIR/files" -type f 2>/dev/null | wc -l)
 
   if [ "$file_count" -ge 3 ] && [ -f "$WEB4STATIC_DIR/web4static.php" ]; then
-    print_message "Web-интерфейс установлен и доступен по адресу http://$user_ip:88/w4s" "$GREEN"
+    echo ""
+    read -p "Открывать Web-интерфейс напрямую по порту? (y/n): " choice
+    case "$choice" in
+    [yY]*) set_static true ;;
+    *) set_static false ;;
+    esac
   else
     print_message "Ошибка: не все файлы были установлены." "$RED"
   fi
@@ -210,7 +220,6 @@ replace_path() {
     if ! grep -q ' -I web4static.php' "/opt/etc/init.d/S80uhttpd"; then
       sed -i 's|^\(ARGS=.*\)"|\1 -I web4static.php"|' "/opt/etc/init.d/S80uhttpd"
       echo ""
-      /opt/etc/init.d/S80uhttpd restart
     fi
   else
     print_message "Ошибка: строка 'ARGS=' не найдена в файле /opt/etc/init.d/S80uhttpd" "$RED"
@@ -227,7 +236,7 @@ remove_web() {
   if grep -q '^ARGS=' "/opt/etc/init.d/S80uhttpd"; then
     sed -i 's| -I web4static.php||' "/opt/etc/init.d/S80uhttpd"
   fi
-
+  set_static false "" "delete"
   print_message "Успешно удалено" "$GREEN"
   exit_function
 }
@@ -263,6 +272,23 @@ post_update() {
   JSON_DATA="{\"script_update\": \"w4s_update_$SCRIPT_VERSION\"}"
   curl -X POST -H "Content-Type: application/json" -d "$JSON_DATA" "$URL" -o /dev/null -s
   main_menu
+}
+
+set_static() {
+  local user_ip=$(get_user_ip)
+  local action="$3"
+  if [ "$1" = "true" ]; then
+    sed -i "s|^DOCROOT=.*|DOCROOT=\"$WEB4STATIC_DIR\"|" "$UHTTPD_CONF"
+    sed -i 's|^doc_root = "/opt/share/www"|# doc_root = "/opt/share/www"|' "$PHP_INI"
+    print_message "Web-интерфейс установлен и доступен по адресу http://$user_ip:88" "$GREEN"
+  else
+    sed -i 's|^DOCROOT=.*|DOCROOT="/opt/share/www"|' "$UHTTPD_CONF"
+    sed -i 's|^# doc_root = "/opt/share/www"|doc_root = "/opt/share/www"|' "$PHP_INI"
+    if [ ! "$action" = "delete" ]; then
+      print_message "Web-интерфейс установлен и доступен по адресу http://$user_ip:88/w4s" "$GREEN"
+    fi
+  fi
+  /opt/etc/init.d/S80uhttpd restart
 }
 
 if [ "$1" = "script_update" ]; then

@@ -158,10 +158,6 @@ function updateScript() {
                 $fileUrl = $file['download_url'];
                 $fileName = $file['name'];
 
-                if ($fileName === 'config.ini') {
-                    continue;
-                }
-
                 $destination = FILES_DIR . '/' . $fileName;
                 if ($fileName === 'web4static.php') {
                     $destination = WEB4STATIC_DIR . '/web4static.php';
@@ -175,6 +171,7 @@ function updateScript() {
             }
         }
 
+        downloadFile("https://raw.githubusercontent.com/spatiumstas/web4static/main/web4static.sh", WEB4STATIC_DIR . '/web4static.sh');
         $success = $allFilesDownloaded ? true : false;
         $output .= $allFilesDownloaded ? '' : "Не все файлы были успешно скачаны\n";
     } else {
