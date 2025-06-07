@@ -11,7 +11,7 @@ if ! opkg list-installed | grep -q "^curl"; then
 fi
 
 mkdir -p "$WEB4STATIC_DIR"
-curl -L -s "https://raw.githubusercontent.com/spatiumstas/$REPO/main/$SCRIPT" --output $TMP_DIR/$SCRIPT
+curl -L -s "https://raw.githubusercontent.com/spatiumstas/$REPO/legacy/$SCRIPT" --output $TMP_DIR/$SCRIPT
 mv "$TMP_DIR/$SCRIPT" "$WEB4STATIC_DIR/$SCRIPT"
 chmod +x $WEB4STATIC_DIR/$SCRIPT
 cd /opt/bin

@@ -42,11 +42,10 @@ main_menu() {
     main_menu
   else
     case "$choice" in
-    1) install_web "${branch:-main}" ;;
+    1) install_web "${branch:-legacy}" ;;
     2) remove_web ;;
     77) packages_delete ;;
-    88) script_update "dev" ;;
-    99) script_update "main" ;;
+    99) script_update "legacy" ;;
     00) exit ;;
     *)
       echo "Неверный выбор. Попробуйте снова."
@@ -292,7 +291,7 @@ set_static() {
 }
 
 if [ "$1" = "script_update" ]; then
-  script_update "main"
+  script_update "legacy"
 elif [ "$1" = "post_update" ]; then
   post_update
 else

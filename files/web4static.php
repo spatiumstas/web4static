@@ -81,8 +81,8 @@ if (isset($_GET['export_all'])) {
     <meta name="theme-color" content="#fff">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>web4static</title>
-    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/main/icons/apple-touch-icon.png">
-    <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/main/icons/favicon.png">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/legacy/icons/apple-touch-icon.png">
+    <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/legacy/icons/favicon.png">
     <link rel="stylesheet" href="files/styles.css?v=<?php echo $cache_buster; ?>">
     <link rel="manifest" href="files/manifest.json?v=<?php echo $cache_buster; ?>">
     <script src="files/script.js?v=<?php echo $cache_buster; ?>" defer></script>
