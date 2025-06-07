@@ -1,7 +1,7 @@
 <?php
-$w4s_version = '1.8.4';
+$w4s_version = '__VERSION__';
 $cache_buster = $w4s_version;
-require_once __DIR__ . '/files/functions.php';
+require_once __DIR__ . '/functions.php';
 
 if (isset($_GET['check_update'])) {
     checkUpdate();
@@ -81,11 +81,11 @@ if (isset($_GET['export_all'])) {
     <meta name="theme-color" content="#fff">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>web4static</title>
-    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/main/icons/apple-touch-icon.png">
-    <link rel="icon" href="https://raw.githubusercontent.com/spatiumstas/web4static/main/icons/favicon.png">
-    <link rel="stylesheet" href="files/styles.css?v=<?php echo $cache_buster; ?>">
-    <link rel="manifest" href="files/manifest.json?v=<?php echo $cache_buster; ?>">
-    <script src="files/script.js?v=<?php echo $cache_buster; ?>" defer></script>
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" href="favicon.png">
+    <link rel="stylesheet" href="styles.css?v=<?php echo $cache_buster; ?>">
+    <link rel="manifest" href="manifest.json?v=<?php echo $cache_buster; ?>">
+    <script src="script.js?v=<?php echo $cache_buster; ?>" defer></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             if (window.navigator.standalone === true) {
@@ -121,10 +121,10 @@ if (isset($_GET['export_all'])) {
 <body class="dark-theme">
     <header id="asciiHeader">
         <pre>
-            <?php echo htmlspecialchars(file_get_contents('files/ascii.txt')); ?>
+            <?php echo htmlspecialchars(file_get_contents('ascii.txt')); ?>
         </pre>
     </header>
-    <?php include 'files/icons.svg'; ?>
+    <?php include 'icons.svg'; ?>
     <main>
         <form id="mainForm" action="" method="post">
             <?php foreach ($categories as $category => $categoryFiles): ?>

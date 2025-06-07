@@ -1,9 +1,11 @@
 <?php
-$allowedExtensions = ['list', 'json', 'conf'];
+$allowedExtensions = ['list', 'json', 'conf', 'txt'];
 $rci = "http://localhost:79/rci/";
 
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
-define('FILES_DIR', WEB4STATIC_DIR . '/files');
+define('FILES_DIR', WEB4STATIC_DIR . '');
+define('__PLATFORM__', '__PLATFORM__');
+define('__EXTENSION__', '__EXTENSION__');
 
 $SERVICES = [
     'IPSET' => [
@@ -60,13 +62,20 @@ $SERVICES = [
             return is_dir('/opt/etc/AdGuardHome') ? ['agh restart'] : [];
         }
     ],
-    'object-group' => [
-        'path' => null,
+    'Antiscan' => [
+        'path' => '/opt/etc/antiscan',
         'useShell' => false,
         'services' => function() {
-            return [];
+            return is_file('/opt/etc/init.d/S99ascn') ? ['/opt/etc/init.d/S99ascn restart'] : [];
         }
-    ]
+    ],
+     'object-group' => [
+         'path' => null,
+         'useShell' => false,
+         'services' => function() {
+             return [];
+         }
+     ]
 ];
 
 function downloadFile($url, $destination) {
@@ -78,7 +87,7 @@ function downloadFile($url, $destination) {
 function getCategories() {
     global $SERVICES;
     $categories = [];
-    
+
     foreach ($SERVICES as $category => $config) {
         if ($category === 'object-group') {
             $categories[$category] = getObjectGroupLists();
@@ -86,7 +95,7 @@ function getCategories() {
             $categories[$category] = getLists($config['path'], $config['useShell']);
         }
     }
-    
+
     return $categories;
 }
 
@@ -116,17 +125,16 @@ function restartServices($changedCategories = null) {
 }
 
 function checkUpdate() {
-    $fileUrl = 'https://raw.githubusercontent.com/spatiumstas/web4static/refs/heads/main/files/web4static.php';
-    $fileContent = trim(shell_exec("curl -s $fileUrl"));
+    $apiUrl = 'https://api.github.com/repos/spatiumstas/web4static/releases/latest';
+    $command = "curl -s -L -H 'User-Agent: web4static-updater' \"$apiUrl\"";
+    $response = shell_exec($command);
+    $release = json_decode($response, true);
 
-    if (!$fileContent) {
-        die(json_encode(['error' => 'Failed to fetch file']));
+    if (!$release || !isset($release['tag_name'])) {
+        die(json_encode(['error' => 'Failed to fetch release info']));
     }
 
-    $remoteVersion = 'unknown';
-    if (preg_match("/\\\$w4s_version\s*=\s*'([^']+)';/", $fileContent, $matches)) {
-        $remoteVersion = $matches[1];
-    }
+    $remoteVersion = $release['tag_name'];
 
     header('Content-Type: application/json');
     echo json_encode([
@@ -139,45 +147,12 @@ function checkUpdate() {
 function updateScript() {
     $remoteVersion = isset($_GET['remote_version']) ? $_GET['remote_version'] : 'unknown';
 
-    $apiUrl = 'https://api.github.com/repos/spatiumstas/web4static/contents/files?ref=main';
-    $command = "curl -s -L -H 'User-Agent: web4static-updater' \"$apiUrl\"";
-    $response = shell_exec($command);
-    $files = json_decode($response, true);
-
-    $output = '';
-    $success = false;
-
-    if ($files && is_array($files)) {
-        if (!is_dir(FILES_DIR)) {
-            mkdir(FILES_DIR, 0777, true);
-        }
-
-        $allFilesDownloaded = true;
-        foreach ($files as $file) {
-            if ($file['type'] === 'file') {
-                $fileUrl = $file['download_url'];
-                $fileName = $file['name'];
-
-                $destination = FILES_DIR . '/' . $fileName;
-                if ($fileName === 'web4static.php') {
-                    $destination = WEB4STATIC_DIR . '/web4static.php';
-                }
-
-                if (downloadFile($fileUrl, $destination)) {
-                } else {
-                    $output .= "Ошибка при скачивании файла: $fileName\n";
-                    $allFilesDownloaded = false;
-                }
-            }
-        }
-
-        downloadFile("https://raw.githubusercontent.com/spatiumstas/web4static/main/web4static.sh", WEB4STATIC_DIR . '/web4static.sh');
-        $success = $allFilesDownloaded ? true : false;
-        $output .= $allFilesDownloaded ? '' : "Не все файлы были успешно скачаны\n";
-    } else {
-        $output = "Ошибка запроса к GitHub API:\n" . $response;
-    }
-
+    $ipkUrl = "https://github.com/spatiumstas/web4static/releases/download/{$remoteVersion}/web4static_{$remoteVersion}_" . __PLATFORM__ . "." . __EXTENSION__;
+    $command = "opkg install {$ipkUrl} 2>&1";
+    $output = shell_exec($command);
+    
+    $success = strpos($output, 'Installing') !== false && strpos($output, 'Configuring') !== false;
+    
     $shortUrl = "aHR0cHM6Ly9sb2cuc3BhdGl1bS5rZWVuZXRpYy5wcm8=";
     $url = base64_decode($shortUrl);
     $json_data = json_encode(["script_update" => "w4s_update_$remoteVersion"]);

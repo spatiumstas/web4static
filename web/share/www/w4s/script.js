@@ -332,7 +332,7 @@ let isUpdating = false;
 
 function versionToNumber(version) {
     if (!version || version === 'unknown') return 0;
-    const parts = version.replace('v', '').split('.');
+    const parts = version.split('.');
     return parseInt(parts[0]) * 10000 + parseInt(parts[1] || 0) * 100 + parseInt(parts[2] || 0);
 }
 
@@ -354,7 +354,7 @@ function opkgUpdate() {
 
     toggleProgressBar(true);
 
-    fetch('web4static.php?opkg_update')
+    fetch('index.php?opkg_update')
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -379,7 +379,7 @@ function opkgUpdate() {
 }
 
 function checkForUpdates() {
-    fetch('web4static.php?check_update')
+    fetch('index.php?check_update')
         .then(response => response.json())
         .then(data => {
             console.log('Check update response:', data);
@@ -452,7 +452,7 @@ function toggleUpdateIcon(localVersion, remoteVersion, show = true) {
 }
 
 function showUpdateAlert(localVersion, remoteVersion) {
-    fetch('web4static.php?get_release_notes&v=' + remoteVersion)
+    fetch('index.php?get_release_notes&v=' + remoteVersion)
         .then(response => response.json())
         .then(data => {
             let releaseNotes = 'Информация об изменениях недоступна.';
@@ -493,7 +493,7 @@ function updateScript(remoteVersion) {
 
     toggleProgressBar(true);
 
-    fetch(`web4static.php?update_script&remote_version=${encodeURIComponent(remoteVersion)}`)
+    fetch(`index.php?update_script&remote_version=${encodeURIComponent(remoteVersion)}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -556,7 +556,7 @@ function setupTextareaResizeListeners() {
 /** Object-Group **/
 function deleteGroup(groupName) {
     if (confirm(`Удалить группу ${groupName}?`)) {
-        fetch('web4static.php?delete_group=' + encodeURIComponent(groupName), {
+        fetch('index.php?delete_group=' + encodeURIComponent(groupName), {
             method: 'POST'
         })
             .then(response => {
@@ -583,7 +583,7 @@ function createGroup() {
         alert('Название группы может содержать только буквы, цифры, подчеркивания и дефисы!');
         return;
     }
-    fetch('web4static.php?create_group=' + encodeURIComponent(groupName.trim()), {
+    fetch('index.php?create_group=' + encodeURIComponent(groupName.trim()), {
         method: 'POST'
     })
         .then(response => {

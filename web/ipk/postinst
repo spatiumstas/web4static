@@ -1,0 +1,22 @@
+#!/bin/sh
+
+GREEN='\033[1;32m'
+NC='\033[0m'
+
+print_message() {
+  local message=$1
+  local color=${2:-$NC}
+  local border=$(printf '%0.s-' $(seq 1 $((${#message} + 2))))
+  printf "${color}\n+${border}+\n| ${message} |\n+${border}+\n${NC}\n"
+}
+
+# Fix conflict with keenetic webdav server: https://github.com/Entware/entware-packages/pull/27
+sed -i -E "s/^PROCS=lighttpd$/PROCS=\/opt\/sbin\/lighttpd/" /opt/etc/init.d/S80lighttpd
+
+/opt/etc/init.d/S80lighttpd restart
+
+ip_addr=$(ip -f inet addr show dev br0 2>/dev/null | grep inet | sed -n 's/.*inet \([0-9.]\+\).*/\1/p')
+print_message "Web-интерфейс установлен и доступен по адресу http://$ip_addr:99" "$GREEN"
+
+exit 0
+
