@@ -2,12 +2,12 @@
 
 ![IMG_0671-round-corners](https://github.com/user-attachments/assets/8b0e44b3-bf50-464f-b389-04a7e8f8f29c)
 
-
 ## Установка
 
-1. В `SSH` ввести команду для установки
+В `SSH` ввести команду для установки
 ```shell
-opkg install https://github.com/spatiumstas/web4static/releases/download/1.9/web4static_1.9_keenetic.ipk
+opkg install wget-ssl && opkg install https://github.com/spatiumstas/web4static/releases/download/1.9/web4static_1.9_keenetic.ipk
 ```
 
-2. Веб-интерфейс доступен по адресу http://192.168.1.1:99
+> [!NOTE]
+> Веб-интерфейс доступен по адресу `http://<router_ip>:99` (например http://192.168.1.1:99)<br/>
