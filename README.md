@@ -6,7 +6,7 @@
 
 В `SSH` ввести команду для установки
 ```shell
-opkg install wget-ssl && opkg install https://github.com/spatiumstas/web4static/releases/download/1.9/web4static_1.9_keenetic.ipk
+opkg install wget-ssl && opkg install https://github.com/spatiumstas/web4static/releases/download/1.9/web4static_1.9_kn.ipk
 ```
 
 > [!NOTE]

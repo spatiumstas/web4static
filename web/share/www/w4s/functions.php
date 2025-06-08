@@ -4,8 +4,6 @@ $rci = "http://localhost:79/rci/";
 
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
 define('FILES_DIR', WEB4STATIC_DIR . '');
-define('__PLATFORM__', '__PLATFORM__');
-define('__EXTENSION__', '__EXTENSION__');
 
 $SERVICES = [
     'IPSET' => [
@@ -147,7 +145,7 @@ function checkUpdate() {
 function updateScript() {
     $remoteVersion = isset($_GET['remote_version']) ? $_GET['remote_version'] : 'unknown';
 
-    $ipkUrl = "https://github.com/spatiumstas/web4static/releases/download/{$remoteVersion}/web4static_{$remoteVersion}_" . __PLATFORM__ . "." . __EXTENSION__;
+    $ipkUrl = "https://github.com/spatiumstas/web4static/releases/download/{$remoteVersion}/web4static_{$remoteVersion}_kn.ipk";
     $command = "opkg install {$ipkUrl} 2>&1";
     $output = shell_exec($command);
     
@@ -337,7 +335,7 @@ function getObjectGroupLists() {
 
     $command = "/bin/ndmc -c 'show version' | grep 'title' | awk -F': ' '{print \$2}' 2>/dev/null";
     $versionOutput = trim(shell_exec($command));
-    if (!$versionOutput || version_compare(strtok($versionOutput, ' ') ?? '0.0', '4.3', '<')) {
+    if (!$versionOutput || version_compare(strtok($versionOutput, ' ') ?? '0.0', '4.3.2', '<')) {
         return false;
     }
 

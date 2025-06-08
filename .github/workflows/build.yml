@@ -1,0 +1,28 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-keenetic:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build web
+        run: make web-kn
+
+      - name: Upload files
+        uses: actions/upload-artifact@v4
+        with:
+          name: web4static_build
+          path: ./out/web4static_*_kn.ipk
+          if-no-files-found: error
+
+      - name: Summary
+        run: |
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          ls ./out/web4static_*_kn.ipk >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
