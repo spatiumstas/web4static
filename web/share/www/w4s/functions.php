@@ -1,7 +1,5 @@
 <?php
 $allowedExtensions = ['list', 'json', 'conf', 'txt'];
-$rci = "http://localhost:79/rci/";
-
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
 define('FILES_DIR', WEB4STATIC_DIR . '');
 
@@ -32,13 +30,6 @@ $SERVICES = [
             return is_file('/opt/etc/init.d/S51nfqws') ? ['/opt/etc/init.d/S51nfqws restart'] : [];
         }
     ],
-    'TPWS' => [
-        'path' => '/opt/etc/tpws',
-        'useShell' => false,
-        'services' => function() {
-            return is_file('/opt/etc/init.d/S51tpws') ? ['/opt/etc/init.d/S51tpws restart'] : [];
-        }
-    ],
     'XKEEN' => [
         'path' => '/opt/etc/xray/configs',
         'useShell' => false,
@@ -66,14 +57,7 @@ $SERVICES = [
         'services' => function() {
             return is_file('/opt/etc/init.d/S99ascn') ? ['/opt/etc/init.d/S99ascn restart'] : [];
         }
-    ],
-     'object-group' => [
-         'path' => null,
-         'useShell' => false,
-         'services' => function() {
-             return [];
-         }
-     ]
+    ]
 ];
 
 function downloadFile($url, $destination) {
@@ -87,11 +71,7 @@ function getCategories() {
     $categories = [];
 
     foreach ($SERVICES as $category => $config) {
-        if ($category === 'object-group') {
-            $categories[$category] = getObjectGroupLists();
-        } else {
-            $categories[$category] = getLists($config['path'], $config['useShell']);
-        }
+        $categories[$category] = getLists($config['path'], $config['useShell']);
     }
 
     return $categories;
@@ -213,9 +193,6 @@ function exportAllFiles($categories) {
     mkdir($tempDir, 0777, true);
 
     foreach ($categories as $category => $categoryFiles) {
-        if ($category === 'object-group') {
-            continue;
-        }
         if (!empty($categoryFiles) && is_array($categoryFiles)) {
             $categoryDir = $tempDir . '/' . $category;
             mkdir($categoryDir, 0777, true);
@@ -277,84 +254,15 @@ function handlePostRequest($files) {
         foreach ($files as $fileKey => $filePath) {
             $baseFileName = pathinfo($fileKey, PATHINFO_FILENAME);
             if ($baseFileName === $fileName && ($category === '' || array_key_exists($fileKey, $GLOBALS['categories'][$category] ?? []))) {
-                if ($category === 'object-group' && array_key_exists($fileKey, $GLOBALS['categories']['object-group'])) {
-                    $oldLines = explode("\n", trim($files[$fileKey]));
-                    $newLines = explode("\n", trim($content));
-
-                    $oldDomains = array_filter($oldLines, function($line) {
-                        return !empty(trim($line)) && strpos(trim($line), '#') !== 0;
-                    });
-                    $newDomains = array_filter($newLines, function($line) {
-                        return !empty(trim($line)) && strpos(trim($line), '#') !== 0;
-                    });
-
-                    $oldDomains = array_map('trim', array_values($oldDomains));
-                    $newDomains = array_map('trim', array_values($newDomains));
-
-                    $toInclude = array_diff($newDomains, $oldDomains);
-                    $toExclude = array_diff($oldDomains, $newDomains);
-
-                    foreach ($toInclude as $domain) {
-                        $commands[] = "object-group fqdn $fileName include $domain";
-                    }
-
-                    foreach ($toExclude as $domain) {
-                        $commands[] = "no object-group fqdn $fileName include $domain";
-                    }
-                } else {
-                    file_put_contents($filePath, $content);
-                    $tmpFile = $filePath . '.tmp';
-                    shell_exec("tr -d '\r' < " . escapeshellarg($filePath) . " > " . escapeshellarg($tmpFile) . " && mv " . escapeshellarg($tmpFile) . " " . escapeshellarg($filePath));
-                }
+                file_put_contents($filePath, $content);
+                $tmpFile = $filePath . '.tmp';
+                shell_exec("tr -d '\r' < " . escapeshellarg($filePath) . " > " . escapeshellarg($tmpFile) . " && mv " . escapeshellarg($tmpFile) . " " . escapeshellarg($filePath));
                 break;
             }
-        }
-    }
-
-    if (!empty($commands) && is_array($GLOBALS['categories']['object-group'])) {
-        $response = sendRciRequest($commands);
-        if ($response && is_array($response)) {
-            foreach ($response['status'] as $status) {
-            }
-        } else {
-            http_response_code(500);
-            exit();
         }
     }
 
     restartServices($changedCategories);
     http_response_code(200);
     exit();
-}
-
-function getObjectGroupLists() {
-    global $rci;
-    if (!file_exists('/bin/ndmc')) {
-        return false;
-    }
-
-    $command = "/bin/ndmc -c 'show version' | grep 'title' | awk -F': ' '{print \$2}' 2>/dev/null";
-    $versionOutput = trim(shell_exec($command));
-    if (!$versionOutput || version_compare(strtok($versionOutput, ' ') ?? '0.0', '4.3.2', '<')) {
-        return false;
-    }
-
-    $request = "$rci/show/object-group/fqdn";
-    $response = file_get_contents($request);
-    $data = json_decode($response, true);
-
-    $lists = [];
-    if (is_array($data) && isset($data['group']) && !empty($data['group'])) {
-        foreach ($data['group'] as $group) {
-            $fileName = "{$group['group-name']}.list";
-            $domains = array_map(function ($entry) {
-                return $entry['fqdn'];
-            }, array_filter($group['entry'] ?? [], function ($entry) {
-                return isset($entry['type']) && $entry['type'] === 'config';
-            }));
-
-            $lists[$fileName] = implode("\n", $domains);
-        }
-    }
-    return $lists;
 }
