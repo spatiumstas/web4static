@@ -231,7 +231,7 @@ remove_web() {
   echo "Удаляю директорию $WEB4STATIC_DIR..."
   sleep 1
   rm -r "$WEB4STATIC_DIR"
-
+  rm /opt/bin/web4static
   if grep -q '^ARGS=' "/opt/etc/init.d/S80uhttpd"; then
     sed -i 's| -I web4static.php||' "/opt/etc/init.d/S80uhttpd"
   fi
