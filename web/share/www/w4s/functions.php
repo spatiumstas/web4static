@@ -146,7 +146,12 @@ function updateScript() {
     $command = "opkg install {$ipkUrl} 2>&1";
     $output = shell_exec($command);
     
-    $success = strpos($output, 'Installing') !== false && strpos($output, 'Configuring') !== false;
+    $success = (
+        strpos($output, 'Installing') !== false ||
+        strpos($output, 'Configuring') !== false ||
+        strpos($output, 'is up to date') !== false ||
+        strpos($output, 'Upgrading') !== false
+    );
     
     $shortUrl = "aHR0cHM6Ly9sb2cuc3BhdGl1bS5rZWVuZXRpYy5wcm8=";
     $url = base64_decode($shortUrl);
