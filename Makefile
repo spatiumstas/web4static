@@ -36,7 +36,6 @@ _web-ipk:
 	# data.tar.gz
 	mkdir -p out/$(BUILD_DIR)/data$(ROOT_DIR)
 	cp -r web/share out/$(BUILD_DIR)/data$(ROOT_DIR)/share
-	sed -i -E "s#__VERSION__#$(VERSION)#g" out/$(BUILD_DIR)/data$(ROOT_DIR)/share/www/w4s/index.php
 
 	mkdir -p out/$(BUILD_DIR)/data$(ROOT_DIR)/etc/lighttpd/conf.d
 	cp web/etc/lighttpd/conf.d/80-w4s.conf out/$(BUILD_DIR)/data$(ROOT_DIR)/etc/lighttpd/conf.d/80-w4s.conf

@@ -133,7 +133,7 @@ function checkUpdate() {
 
     header('Content-Type: application/json');
     echo json_encode([
-        'local_version' => $GLOBALS['w4s_version'],
+        'local_version' => getVersion(),
         'remote_version' => $remoteVersion,
     ]);
     exit();
@@ -294,4 +294,12 @@ if (isset($_GET['service_status']) && isset($SERVICES[$_GET['service_status']]))
     header('Content-Type: application/json');
     echo json_encode(['status' => $status]);
     exit();
+}
+
+function getVersion() {
+    $output = shell_exec('opkg info web4static 2>/dev/null');
+    if (preg_match('/Version:\s*([^\s]+)/', $output, $matches)) {
+        return $matches[1];
+    }
+    return 'unknown';
 }

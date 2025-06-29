@@ -1,7 +1,6 @@
 <?php
-$w4s_version = '__VERSION__';
-$cache_buster = $w4s_version;
 require_once __DIR__ . '/functions.php';
+$cache_buster = getVersion();
 
 if (isset($_GET['check_update'])) {
     checkUpdate();
