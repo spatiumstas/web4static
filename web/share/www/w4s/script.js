@@ -598,3 +598,16 @@ function formatJson(textareaName) {
         alert('Неверный формат JSON\n' + error.message);
     }
 }
+
+let statusRequestInProgress = false;
+function getServiceStatus(category) {
+    if (statusRequestInProgress) return;
+    statusRequestInProgress = true;
+    fetch(`index.php?service_status=${encodeURIComponent(category)}`)
+        .then(r => r.json())
+        .then(data => {
+            alert(data.status);
+        })
+        .catch(() => alert('Ошибка получения статуса сервиса'))
+        .finally(() => { statusRequestInProgress = false; });
+}

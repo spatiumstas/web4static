@@ -7,55 +7,71 @@ $SERVICES = [
     'IPSET' => [
         'path' => "readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/lists/'",
         'useShell' => true,
-        'services' => function() {
+        'restart' => function($self) {
             $ipset = trim(shell_exec("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/scripts/'"));
             return $ipset ? [escapeshellcmd("$ipset/update-ipset.sh")] : [];
-        }
+        },
     ],
     'BIRD' => [
         'path' => "readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'",
         'useShell' => true,
-        'services' => function() {
+        'restart' => function($self) {
             $bird = trim(shell_exec("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/scripts/'"));
             return $bird ? [
                 escapeshellcmd("$bird/add-bird4_routes.sh"),
                 escapeshellcmd("$bird/IPset4Static/scripts/update-ipset.sh")
             ] : [];
-        }
+        },
     ],
     'NFQWS' => [
+        'init' => '/opt/etc/init.d/S51nfqws',
         'path' => '/opt/etc/nfqws',
         'useShell' => false,
-        'services' => function() {
-            return is_file('/opt/etc/init.d/S51nfqws') ? ['/opt/etc/init.d/S51nfqws restart'] : [];
+        'restart' => function($self) {
+            return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
+        },
+        'status' => function($self) {
+            return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
         }
     ],
     'XKEEN' => [
+        'init' => 'xkeen',
         'path' => '/opt/etc/xray/configs',
         'useShell' => false,
-        'services' => function() {
-            return is_dir('/opt/etc/xray/configs') ? ['xkeen -restart'] : [];
+        'restart' => function($self) {
+            return is_dir($self['path']) ? [$self['init'] . ' -restart'] : [];
+        },
+        'status' => function($self) {
+            return shell_exec($self['init'] . ' -status 2>&1');
         }
     ],
     'sing-box' => [
+        'init' => '/opt/etc/init.d/S99sing-box',
         'path' => '/opt/etc/sing-box',
         'useShell' => false,
-        'services' => function() {
-            return is_file('/opt/etc/init.d/S99sing-box') ? ['/opt/etc/init.d/S99sing-box restart'] : [];
+        'restart' => function($self) {
+            return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
+        },
+        'status' => function($self) {
+            return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
         }
     ],
     'HydraRoute' => [
         'path' => ['/opt/etc/HydraRoute', '/opt/etc/AdGuardHome'],
         'useShell' => false,
-        'services' => function() {
+        'restart' => function($self) {
             return is_dir('/opt/etc/AdGuardHome') ? ['agh restart'] : [];
-        }
+        },
     ],
     'Antiscan' => [
+        'init' => '/opt/etc/init.d/S99ascn',
         'path' => '/opt/etc/antiscan',
         'useShell' => false,
-        'services' => function() {
-            return is_file('/opt/etc/init.d/S99ascn') ? ['/opt/etc/init.d/S99ascn restart'] : [];
+        'restart' => function($self) {
+            return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
+        },
+        'status' => function($self) {
+            return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
         }
     ]
 ];
@@ -81,18 +97,19 @@ function restartServices($changedCategories = null) {
     global $SERVICES;
     $commands = [];
 
-
     if ($changedCategories && is_array($changedCategories)) {
         foreach ($changedCategories as $category) {
-            if (isset($SERVICES[$category])) {
-                $commands = array_merge($commands, $SERVICES[$category]['services']());
+            if (isset($SERVICES[$category]) && isset($SERVICES[$category]['restart'])) {
+                $commands = array_merge($commands, $SERVICES[$category]['restart']($SERVICES[$category]));
             }
         }
     }
 
     if (empty($commands)) {
-        foreach ($SERVICES as $config) {
-            $commands = array_merge($commands, $config['services']());
+        foreach ($SERVICES as $cat => $config) {
+            if (isset($config['restart'])) {
+                $commands = array_merge($commands, $config['restart']($config));
+            }
         }
     }
 
@@ -217,22 +234,6 @@ function exportAllFiles($categories) {
     exit();
 }
 
-function sendRciRequest($commands) {
-    global $rci;
-    $data = ['parse' => $commands];
-    $options = [
-        'http' => [
-            'method' => 'POST',
-            'header' => "Content-Type: application/json\r\n",
-            'content' => json_encode($data),
-            'ignore_errors' => true,
-        ],
-    ];
-    $context = stream_context_create($options);
-    $response = file_get_contents($rci, false, $context);
-    return json_decode($response, true);
-}
-
 function handlePostRequest($files) {
     $commands = [];
     $changedCategories = [];
@@ -264,5 +265,28 @@ function handlePostRequest($files) {
 
     restartServices($changedCategories);
     http_response_code(200);
+    exit();
+}
+
+function stripAnsi($text) {
+    $text = preg_replace('/\e\[[;?0-9]*[a-zA-Z]/', '', $text);
+    $text = str_replace(["\t", "\u{00A0}"], ' ', $text);
+    return $text;
+}
+
+function getServiceStatus($category) {
+    global $SERVICES;
+    if (isset($SERVICES[$category]['status'])) {
+        $status = $SERVICES[$category]['status']($SERVICES[$category]);
+        return stripAnsi($status);
+    }
+    return 'Статус не поддерживается';
+}
+
+if (isset($_GET['service_status']) && isset($SERVICES[$_GET['service_status']])) {
+    $cat = $_GET['service_status'];
+    $status = getServiceStatus($cat);
+    header('Content-Type: application/json');
+    echo json_encode(['status' => $status]);
     exit();
 }

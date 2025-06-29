@@ -26,6 +26,12 @@ if (isset($_GET['opkg_update'])) {
 
 $categories = getCategories();
 
+$serviceStatusSupport = [];
+foreach (array_keys($categories) as $cat) {
+    global $SERVICES;
+    $serviceStatusSupport[$cat] = isset($SERVICES[$cat]['status']);
+}
+
 $files = [];
 foreach ($categories as $category => $categoryFiles) {
     if (is_array($categoryFiles)) {
@@ -90,6 +96,7 @@ if (isset($_GET['export_all'])) {
             header.addEventListener("click", function() {
                 location.reload();
             });
+            window.getServiceStatus = getServiceStatus;
         });
     </script>
 </head>
@@ -137,6 +144,11 @@ if (isset($_GET['export_all'])) {
                                         <button type="button" class="format-json-btn" onclick="formatJson('<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>')" aria-label="Format JSON" title="Format JSON" style="display: none;">
                                             <svg width="24" height="24"><use href="#json"/></svg>
                                         </button>
+                                        <?php if (!empty($serviceStatusSupport[$category])): ?>
+                                        <button type="button" class="status-btn" onclick="getServiceStatus('<?php echo htmlspecialchars($category); ?>')" aria-label="Service status" title="Статус сервиса">
+                                            <svg width="24" height="24"><use href="#status"/></svg>
+                                        </button>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
