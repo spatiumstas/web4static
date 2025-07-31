@@ -57,7 +57,7 @@ $SERVICES = [
         }
     ],
     'HydraRoute' => [
-        'path' => ['/opt/etc/HydraRoute', '/opt/etc/AdGuardHome'],
+        'path' => ['/opt/etc/HydraRoute', '/opt/etc/AdGuardHome/domain.conf'],
         'useShell' => false,
         'restart' => function($self) {
             return is_dir('/opt/etc/AdGuardHome') ? ['agh restart'] : [];
@@ -66,6 +66,17 @@ $SERVICES = [
     'Antiscan' => [
         'init' => '/opt/etc/init.d/S99ascn',
         'path' => '/opt/etc/antiscan',
+        'useShell' => false,
+        'restart' => function($self) {
+            return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
+        },
+        'status' => function($self) {
+            return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
+        }
+    ],
+    'dnsmasq' => [
+        'init' => '/opt/etc/init.d/S56dnsmasq',
+        'path' => '/opt/etc/dnsmasq.conf',
         'useShell' => false,
         'restart' => function($self) {
             return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
@@ -194,15 +205,26 @@ function getLists($paths, bool $useShell = false): array {
     foreach ($paths as $path) {
         if ($useShell) {
             $path = rtrim(shell_exec($path) ?? '');
-            $files = explode("\n", trim(shell_exec("ls $path/* 2>/dev/null")));
-        } else {
-            $files = glob($path . '/*');
         }
-        foreach ($files as $file) {
-            if ($file && !is_link($file) && is_file($file)) {
-                $extension = pathinfo($file, PATHINFO_EXTENSION);
-                if (in_array($extension, $allowedExtensions)) {
-                    $result[$path . '/' . basename($file)] = $file;
+        if (is_file($path)) {
+            $extension = pathinfo($path, PATHINFO_EXTENSION);
+            if (in_array($extension, $allowedExtensions)) {
+                $result[$path] = $path;
+            }
+            continue;
+        }
+        if (is_dir($path)) {
+            if ($useShell) {
+                $files = explode("\n", trim(shell_exec("ls $path/* 2>/dev/null")));
+            } else {
+                $files = glob($path . '/*');
+            }
+            foreach ($files as $file) {
+                if ($file && !is_link($file) && is_file($file)) {
+                    $extension = pathinfo($file, PATHINFO_EXTENSION);
+                    if (in_array($extension, $allowedExtensions)) {
+                        $result[$path . '/' . basename($file)] = $file;
+                    }
                 }
             }
         }
