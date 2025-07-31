@@ -360,11 +360,11 @@ function opkgUpdate() {
             if (data.success) {
                 alert(data.output);
             } else {
-                alert('Ошибка при обновлении:\n' + data.output);
+                alert(data.output);
             }
         })
         .catch(err => {
-            console.error('Ошибка при обновлении OPKG:', err);
+            console.error(err);
             alert('Ошибка при обновлении OPKG пакетов');
         })
         .finally(() => {
@@ -503,7 +503,7 @@ function updateScript(remoteVersion) {
             }
         })
         .catch(err => {
-            console.error('Ошибка при обновлении:', err);
+            console.error(err);
             alert('Ошибка при обновлении веб-интерфейса');
         })
         .finally(() => {

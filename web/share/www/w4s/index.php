@@ -14,12 +14,12 @@ if (isset($_GET['get_release_notes']) && isset($_GET['v'])) {
 
 if (isset($_GET['opkg_update'])) {
     $output = [];
-
-    exec("opkg update && opkg upgrade 2>&1", $output);
+    $return_var = 0;
+    exec("opkg update && opkg upgrade 2>&1", $output, $return_var);
     $outputString = implode("\n", $output);
-
+    $success = ($return_var === 0);
     header('Content-Type: application/json');
-    echo json_encode(['success' => true, 'output' => $outputString]);
+    echo json_encode(['success' => $success, 'output' => $outputString]);
     exit();
 }
 
@@ -102,7 +102,12 @@ if (isset($_GET['export_all'])) {
 <body class="dark-theme">
     <header id="asciiHeader">
         <pre>
-            <?php echo htmlspecialchars(file_get_contents('ascii.txt')); ?>
+                __    __ __       __        __  _     
+ _      _____  / /_  / // / _____/ /_____ _/ /_(_)____
+| | /| / / _ \/ __ \/ // /_/ ___/ __/ __ `/ __/ / ___/
+| |/ |/ /  __/ /_/ /__  __(__  ) /_/ /_/ / /_/ / /__  
+|__/|__/\___/_.___/  /_/ /____/\__/\__,_/\__/_/\___/  
+                                                      
         </pre>
     </header>
     <?php include 'icons.svg'; ?>
