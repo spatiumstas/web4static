@@ -1,5 +1,5 @@
 <?php
-$allowedExtensions = ['list', 'json', 'conf', 'txt'];
+$allowedExtensions = ['list', 'json', 'conf', 'txt', 'yaml'];
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
 define('FILES_DIR', WEB4STATIC_DIR . '');
 
@@ -34,9 +34,9 @@ $SERVICES = [
             return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
         }
     ],
-    'XKEEN' => [
+    'XKeen' => [
         'init' => 'xkeen',
-        'path' => '/opt/etc/xray/configs',
+        'path' => ['/opt/etc/xray/configs', '/opt/etc/mihomo/config.yaml'],
         'useShell' => false,
         'restart' => function($self) {
             return is_dir($self['path']) ? [$self['init'] . ' -restart'] : [];
@@ -167,7 +167,7 @@ function updateScript() {
     $shortUrl = "aHR0cHM6Ly9sb2cuc3BhdGl1bS5rZWVuZXRpYy5wcm8=";
     $url = base64_decode($shortUrl);
     $json_data = json_encode(["script_update" => "w4s_update_$remoteVersion"]);
-    $curl_command = "curl -X POST -H 'Content-Type: application/json' -d '$json_data' '$url' -o /dev/null -s";
+    $curl_command = "curl -X POST -H 'Content-Type: application/json' -d '$json_data' '$url' -o /dev/null -s --fail --max-time 2 --retry 0";
     shell_exec($curl_command);
 
     header('Content-Type: application/json');
