@@ -14,12 +14,10 @@ if (isset($_GET['get_release_notes']) && isset($_GET['v'])) {
 
 if (isset($_GET['opkg_update'])) {
     $output = [];
-    $return_var = 0;
-    exec("opkg update && opkg upgrade 2>&1", $output, $return_var);
+    exec("opkg update && opkg upgrade 2>&1", $output);
     $outputString = implode("\n", $output);
-    $success = ($return_var === 0);
     header('Content-Type: application/json');
-    echo json_encode(['success' => $success, 'output' => $outputString]);
+    echo json_encode(['output' => $outputString]);
     exit();
 }
 
@@ -139,13 +137,13 @@ if (isset($_GET['export_all'])) {
                                     </div>
                                     <div class="button-container">
                                         <input type="file" id="import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>" style="display:none;" accept=".txt,.list,.json,.conf" onchange="importFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', this, '<?php echo htmlspecialchars($category); ?>')">
-                                        <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>').click()" aria-label="Replace file" title="Replace">
+                                        <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>').click()" aria-label="Replace file" title="Заменить">
                                             <svg width="24" height="24"><use href="#swap"/></svg>
                                         </button>
-                                        <button type="button" onclick="exportFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', '<?php echo htmlspecialchars(pathinfo($key, PATHINFO_EXTENSION)); ?>', '<?php echo htmlspecialchars($category); ?>')" aria-label="Save file" title="Save">
+                                        <button type="button" onclick="exportFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', '<?php echo htmlspecialchars(pathinfo($key, PATHINFO_EXTENSION)); ?>', '<?php echo htmlspecialchars($category); ?>')" aria-label="Save file" title="Сохранить">
                                             <svg width="24" height="24"><use href="#download-file"/></svg>
                                         </button>
-                                        <button type="button" class="format-json-btn" onclick="formatJson('<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>')" aria-label="Format JSON" title="Format JSON" style="display: none;">
+                                        <button type="button" class="format-json-btn" onclick="formatJson('<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>')" aria-label="Format JSON" title="Форматировать JSON" style="display: none;">
                                             <svg width="24" height="24"><use href="#json"/></svg>
                                         </button>
                                         <?php if (!empty($serviceStatusSupport[$category])): ?>
@@ -187,5 +185,14 @@ if (isset($_GET['export_all'])) {
         </div>
     </footer>
     <div class="pwa-safe-area"></div>
+    <div id="output-modal" class="output-modal">
+        <div class="output-modal-content">
+            <div class="output-modal-header">
+                <h3>Журнал</h3>
+                <button class="close-modal-btn">&times;</button>
+            </div>
+            <pre id="output-modal-text" class="output-modal-text"></pre>
+        </div>
+    </div>
 </body>
 </html>

@@ -39,7 +39,12 @@ $SERVICES = [
         'path' => ['/opt/etc/xray/configs', '/opt/etc/mihomo/config.yaml'],
         'useShell' => false,
         'restart' => function($self) {
-            return is_dir($self['path']) ? [$self['init'] . ' -restart'] : [];
+            foreach ((array)$self['path'] as $p) {
+                if (is_dir($p) || is_file($p)) {
+                    return [$self['init'] . ' -restart'];
+                }
+            }
+            return [];
         },
         'status' => function($self) {
             return shell_exec($self['init'] . ' -status 2>&1');
@@ -153,19 +158,13 @@ function checkUpdate() {
 function updateScript() {
     $remoteVersion = isset($_GET['remote_version']) ? $_GET['remote_version'] : 'unknown';
     $output = null;
-    $retval = null;
 
     $configFile = '/opt/etc/opkg/web4static.conf';
     if (!file_exists($configFile)) {
-        exec("mkdir -p /opt/etc/opkg", $output, $retval);
-        exec("echo 'src/gz web4static https://spatiumstas.github.io/web4static/all/' > $configFile", $output, $retval);
+        exec("mkdir -p /opt/etc/opkg");
+        exec("echo 'src/gz web4static https://spatiumstas.github.io/web4static/all/' > $configFile");
     }
-    exec("opkg update 2>&1");
-    exec("opkg upgrade web4static 2>&1", $output, $retval);
-
-    if (empty($output)) {
-        $output[] = 'Nothing to update';
-    }
+    exec("opkg update && opkg upgrade web4static 2>&1", $output);
 
     $shortUrl = "aHR0cHM6Ly9sb2cuc3BhdGl1bS5uZXRjcmF6ZS5wcm8=";
     $url = base64_decode($shortUrl);
@@ -174,7 +173,7 @@ function updateScript() {
     shell_exec($curl_command);
 
     header('Content-Type: application/json');
-    echo json_encode(['output' => implode("\n", $output), 'status' => $retval]);
+    echo json_encode(['output' => implode("\n", $output)]);
     exit();
 }
 

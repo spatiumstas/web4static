@@ -358,15 +358,12 @@ function opkgUpdate() {
     fetch('index.php?opkg_update')
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                alert(data.output);
-            } else {
-                alert(data.output);
-            }
+            const title = 'Обновление OPKG';
+            showOutputModal(title, data.output);
         })
         .catch(err => {
             console.error(err);
-            alert('Ошибка при обновлении OPKG пакетов');
+            showOutputModal('Ошибка OPKG', err.message);
         })
         .finally(() => {
             toggleProgressBar(false, {
@@ -375,7 +372,6 @@ function opkgUpdate() {
                 onClickAfterHide: () => showUpdateAlert(local_version, remoteVersion)
             });
             isUpdating = false;
-            location.reload();
         });
 }
 
@@ -496,7 +492,7 @@ function showUpdateAlert(localVersion, remoteVersion) {
 
 function updateScript() {
     if (isUpdating) {
-        alert('Дождитесь завершения текущего обновления.');
+        showOutputModal('Обновление', 'Дождитесь завершения текущего обновления.');
         return;
     }
     isUpdating = true;
@@ -508,21 +504,17 @@ function updateScript() {
     fetch(`index.php?update_script`)
         .then(response => response.json())
         .then(data => {
-            if (data.status === 0) {
-                alert('Веб-интерфейс успешно обновлён!\n\n' + data.output);
-            } else {
-                alert('Ошибка при обновлении:\n\n' + data.output);
-            }
+            const title = 'Обновление веб-интерфейса';
+            showOutputModal(title, data.output);
         })
         .catch(err => {
             console.error(err);
-            alert('Ошибка при обновлении:\n\n' + err.message);
+            showOutputModal('Ошибка обновления веб-интерфейса', err.message);
         })
         .finally(() => {
             toggleProgressBar(false);
             isUpdating = false;
             manageUpdatePanel({showPanel: false});
-            location.reload();
         });
 }
 
@@ -605,7 +597,7 @@ function formatJson(textareaName) {
         const formattedJson = JSON.stringify(parsedJson, null, 2);
         textarea.value = formattedJson;
     } catch (error) {
-        alert('Неверный формат JSON\n' + error.message);
+        showOutputModal('Ошибка JSON', error.message);
     }
 }
 
@@ -616,8 +608,40 @@ function getServiceStatus(category) {
     fetch(`index.php?service_status=${encodeURIComponent(category)}`)
         .then(r => r.json())
         .then(data => {
-            alert(data.status);
+            showOutputModal('Статус сервиса', data.status);
         })
-        .catch(() => alert('Ошибка получения статуса сервиса'))
+        .catch(() => showOutputModal('Ошибка', 'Ошибка получения статуса сервиса'))
         .finally(() => { statusRequestInProgress = false; });
 }
+
+function showOutputModal(title, message) {
+    const modal = document.getElementById('output-modal');
+    const modalTitle = modal.querySelector('.output-modal-header h3');
+    const modalText = document.getElementById('output-modal-text');
+
+    modalTitle.textContent = title;
+    modalText.textContent = message;
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
+}
+
+function hideOutputModal() {
+    const modal = document.getElementById('output-modal');
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('output-modal');
+    const closeButtons = modal.querySelectorAll('.close-modal-btn');
+
+    closeButtons.forEach(button => {
+        button.addEventListener('click', hideOutputModal);
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            hideOutputModal();
+        }
+    });
+});
