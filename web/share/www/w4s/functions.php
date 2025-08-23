@@ -135,12 +135,22 @@ function restartServices($changedCategories = null) {
     }
 }
 
-function checkUpdate() {
-    $apiUrl = 'https://api.github.com/repos/spatiumstas/web4static/releases/latest';
+function fetchGitHubRelease($version = 'latest') {
+    $apiUrl = $version === 'latest'
+        ? 'https://api.github.com/repos/spatiumstas/web4static/releases/latest'
+        : "https://api.github.com/repos/spatiumstas/web4static/releases/tags/$version";
     $command = "curl -s -L -H 'User-Agent: web4static-updater' \"$apiUrl\"";
     $response = shell_exec($command);
-    $release = json_decode($response, true);
+    return json_decode($response, true);
+}
 
+function getRemoteVersion() {
+    $release = fetchGitHubRelease('latest');
+    return $release['tag_name'] ?? 'unknown';
+}
+
+function checkUpdate() {
+    $release = fetchGitHubRelease('latest');
     if (!$release || !isset($release['tag_name'])) {
         die(json_encode(['error' => 'Failed to fetch release info']));
     }
@@ -156,7 +166,7 @@ function checkUpdate() {
 }
 
 function updateScript() {
-    $remoteVersion = isset($_GET['remote_version']) ? $_GET['remote_version'] : 'unknown';
+    $remoteVersion = getRemoteVersion();
     $output = null;
 
     $configFile = '/opt/etc/opkg/web4static.conf';
@@ -178,11 +188,7 @@ function updateScript() {
 }
 
 function getReleaseNotes($version) {
-    $apiUrl = "https://api.github.com/repos/spatiumstas/web4static/releases/tags/$version";
-    $command = "curl -s -L -H 'User-Agent: web4static-updater' \"$apiUrl\"";
-    $response = shell_exec($command);
-    $release = json_decode($response, true);
-
+    $release = fetchGitHubRelease($version);
     $notes = [];
     if ($release && isset($release['body'])) {
         $notes = explode("\n", trim($release['body']));
