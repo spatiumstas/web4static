@@ -1,7 +1,16 @@
-name: Build
+name: Build and Deploy
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build-keenetic:
@@ -17,7 +26,7 @@ jobs:
       - name: Upload files
         uses: actions/upload-artifact@v4
         with:
-          name: web4static_build
+          name: keenetic
           path: ./out/web4static_*_kn.ipk
           if-no-files-found: error
 
@@ -26,3 +35,87 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           ls ./out/web4static_*_kn.ipk >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+
+  build-repository:
+    runs-on: ubuntu-22.04
+    needs: [ build-keenetic ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read version
+        id: version
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./VERSION
+          trim: true
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+
+      - name: Display artifacts
+        run: ls -R ./out
+
+      - name: Build repository
+        run: |
+          # Clean and prepare _pages directory
+          rm -rf out/_pages
+          mkdir -p out/_pages/all
+
+          cp out/web4static_${{ steps.version.outputs.content }}_kn.ipk out/_pages/all/web4static_${{ steps.version.outputs.content }}_all.ipk
+
+          echo "Package: web4static" > out/_pages/all/Packages
+          echo "Version: ${{ steps.version.outputs.content }}" >> out/_pages/all/Packages
+          echo "Depends: curl, php8-cgi, php8-mod-session, lighttpd, lighttpd-mod-cgi, lighttpd-mod-setenv, lighttpd-mod-rewrite" >> out/_pages/all/Packages  # Adapt dependencies as needed
+          echo "License: MIT" >> out/_pages/all/Packages
+          echo "Section: net" >> out/_pages/all/Packages
+          echo "Architecture: all" >> out/_pages/all/Packages
+          echo "Filename: web4static_${{ steps.version.outputs.content }}_all.ipk" >> out/_pages/all/Packages
+          echo "Size: $(wc -c out/_pages/all/web4static_${{ steps.version.outputs.content }}_all.ipk | awk '{print $1}')" >> out/_pages/all/Packages
+          echo "SHA256sum: $(sha256sum out/_pages/all/web4static_${{ steps.version.outputs.content }}_all.ipk | awk '{print $1}')" >> out/_pages/all/Packages
+          echo "Description: Web interface" >> out/_pages/all/Packages
+          echo "" >> out/_pages/all/Packages
+
+          gzip -k out/_pages/all/Packages
+
+          echo '<html><head><title>Index of /all/</title></head><body><h1>Index of /all/</h1><hr><pre>' > out/_pages/all/index.html
+          echo '<a href="../">../</a>' >> out/_pages/all/index.html
+          echo '<a href="Packages">Packages</a>' >> out/_pages/all/index.html
+          echo '<a href="Packages.gz">Packages.gz</a>' >> out/_pages/all/index.html
+          echo '<a href="web4static_${{ steps.version.outputs.content }}_all.ipk">web4static_${{ steps.version.outputs.content }}_all.ipk</a>' >> out/_pages/all/index.html
+          echo '</pre><hr></body></html>' >> out/_pages/all/index.html
+
+          echo '<html><head><title>Index of /</title></head><body><h1>Index of /</h1><hr><pre>' > out/_pages/index.html
+          echo '<a href="all/">all/</a>' >> out/_pages/index.html
+          echo '</pre><hr></body></html>' >> out/_pages/index.html
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./out/_pages
+
+      - name: Summary
+        run: |
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          ls -R ./out/_pages >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+  deploy-repository:
+    runs-on: ubuntu-22.04
+    needs: [ build-repository ]
+
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Summary
+        run: |
+          echo "Repository deployed" >> $GITHUB_STEP_SUMMARY

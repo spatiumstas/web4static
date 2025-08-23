@@ -329,6 +329,7 @@ document.addEventListener('keydown', function (e) {
 
 /** Updates **/
 let isUpdating = false;
+let remoteVersion = null;
 
 function versionToNumber(version) {
     if (!version || version === 'unknown') return 0;
@@ -385,6 +386,7 @@ function checkForUpdates() {
             console.log('Check update response:', data);
             const localNum = versionToNumber(data.local_version);
             const remoteNum = versionToNumber(data.remote_version);
+            remoteVersion = data.remote_version;
 
             toggleUpdateIcon(data.local_version, data.remote_version, remoteNum > localNum);
         })
@@ -442,6 +444,10 @@ function toggleProgressBar(show, {hideElement = null, showElement = null, wasPan
 }
 
 function toggleUpdateIcon(localVersion, remoteVersion, show = true) {
+    if (isUpdating) {
+        show = false;
+    }
+
     manageUpdatePanel({
         showPanel: show,
         showText: show,
@@ -452,6 +458,10 @@ function toggleUpdateIcon(localVersion, remoteVersion, show = true) {
 }
 
 function showUpdateAlert(localVersion, remoteVersion) {
+    if (isUpdating) {
+        return;
+    }
+
     fetch('index.php?get_release_notes&v=' + remoteVersion)
         .then(response => response.json())
         .then(data => {
@@ -472,46 +482,46 @@ function showUpdateAlert(localVersion, remoteVersion) {
 
             const message = `Доступно обновление: ${remoteVersion} (текущая: ${localVersion})\n\n${releaseNotes}\n\nОбновить?`;
             if (confirm(message)) {
-                updateScript(remoteVersion);
+                updateScript();
             }
         })
         .catch(err => {
             console.error('Ошибка при получении списка изменений:', err);
             const message = `Доступно обновление: ${remoteVersion} (текущая: ${localVersion})\n\nСписок изменений недоступен.\n\nОбновить?`;
             if (confirm(message)) {
-                updateScript(remoteVersion);
+                updateScript();
             }
         });
 }
 
-function updateScript(remoteVersion) {
+function updateScript() {
     if (isUpdating) {
         alert('Дождитесь завершения текущего обновления.');
         return;
     }
     isUpdating = true;
 
+    manageUpdatePanel({showPanel: false});
+
     toggleProgressBar(true);
 
-    fetch(`index.php?update_script&remote_version=${encodeURIComponent(remoteVersion)}`)
+    fetch(`index.php?update_script`)
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                alert('Веб-интерфейс успешно обновлён!\n' + data.output);
+            if (data.status === 0) {
+                alert('Веб-интерфейс успешно обновлён!\n\n' + data.output);
             } else {
-                alert('Ошибка при обновлении:\n' + data.output);
+                alert('Ошибка при обновлении:\n\n' + data.output);
             }
         })
         .catch(err => {
             console.error(err);
-            alert('Ошибка при обновлении веб-интерфейса');
+            alert('Ошибка при обновлении:\n\n' + err.message);
         })
         .finally(() => {
-            toggleProgressBar(false, {
-                wasPanelVisible: true,
-                onClickAfterHide: () => showUpdateAlert(local_version, remoteVersion)
-            });
+            toggleProgressBar(false);
             isUpdating = false;
+            manageUpdatePanel({showPanel: false});
             location.reload();
         });
 }

@@ -18,7 +18,7 @@ _web-control:
 	echo "Section: net" >> out/$(BUILD_DIR)/control/control
 	echo "URL: https://github.com/spatiumstas/web4static" >> out/$(BUILD_DIR)/control/control
 	echo "Architecture: all" >> out/$(BUILD_DIR)/control/control
-	echo "Description:  Web interface" >> out/$(BUILD_DIR)/control/control
+	echo "Description: Web interface" >> out/$(BUILD_DIR)/control/control
 	echo "" >> out/$(BUILD_DIR)/control/control
 
 _web-scripts:

@@ -152,26 +152,29 @@ function checkUpdate() {
 
 function updateScript() {
     $remoteVersion = isset($_GET['remote_version']) ? $_GET['remote_version'] : 'unknown';
+    $output = null;
+    $retval = null;
 
-    $ipkUrl = "https://github.com/spatiumstas/web4static/releases/download/{$remoteVersion}/web4static_{$remoteVersion}_kn.ipk";
-    $command = "opkg install {$ipkUrl} 2>&1";
-    $output = shell_exec($command);
-    
-    $success = (
-        strpos($output, 'Installing') !== false ||
-        strpos($output, 'Configuring') !== false ||
-        strpos($output, 'is up to date') !== false ||
-        strpos($output, 'Upgrading') !== false
-    );
-    
-    $shortUrl = "aHR0cHM6Ly9sb2cuc3BhdGl1bS5rZWVuZXRpYy5wcm8=";
+    $configFile = '/opt/etc/opkg/web4static.conf';
+    if (!file_exists($configFile)) {
+        exec("mkdir -p /opt/etc/opkg", $output, $retval);
+        exec("echo 'src/gz web4static https://spatiumstas.github.io/web4static/all/' > $configFile", $output, $retval);
+    }
+    exec("opkg update 2>&1");
+    exec("opkg upgrade web4static 2>&1", $output, $retval);
+
+    if (empty($output)) {
+        $output[] = 'Nothing to update';
+    }
+
+    $shortUrl = "aHR0cHM6Ly9sb2cuc3BhdGl1bS5uZXRjcmF6ZS5wcm8=";
     $url = base64_decode($shortUrl);
     $json_data = json_encode(["script_update" => "w4s_update_$remoteVersion"]);
     $curl_command = "curl -X POST -H 'Content-Type: application/json' -d '$json_data' '$url' -o /dev/null -s --fail --max-time 2 --retry 0";
     shell_exec($curl_command);
 
     header('Content-Type: application/json');
-    echo json_encode(['success' => $success, 'output' => $output]);
+    echo json_encode(['output' => implode("\n", $output), 'status' => $retval]);
     exit();
 }
 
@@ -319,9 +322,6 @@ if (isset($_GET['service_status']) && isset($SERVICES[$_GET['service_status']]))
 }
 
 function getVersion() {
-    $output = shell_exec('opkg info web4static 2>/dev/null');
-    if (preg_match('/Version:\s*([^\s]+)/', $output, $matches)) {
-        return $matches[1];
-    }
-    return 'unknown';
+    $output = shell_exec('opkg list-installed 2>/dev/null | grep "^web4static - "');
+    return trim(substr($output, strlen('web4static - ')));
 }
