@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-keenetic:
+  build-package:
     runs-on: ubuntu-22.04
 
     steps:
@@ -26,7 +26,7 @@ jobs:
       - name: Upload files
         uses: actions/upload-artifact@v4
         with:
-          name: keenetic
+          name: web4static
           path: ./out/web4static_*_kn.ipk
           if-no-files-found: error
 
@@ -38,7 +38,7 @@ jobs:
 
   build-repository:
     runs-on: ubuntu-22.04
-    needs: [ build-keenetic ]
+    needs: [ build-package ]
 
     steps:
       - name: Checkout
