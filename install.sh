@@ -31,4 +31,4 @@ mkdir -p /opt/etc/opkg
 echo "src/gz web4static https://spatiumstas.github.io/web4static/all/" > /opt/etc/opkg/web4static.conf
 run_with_animation "Начинаю установку"
 echo ""
-opkg update && opkg install ca-certificates wget-ssl web4static
+opkg update && opkg install web4static
