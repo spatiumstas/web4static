@@ -332,7 +332,7 @@ let isUpdating = false;
 let remoteVersion = null;
 
 function versionToNumber(version) {
-    if (!version || version === 'unknown') return 0;
+    if (!version || version === 'unknown' || version === '') return 0;
     const parts = version.split('.');
     return parseInt(parts[0]) * 10000 + parseInt(parts[1] || 0) * 100 + parseInt(parts[2] || 0);
 }
@@ -355,7 +355,7 @@ function opkgUpdate() {
 
     toggleProgressBar(true);
 
-    fetch('index.php?opkg_update')
+    fetch('index.php?update&type=packages')
         .then(response => response.json())
         .then(data => {
             const title = 'Обновление OPKG';
@@ -440,6 +440,10 @@ function toggleProgressBar(show, {hideElement = null, showElement = null, wasPan
 }
 
 function toggleUpdateIcon(localVersion, remoteVersion, show = true) {
+    if (!localVersion || localVersion === '' || localVersion === 'unknown') {
+        show = false;
+    }
+
     if (isUpdating) {
         show = false;
     }
@@ -501,7 +505,7 @@ function updateScript() {
 
     toggleProgressBar(true);
 
-    fetch(`index.php?update_script`)
+    fetch(`index.php?update&type=web`)
         .then(response => response.json())
         .then(data => {
             const title = 'Обновление веб-интерфейса';

@@ -5,20 +5,12 @@ $cache_buster = getVersion();
 if (isset($_GET['check_update'])) {
     checkUpdate();
 }
-if (isset($_GET['update_script'])) {
-    updateScript();
+if (isset($_GET['update'])) {
+    $type = $_GET['type'] ?? 'packages';
+    update($type);
 }
 if (isset($_GET['get_release_notes']) && isset($_GET['v'])) {
     getReleaseNotes(htmlspecialchars($_GET['v']));
-}
-
-if (isset($_GET['opkg_update'])) {
-    $output = [];
-    exec("opkg update && opkg upgrade 2>&1", $output);
-    $outputString = implode("\n", $output);
-    header('Content-Type: application/json');
-    echo json_encode(['output' => $outputString]);
-    exit();
 }
 
 $categories = getCategories();

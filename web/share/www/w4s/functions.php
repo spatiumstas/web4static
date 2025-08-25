@@ -165,23 +165,23 @@ function checkUpdate() {
     exit();
 }
 
-function updateScript() {
-    $remoteVersion = getRemoteVersion();
-    $output = null;
-
-    $configFile = '/opt/etc/opkg/web4static.conf';
-    if (!file_exists($configFile)) {
-        exec("mkdir -p /opt/etc/opkg");
-        exec("echo 'src/gz web4static https://spatiumstas.github.io/web4static/all/' > $configFile");
+function update($type = 'packages') {
+    if ($type === 'web') {
+        $remoteVersion = getRemoteVersion();
+        $configFile = '/opt/etc/opkg/web4static.conf';
+        if (!file_exists($configFile)) {
+            exec("mkdir -p /opt/etc/opkg");
+            exec("echo 'src/gz web4static https://spatiumstas.github.io/web4static/all' > $configFile");
+        }
+        exec("opkg update && opkg upgrade web4static 2>&1", $output);
+        $shortUrl = "aHR0cHM6Ly9sb2cuc3BhdGl1bS5uZXRjcmF6ZS5wcm8=";
+        $url = base64_decode($shortUrl);
+        $json_data = json_encode(["script_update" => "w4s_update_$remoteVersion"]);
+        $curl_command = "curl -X POST -H 'Content-Type: application/json' -d '$json_data' '$url' -o /dev/null -s --fail --max-time 2 --retry 0";
+        shell_exec($curl_command);
+    } else {
+        exec("opkg update && opkg upgrade 2>&1", $output);
     }
-    exec("opkg update && opkg upgrade web4static 2>&1", $output);
-
-    $shortUrl = "aHR0cHM6Ly9sb2cuc3BhdGl1bS5uZXRjcmF6ZS5wcm8=";
-    $url = base64_decode($shortUrl);
-    $json_data = json_encode(["script_update" => "w4s_update_$remoteVersion"]);
-    $curl_command = "curl -X POST -H 'Content-Type: application/json' -d '$json_data' '$url' -o /dev/null -s --fail --max-time 2 --retry 0";
-    shell_exec($curl_command);
-
     header('Content-Type: application/json');
     echo json_encode(['output' => implode("\n", $output)]);
     exit();
