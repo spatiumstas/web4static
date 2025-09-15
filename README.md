@@ -1,4 +1,4 @@
-## Веб-интерфейс для управления списками [Bird4Static](https://github.com/DennoN-RUS/Bird4Static) / [IPset4Static](https://github.com/DennoN-RUS/IPset4Static) / [NFQWS](https://github.com/Anonym-tsk/nfqws-keenetic) / [XKeen](https://github.com/Skrill0/XKeen) / [HydraRoute](https://github.com/Ground-Zerro/HydraRoute) / [Antiscan](https://github.com/dimon27254/antiscan)
+## Веб-интерфейс для управления конфигурацией [Bird4Static](https://github.com/DennoN-RUS/Bird4Static) / [IPset4Static](https://github.com/DennoN-RUS/IPset4Static) / [NFQWS](https://github.com/Anonym-tsk/nfqws-keenetic) / [XKeen](https://github.com/Skrill0/XKeen) / [HydraRoute](https://github.com/Ground-Zerro/HydraRoute) / [Antiscan](https://github.com/dimon27254/antiscan) / Xray / sing-box
 
 ![IMG_0671-round-corners](https://github.com/user-attachments/assets/8b0e44b3-bf50-464f-b389-04a7e8f8f29c)
 

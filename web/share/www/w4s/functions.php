@@ -61,6 +61,17 @@ $SERVICES = [
             return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
         }
     ],
+    'Xray' => [
+        'init' => '/opt/etc/init.d/S24xray',
+        'path' => '/opt/etc/xray',
+        'useShell' => false,
+        'restart' => function($self) {
+            return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
+        },
+        'status' => function($self) {
+            return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
+        }
+    ],
     'HydraRoute' => [
         'path' => ['/opt/etc/HydraRoute', '/opt/etc/AdGuardHome/domain.conf'],
         'useShell' => false,
