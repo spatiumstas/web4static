@@ -1,19 +1,15 @@
 <?php
-$allowedExtensions = ['list', 'json', 'conf', 'txt', 'yaml'];
+$allowedExtensions = ['list', 'json', 'conf', 'txt', 'yaml', 'sh'];
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
 define('FILES_DIR', WEB4STATIC_DIR . '');
 
 $SERVICES = [
-    'IPSET' => [
-        'path' => "readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/lists/'",
-        'useShell' => true,
-        'restart' => function($self) {
-            $ipset = trim(shell_exec("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/scripts/'"));
-            return $ipset ? [escapeshellcmd("$ipset/update-ipset.sh")] : [];
-        },
-    ],
-    'BIRD' => [
-        'path' => "readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'",
+    'Bird4Static' => [
+        'init' => '/opt/etc/init.d/S70bird',
+        'path' => [
+            "readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'",
+            "readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/scripts/'"
+        ],
         'useShell' => true,
         'restart' => function($self) {
             $bird = trim(shell_exec("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/scripts/'"));
@@ -21,6 +17,20 @@ $SERVICES = [
                 escapeshellcmd("$bird/add-bird4_routes.sh"),
                 escapeshellcmd("$bird/IPset4Static/scripts/update-ipset.sh")
             ] : [];
+        },
+        'status' => function($self) {
+            return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
+        }
+    ],
+    'IPset4Static' => [
+        'path' => [
+            "readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/lists/'",
+            "readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/scripts/'"
+        ],
+        'useShell' => true,
+        'restart' => function($self) {
+            $ipset = trim(shell_exec("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/scripts/'"));
+            return $ipset ? [escapeshellcmd("$ipset/update-ipset.sh")] : [];
         },
     ],
     'NFQWS' => [

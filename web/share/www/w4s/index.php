@@ -83,6 +83,7 @@ if (isset($_GET['export_all'])) {
             checkForUpdates();
             const header = document.getElementById("asciiHeader");
             header.addEventListener("click", function() {
+                try { localStorage.clear(); } catch (e) {}
                 location.reload();
             });
             window.getServiceStatus = getServiceStatus;

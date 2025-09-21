@@ -1,13 +1,28 @@
-## Веб-интерфейс для управления конфигурацией [Bird4Static](https://github.com/DennoN-RUS/Bird4Static) / [IPset4Static](https://github.com/DennoN-RUS/IPset4Static) / [NFQWS](https://github.com/Anonym-tsk/nfqws-keenetic) / [XKeen](https://github.com/Skrill0/XKeen) / [HydraRoute](https://github.com/Ground-Zerro/HydraRoute) / [Antiscan](https://github.com/dimon27254/antiscan) / Xray / sing-box
+## Веб‑интерфейс управления конфигурациями [Bird4Static](https://github.com/DennoN-RUS/Bird4Static) - [IPset4Static](https://github.com/DennoN-RUS/IPset4Static) - [NFQWS](https://github.com/Anonym-tsk/nfqws-keenetic) - [XKeen](https://github.com/Skrill0/XKeen) - [HydraRoute](https://github.com/Ground-Zerro/HydraRoute) - [Antiscan](https://github.com/dimon27254/antiscan) - Xray - sing-box - dnsmasq
 
 ![IMG_0671-round-corners](https://github.com/user-attachments/assets/8b0e44b3-bf50-464f-b389-04a7e8f8f29c)
 
-## Установка
+##### Установка
 
-В `SSH` ввести команду для установки
 ```shell
 opkg update && opkg install curl ca-certificates wget-ssl && curl -L -s "https://raw.githubusercontent.com/spatiumstas/web4static/main/install.sh" > /tmp/install.sh && sh /tmp/install.sh
 ```
 
 > [!NOTE]
-> Веб-интерфейс доступен по адресу `http://<router_ip>:99` (например http://192.168.1.1:99)<br/>
+> Веб‑интерфейс доступен по адресу `http://<router_ip>:99` (например http://192.168.1.1:99)<br/>
+
+> [!TIP]
+> По-умолчанию php использует только 8Мб памяти. Из-за этого ограничения, могут не загружаться большие списки файлов.
+> Вы можете изменить конфигурацию php самостоятельно:<br/>
+> Откройте файл `/opt/etc/php.ini` и измените следующие значения
+> ```
+> memory_limit = 32M
+> post_max_size = 32M
+> upload_max_filesize = 16M
+> ```
+
+##### Удаление
+
+```
+opkg remove web4static
+```
