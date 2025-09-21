@@ -2,11 +2,28 @@
 
 ![IMG_0671-round-corners](https://github.com/user-attachments/assets/8b0e44b3-bf50-464f-b389-04a7e8f8f29c)
 
-##### Установка
+##### Автоустановка
 
 ```shell
 opkg update && opkg install curl ca-certificates wget-ssl && curl -L -s "https://raw.githubusercontent.com/spatiumstas/web4static/main/install.sh" > /tmp/install.sh && sh /tmp/install.sh
 ```
+
+##### Ручная установка
+
+1. Установите необходимые зависимости
+   ```
+   opkg update && opkg install ca-certificates wget-ssl && opkg remove wget-nossl
+   ```
+2. Установите opkg-репозиторий в систему
+   ```
+   mkdir -p /opt/etc/opkg
+   echo "src/gz web4static https://spatiumstas.github.io/web4static/all" > /opt/etc/opkg/web4static.conf
+   ```
+
+3. Установите пакет
+   ```
+   opkg update && opkg install web4static
+   ```   
 
 > [!NOTE]
 > Веб‑интерфейс доступен по адресу `http://<router_ip>:99` (например http://192.168.1.1:99)<br/>
