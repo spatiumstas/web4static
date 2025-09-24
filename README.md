@@ -41,7 +41,7 @@ opkg update && opkg install curl ca-certificates wget-ssl && curl -L -s "https:/
 
 ##### Авторизация
 > [!NOTE]
-> Для включения измените флаг на `"W4S_AUTH" => "1"` в файле `/opt/etc/lighttpd/conf.d/` и выполните перезапуск
+> Для включения измените флаг на `"BASIC_AUTH" => "1"` в файле `/opt/etc/lighttpd/conf.d/81-w4s-local.conf` и выполните перезапуск
 ```
 /opt/etc/init.d/S80lighttpd restart
 ```

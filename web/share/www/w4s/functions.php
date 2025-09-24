@@ -1,11 +1,11 @@
 <?php
 $allowedExtensions = ['list', 'json', 'conf', 'txt', 'yaml', 'sh'];
-$AUTH_FLAG = getenv('W4S_AUTH');
+$AUTH_FLAG = getenv('BASIC_AUTH');
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
 define('FILES_DIR', WEB4STATIC_DIR . '');
 
-if ($AUTH_FLAG === false && isset($_SERVER['W4S_AUTH'])) {
-    $AUTH_FLAG = $_SERVER['W4S_AUTH'];
+if ($AUTH_FLAG === false && isset($_SERVER['BASIC_AUTH'])) {
+    $AUTH_FLAG = $_SERVER['BASIC_AUTH'];
 }
 
 function isAuthEnabled(): bool {
