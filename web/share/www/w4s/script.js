@@ -337,6 +337,21 @@ function versionToNumber(version) {
     return parseInt(parts[0]) * 10000 + parseInt(parts[1] || 0) * 100 + parseInt(parts[2] || 0);
 }
 
+function isRemoteNewer(local, remote) {
+    const a = String(local || '0').split('.').map(n => parseInt(n, 10) || 0);
+    const b = String(remote || '0').split('.').map(n => parseInt(n, 10) || 0);
+    for (let i = 0; i < 3; i++) {
+        const av = a[i] || 0;
+        const bv = b[i] || 0;
+        if (bv > av) return true;
+        if (bv < av) return false;
+    }
+    for (let i = 3; i < b.length; i++) {
+        if ((b[i] || 0) > 0) return true;
+    }
+    return false;
+}
+
 function setElementVisibility(element, isVisible) {
     if (element) {
         element.style.display = isVisible ? 'flex' : 'none';
@@ -380,11 +395,9 @@ function checkForUpdates() {
         .then(response => response.json())
         .then(data => {
             console.log('Check update response:', data);
-            const localNum = versionToNumber(data.local_version);
-            const remoteNum = versionToNumber(data.remote_version);
             remoteVersion = data.remote_version;
-
-            toggleUpdateIcon(data.local_version, data.remote_version, remoteNum > localNum);
+            const newer = isRemoteNewer(data.local_version, data.remote_version);
+            toggleUpdateIcon(data.local_version, data.remote_version, newer);
         })
         .catch(err => console.error('Ошибка при проверке обновлений:', err));
 }
