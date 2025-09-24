@@ -311,9 +311,8 @@ function handlePostRequest($files) {
         foreach ($files as $fileKey => $filePath) {
             $baseFileName = pathinfo($fileKey, PATHINFO_FILENAME);
             if ($baseFileName === $fileName && ($category === '' || array_key_exists($fileKey, $GLOBALS['categories'][$category] ?? []))) {
-                file_put_contents($filePath, $content);
-                $tmpFile = $filePath . '.tmp';
-                shell_exec("tr -d '\r' < " . escapeshellarg($filePath) . " > " . escapeshellarg($tmpFile) . " && mv " . escapeshellarg($tmpFile) . " " . escapeshellarg($filePath));
+                $normalizedContent = str_replace("\r", '', $content);
+                file_put_contents($filePath, $normalizedContent);
                 break;
             }
         }
