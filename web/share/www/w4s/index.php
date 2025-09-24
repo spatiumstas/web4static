@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/functions.php';
 $cache_buster = getVersion();
+enforceBasicAuth();
 
 if (isset($_GET['check_update'])) {
     checkUpdate();
@@ -129,7 +130,7 @@ if (isset($_GET['export_all'])) {
                                         <textarea name="<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
                                     </div>
                                     <div class="button-container">
-                                        <input type="file" id="import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>" style="display:none;" accept=".txt,.list,.json,.conf" onchange="importFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', this, '<?php echo htmlspecialchars($category); ?>')">
+                                        <input type="file" id="import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>" style="display:none;" accept=".list,.json,.conf,.txt,.yaml,.sh" onchange="importFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', this, '<?php echo htmlspecialchars($category); ?>')">
                                         <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>').click()" aria-label="Replace file" title="Заменить">
                                             <svg width="24" height="24"><use href="#swap"/></svg>
                                         </button>

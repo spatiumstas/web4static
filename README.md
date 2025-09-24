@@ -27,6 +27,7 @@ opkg update && opkg install curl ca-certificates wget-ssl && curl -L -s "https:/
 
 > [!NOTE]
 > Веб‑интерфейс доступен по адресу `http://<router_ip>:99` (например http://192.168.1.1:99)<br/>
+> Для авторизации используйте `логин:пароль` от Entware (по-умолчанию `root:keenetic`)
 
 > [!TIP]
 > По-умолчанию php использует только 8Мб памяти. Из-за этого ограничения, могут не загружаться большие списки файлов.
@@ -38,6 +39,12 @@ opkg update && opkg install curl ca-certificates wget-ssl && curl -L -s "https:/
 > upload_max_filesize = 16M
 > ```
 
+##### Авторизация
+> [!NOTE]
+> Для включения измените флаг на `"W4S_AUTH" => "1"` в файле `/opt/etc/lighttpd/conf.d/` и выполните перезапуск
+```
+/opt/etc/init.d/S80lighttpd restart
+```
 ##### Удаление
 
 ```

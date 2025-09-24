@@ -1,7 +1,71 @@
 <?php
 $allowedExtensions = ['list', 'json', 'conf', 'txt', 'yaml', 'sh'];
+$AUTH_FLAG = getenv('W4S_AUTH');
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
 define('FILES_DIR', WEB4STATIC_DIR . '');
+
+if ($AUTH_FLAG === false && isset($_SERVER['W4S_AUTH'])) {
+    $AUTH_FLAG = $_SERVER['W4S_AUTH'];
+}
+
+function isAuthEnabled(): bool {
+    global $AUTH_FLAG;
+    $flag = strtolower(trim((string)$AUTH_FLAG));
+    return in_array($flag, ['1', 'true', 'on', 'yes'], true);
+}
+
+function authenticateUser(string $username, string $password): bool {
+    $rootDir = file_exists('/opt/etc/passwd') ? '/opt' : '';
+    $passwdFile = $rootDir . '/etc/passwd';
+    $shadowFile = $rootDir . '/etc/shadow';
+
+    $sourceFile = file_exists($shadowFile) ? $shadowFile : $passwdFile;
+    if (!is_readable($sourceFile)) {
+        return false;
+    }
+
+    $users = file($sourceFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($users as $line) {
+        if (strpos($line, $username . ':') === 0) {
+            $parts = explode(':', $line);
+            $passwdInDB = $parts[1] ?? '';
+            if ($passwdInDB === '') {
+                return $password === '';
+            }
+            return crypt($password, $passwdInDB) === $passwdInDB;
+        }
+    }
+    return false;
+}
+
+function parseBasicAuthFromHeader(): array {
+    $user = $_SERVER['PHP_AUTH_USER'] ?? null;
+    $pass = $_SERVER['PHP_AUTH_PW'] ?? null;
+    if ($user !== null) {
+        return [$user, (string)$pass];
+    }
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['Authorization'] ?? '';
+    if (stripos($authHeader, 'Basic ') === 0) {
+        $decoded = base64_decode(substr($authHeader, 6));
+        if ($decoded !== false && strpos($decoded, ':') !== false) {
+            return explode(':', $decoded, 2);
+        }
+    }
+    return [null, null];
+}
+
+function enforceBasicAuth(string $realm = 'web4static'): void {
+    if (!isAuthEnabled()) {
+        return;
+    }
+    list($user, $pass) = parseBasicAuthFromHeader();
+    if ($user === null || !authenticateUser($user, $pass)) {
+        header('WWW-Authenticate: Basic realm="' . $realm . '", charset="UTF-8"');
+        header('HTTP/1.0 401 Unauthorized');
+        echo 'Authorization required';
+        exit();
+    }
+}
 
 $SERVICES = [
     'Bird4Static' => [
