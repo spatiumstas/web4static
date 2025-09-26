@@ -130,6 +130,11 @@ if (isset($_GET['export_all'])) {
                                         <textarea name="<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
                                     </div>
                                     <div class="button-container">
+                                        <?php if (in_array($category, ['sing-box', 'Xray'])): ?>
+                                        <button type="button" onclick="window.open('https://spatiumstas.github.io/web4core', '_blank')" aria-label="Generate configuration" title="Создать конфигурацию">
+                                            <svg width="24" height="24"><use href="#plus"/></svg>
+                                        </button>
+                                        <?php endif; ?>
                                         <input type="file" id="import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>" style="display:none;" accept=".list,.json,.conf,.txt,.yaml,.sh" onchange="importFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', this, '<?php echo htmlspecialchars($category); ?>')">
                                         <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>').click()" aria-label="Replace file" title="Заменить">
                                             <svg width="24" height="24"><use href="#swap"/></svg>

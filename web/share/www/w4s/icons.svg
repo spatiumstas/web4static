@@ -69,4 +69,11 @@
         <line x1="12" y1="16" x2="12" y2="12"></line>
         <line x1="12" y1="8" x2="12" y2="8"></line>
     </symbol>
+
+    <!-- Plus -->
+    <symbol id="plus" viewBox="0 0 16 16" fill="none">
+        <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M8.584 1.167a.75.75 0 1 0-1.5 0V7.25H1a.75.75 0 0 0 0 1.5h6.083v6.083a.75.75 0 0 0 1.5 0V8.75h6.084a.75.75 0 0 0 0-1.5H8.584V1.167Z"
+              fill="currentColor"/>
+    </symbol>
 </svg>
