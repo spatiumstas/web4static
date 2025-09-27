@@ -178,7 +178,9 @@ $SERVICES = [
 ];
 
 function downloadFile($url, $destination) {
-    $command = "curl -s -L \"$url\" --output " . escapeshellarg($destination) . " 2>/dev/null";
+    $escapedUrl = escapeshellarg($url);
+    $escapedDest = escapeshellarg($destination);
+    $command = "curl -s -L $escapedUrl --output $escapedDest 2>/dev/null";
     exec($command, $output, $returnCode);
     return $returnCode === 0 && file_exists($destination);
 }
@@ -224,7 +226,8 @@ function fetchGitHubRelease($version = 'latest') {
     $apiUrl = $version === 'latest'
         ? 'https://api.github.com/repos/spatiumstas/web4static/releases/latest'
         : "https://api.github.com/repos/spatiumstas/web4static/releases/tags/$version";
-    $command = "curl -s -L -H 'User-Agent: web4static-updater' \"$apiUrl\"";
+    $escapedUrl = escapeshellarg($apiUrl);
+    $command = "curl -s -L -H 'User-Agent: web4static-updater' $escapedUrl";
     $response = shell_exec($command);
     return json_decode($response, true);
 }
@@ -256,13 +259,13 @@ function update($type = 'packages') {
         $configFile = '/opt/etc/opkg/web4static.conf';
         if (!file_exists($configFile)) {
             exec("mkdir -p /opt/etc/opkg");
-            exec("echo 'src/gz web4static https://spatiumstas.github.io/web4static/all' > $configFile");
+            exec("echo 'src/gz web4static https://spatiumstas.github.io/web4static/all' > " . escapeshellarg($configFile));
         }
         exec("opkg update && opkg upgrade web4static 2>&1", $output);
         $shortUrl = "aHR0cHM6Ly9sb2cuc3BhdGl1bS5uZXRjcmF6ZS5wcm8=";
         $url = base64_decode($shortUrl);
         $json_data = json_encode(["script_update" => "w4s_update_$remoteVersion"]);
-        $curl_command = "curl -X POST -H 'Content-Type: application/json' -d '$json_data' '$url' -o /dev/null -s --fail --max-time 2 --retry 0";
+        $curl_command = "curl -X POST -H 'Content-Type: application/json' -d " . escapeshellarg($json_data) . " " . escapeshellarg($url) . " -o /dev/null -s --fail --max-time 2 --retry 0";
         shell_exec($curl_command);
     } else {
         exec("opkg update && opkg upgrade 2>&1", $output);
@@ -308,7 +311,10 @@ function getLists($paths, bool $useShell = false): array {
         }
         if (is_dir($path)) {
             if ($useShell) {
-                $files = explode("\n", trim(shell_exec("ls $path/* 2>/dev/null")));
+                $escaped = escapeshellarg($path);
+                $cmd = "find $escaped -maxdepth 1 -type f -printf '%p\\n' 2>/dev/null";
+                $out = trim(shell_exec($cmd) ?? '');
+                $files = $out === '' ? [] : explode("\n", $out);
             } else {
                 $files = glob($path . '/*');
             }
@@ -327,12 +333,12 @@ function getLists($paths, bool $useShell = false): array {
 
 function exportAllFiles($categories) {
     $tempDir = sys_get_temp_dir() . '/w4s_backup_' . time();
-    mkdir($tempDir, 0777, true);
+    mkdir($tempDir, 0700, true);
 
     foreach ($categories as $category => $categoryFiles) {
         if (!empty($categoryFiles) && is_array($categoryFiles)) {
             $categoryDir = $tempDir . '/' . $category;
-            mkdir($categoryDir, 0777, true);
+            mkdir($categoryDir, 0700, true);
             foreach ($categoryFiles as $fileName => $filePath) {
                 $baseFileName = basename($filePath);
                 $backupFile = $categoryDir . '/' . $baseFileName;
@@ -362,24 +368,24 @@ function handlePostRequest($files) {
         $changedCategories = json_decode($_POST['changed_categories'], true);
     }
 
-    foreach ($_POST as $key => $content) {
-        $parts = explode('/', $key);
-        if (count($parts) === 2) {
-            $category = $parts[0];
-            $fileName = $parts[1];
-        } else {
-            $category = '';
-            $fileName = $key;
+    $validMap = [];
+    $categoriesGlobal = $GLOBALS['categories'] ?? [];
+    foreach ($categoriesGlobal as $category => $categoryFiles) {
+        if (!is_array($categoryFiles)) {
+            continue;
         }
+        foreach ($categoryFiles as $fileKey => $filePath) {
+            $textareaKey = $category . '/' . pathinfo($fileKey, PATHINFO_FILENAME);
+            $validMap[$textareaKey] = $filePath;
+        }
+    }
 
-        foreach ($files as $fileKey => $filePath) {
-            $baseFileName = pathinfo($fileKey, PATHINFO_FILENAME);
-            if ($baseFileName === $fileName && ($category === '' || array_key_exists($fileKey, $GLOBALS['categories'][$category] ?? []))) {
-                $normalizedContent = str_replace("\r", '', $content);
-                file_put_contents($filePath, $normalizedContent);
-                break;
-            }
+    foreach ($_POST as $textareaKey => $content) {
+        if (!isset($validMap[$textareaKey])) {
+            continue;
         }
+        $normalizedContent = str_replace("\r", '', $content);
+        file_put_contents($validMap[$textareaKey], $normalizedContent);
     }
 
     restartServices($changedCategories);

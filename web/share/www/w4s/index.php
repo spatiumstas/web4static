@@ -15,6 +15,7 @@ if (isset($_GET['get_release_notes']) && isset($_GET['v'])) {
 }
 
 $categories = getCategories();
+$GLOBALS['categories'] = $categories;
 
 $serviceStatusSupport = [];
 foreach (array_keys($categories) as $cat) {
@@ -57,39 +58,6 @@ if (isset($_GET['export_all'])) {
     <link rel="stylesheet" href="styles.css?v=<?php echo $cache_buster; ?>">
     <link rel="manifest" href="manifest.json?v=<?php echo $cache_buster; ?>">
     <script src="script.js?v=<?php echo $cache_buster; ?>" defer></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            if (window.navigator.standalone === true) {
-                document.body.classList.add("pwa-mode");
-            }
-        document.querySelectorAll('textarea').forEach(textarea => {
-                const fileKey = textarea.name;
-                const formatButton = document.querySelector(`.format-json-btn[onclick="formatJson('${fileKey}')"]`);
-                if (formatButton) {
-                    toggleJsonButton(textarea, formatButton);
-                }
-            });
-            document.addEventListener('input', (e) => {
-                if (e.target.tagName === 'TEXTAREA') {
-                    const fileKey = e.target.name;
-                    const formatButton = document.querySelector(`.format-json-btn[onclick="formatJson('${fileKey}')"]`);
-                    if (formatButton) {
-                        toggleJsonButton(e.target, formatButton);
-                    }
-                }
-            });
-            applySavedTheme();
-            restoreTextareaSizes();
-            setupTextareaResizeListeners();
-            checkForUpdates();
-            const header = document.getElementById("asciiHeader");
-            header.addEventListener("click", function() {
-                try { localStorage.clear(); } catch (e) {}
-                location.reload();
-            });
-            window.getServiceStatus = getServiceStatus;
-        });
-    </script>
 </head>
 <body class="dark-theme">
     <header id="asciiHeader">

@@ -1,6 +1,7 @@
 /** Theme **/
 
 const themeCache = {theme: localStorage.getItem('theme') || 'dark'};
+let statusRequestInProgress = false;
 
 function toggleTheme() {
     document.body.classList.toggle('dark-theme');
@@ -132,6 +133,48 @@ document.addEventListener('DOMContentLoaded', function () {
             saveFileVersion(this);
         });
     });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.navigator.standalone === true) {
+        document.body.classList.add('pwa-mode');
+    }
+
+    document.querySelectorAll('textarea').forEach(textarea => {
+        const fileKey = textarea.name;
+        const formatButton = document.querySelector(`.format-json-btn[onclick="formatJson('${fileKey}')"]`);
+        if (formatButton) {
+            toggleJsonButton(textarea, formatButton);
+        }
+    });
+
+    document.addEventListener('input', (e) => {
+        if (e.target.tagName === 'TEXTAREA') {
+            const fileKey = e.target.name;
+            const formatButton = document.querySelector(`.format-json-btn[onclick=\"formatJson('${fileKey}')\"]`);
+            if (formatButton) {
+                toggleJsonButton(e.target, formatButton);
+            }
+        }
+    });
+
+    applySavedTheme();
+    restoreTextareaSizes();
+    setupTextareaResizeListeners();
+    checkForUpdates();
+
+    const header = document.getElementById('asciiHeader');
+    if (header) {
+        header.addEventListener('click', function () {
+            try {
+                localStorage.clear();
+            } catch (e) {
+            }
+            location.reload();
+        });
+    }
+
+    window.getServiceStatus = getServiceStatus;
 });
 
 document.getElementById('mainForm').addEventListener('submit', function (event) {
@@ -618,7 +661,6 @@ function formatJson(textareaName) {
     }
 }
 
-let statusRequestInProgress = false;
 function getServiceStatus(category) {
     if (statusRequestInProgress) return;
     statusRequestInProgress = true;
