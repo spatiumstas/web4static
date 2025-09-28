@@ -112,6 +112,7 @@ $SERVICES = [
         'init' => 'xkeen',
         'path' => ['/opt/etc/xray/configs', '/opt/etc/mihomo/config.yaml'],
         'useShell' => false,
+        'validate_config' => true,
         'restart' => function($self) {
             foreach ((array)$self['path'] as $p) {
                 if (is_dir($p) || is_file($p)) {
@@ -120,30 +121,51 @@ $SERVICES = [
             }
             return [];
         },
-        'status' => function($self) {
-            return shell_exec($self['init'] . ' -status 2>&1');
+        'status' => function($self, $configPath = null) {
+            $out = shell_exec($self['init'] . ' -status 2>&1');
+            if ($configPath) {
+                $cfg = (string)$configPath;
+                if (preg_match('/\.(ya?ml)$/i', $cfg)) {
+                    $out .= "\n" . shell_exec('mihomo -t -f ' . escapeshellarg($cfg) . ' 2>&1');
+                } else {
+                    $out .= "\n" . shell_exec('xray -test -config ' . escapeshellarg($cfg) . " 2>&1 | sed '1,2d'");
+                }
+            }
+            return $out;
         }
     ],
     'sing-box' => [
         'init' => '/opt/etc/init.d/S99sing-box',
         'path' => '/opt/etc/sing-box',
         'useShell' => false,
+        'validate_config' => true,
         'restart' => function($self) {
             return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
         },
-        'status' => function($self) {
-            return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
+        'status' => function($self, $configPath = null) {
+            $out = is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : '';
+            if ($configPath) {
+                $cfg = (string)$configPath;
+                $out .= "\n" . shell_exec('sing-box check -c ' . escapeshellarg($cfg) . " 2>&1");
+            }
+            return trim((string)$out) !== '' ? $out : 'Нет статуса';
         }
     ],
     'Xray' => [
         'init' => '/opt/etc/init.d/S24xray',
         'path' => '/opt/etc/xray',
         'useShell' => false,
+        'validate_config' => true,
         'restart' => function($self) {
             return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
         },
-        'status' => function($self) {
-            return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
+        'status' => function($self, $configPath = null) {
+            $out = is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : '';
+            if ($configPath) {
+                $cfg = (string)$configPath;
+                $out .= "\n" . shell_exec('xray -test -config ' . escapeshellarg($cfg) . " 2>&1 | sed '1,2d'");
+            }
+            return trim((string)$out) !== '' ? $out : 'Нет статуса';
         }
     ],
     'HydraRoute' => [
@@ -410,7 +432,11 @@ function getServiceStatus($category) {
 
 if (isset($_GET['service_status']) && isset($SERVICES[$_GET['service_status']])) {
     $cat = $_GET['service_status'];
-    $status = getServiceStatus($cat);
+    $configPath = isset($_GET['config']) ? $_GET['config'] : null;
+    $raw = isset($SERVICES[$cat]['status'])
+        ? $SERVICES[$cat]['status']($SERVICES[$cat], $configPath)
+        : getServiceStatus($cat);
+    $status = stripAnsi((string)$raw);
     header('Content-Type: application/json');
     echo json_encode(['status' => $status]);
     exit();

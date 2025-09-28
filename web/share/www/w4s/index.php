@@ -18,9 +18,11 @@ $categories = getCategories();
 $GLOBALS['categories'] = $categories;
 
 $serviceStatusSupport = [];
+$serviceValidateSupport = [];
 foreach (array_keys($categories) as $cat) {
     global $SERVICES;
     $serviceStatusSupport[$cat] = isset($SERVICES[$cat]['status']);
+    $serviceValidateSupport[$cat] = !empty($SERVICES[$cat]['validate_config']);
 }
 
 $files = [];
@@ -98,7 +100,7 @@ if (isset($_GET['export_all'])) {
                                         <textarea name="<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
                                     </div>
                                     <div class="button-container">
-                                        <?php if (in_array($category, ['sing-box', 'Xray'])): ?>
+                                        <?php if (in_array($category, ['sing-box', 'Xray', 'XKeen'])): ?>
                                         <button type="button" onclick="window.open('https://spatiumstas.github.io/web4core', '_blank')" aria-label="Generate configuration" title="Создать конфигурацию">
                                             <svg width="24" height="24"><use href="#plus"/></svg>
                                         </button>
@@ -114,7 +116,7 @@ if (isset($_GET['export_all'])) {
                                             <svg width="24" height="24"><use href="#json"/></svg>
                                         </button>
                                         <?php if (!empty($serviceStatusSupport[$category])): ?>
-                                        <button type="button" class="status-btn" onclick="getServiceStatus('<?php echo htmlspecialchars($category); ?>')" aria-label="Service status" title="Статус сервиса">
+                                        <button type="button" class="status-btn" onclick="getServiceStatus('<?php echo htmlspecialchars($category); ?>'<?php if (!empty($serviceValidateSupport[$category])) { ?>,'<?php echo htmlspecialchars($path, ENT_QUOTES); ?>'<?php } ?>)" aria-label="Service status" title="Статус сервиса">
                                             <svg width="24" height="24"><use href="#status"/></svg>
                                         </button>
                                         <?php endif; ?>

@@ -661,10 +661,15 @@ function formatJson(textareaName) {
     }
 }
 
-function getServiceStatus(category) {
+function getServiceStatus(category, filePath) {
     if (statusRequestInProgress) return;
     statusRequestInProgress = true;
-    fetch(`index.php?service_status=${encodeURIComponent(category)}`)
+    const params = new URLSearchParams();
+    params.set('service_status', category);
+    if (filePath) {
+        params.set('config', filePath);
+    }
+    fetch(`index.php?${params.toString()}`)
         .then(r => r.json())
         .then(data => {
             showOutputModal('Статус сервиса', data.status);
