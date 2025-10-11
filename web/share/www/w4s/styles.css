@@ -9,6 +9,10 @@
     --border-radius: 20px;
     --font-family: Roboto, sans-serif;
     --placeholder-color: #aaa;
+    --glass-bg-light: rgba(255, 255, 255, 0.70);
+    --glass-bg-dark: rgba(27, 36, 52, 0.65);
+    --glass-stroke-light: rgba(0, 0, 0, 0.08);
+    --glass-stroke-dark: rgba(255, 255, 255, 0.14);
 }
 
 html {
@@ -54,18 +58,6 @@ footer {
     transition: margin-bottom 0.3s ease;
 }
 
-.footer {
-    margin-top: 20px;
-    text-align: center;
-    font-size: 14px;
-    color: var(--primary-color);
-}
-
-.footer a {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
 footer.dark-theme {
     background-color: var(--background-color-dark);
 }
@@ -79,11 +71,6 @@ footer.panel-above {
     border: none;
     cursor: pointer;
     padding: 10px;
-}
-
-#theme-toggle svg {
-    color: #333;
-    transition: color 0.3s ease;
 }
 
 body.dark-theme {
@@ -190,16 +177,6 @@ textarea::-webkit-scrollbar {
     display: none;
 }
 
-textarea:focus {
-    border: 1px solid var(--primary-color);
-    outline: none;
-}
-
-textarea:hover {
-    border: 1px solid var(--primary-color);
-    outline: none;
-}
-
 textarea::placeholder {
     color: var(--placeholder-color);
     opacity: 0.8;
@@ -230,7 +207,7 @@ body.dark-theme textarea:hover {
 }
 
 input[type="submit"] {
-    margin: 20px 0;
+    margin: 10px 0;
     padding: 10px 15px;
     border-radius: var(--border-radius);
     border: 1px solid var(--primary-color);
@@ -252,7 +229,7 @@ input[type="submit"]:disabled:hover {
 }
 
 input[type="button"] {
-    margin: 10px 0;
+    margin: 5px 0;
     padding: 10px 15px;
     border-radius: var(--border-radius);
     border: 1px solid var(--primary-color);
@@ -263,7 +240,7 @@ input[type="button"] {
 }
 
 body.dark-theme input[type="button"] {
-    margin: 10px 0;
+    margin: 5px 0;
     padding: 10px 15px;
     border-radius: var(--border-radius);
     border: 1px solid var(--primary-color);
@@ -283,6 +260,10 @@ body.dark-theme input[type="button"]:hover {
 }
 
 input[type="submit"]:active, input[type="button"]:active, button:active {
+    transform: scale(0.95);
+}
+
+footer a:active {
     transform: scale(0.95);
 }
 
@@ -375,10 +356,6 @@ body.dark-theme .form-section .button-container button:hover {
     transition: color 0.3s ease;
 }
 
-.form-section .button-container button svg {
-    transition: color 0.3s ease;
-}
-
 #theme-toggle,
 footer button,
 footer a {
@@ -443,16 +420,6 @@ body.dark-theme #github-dark-icon {
     cursor: pointer;
 }
 
-#update-icon {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 @keyframes spin {
     0% {
         transform: rotate(0deg);
@@ -465,31 +432,6 @@ body.dark-theme #github-dark-icon {
 .group-button-wrapper {
     position: relative;
     display: inline-block;
-}
-
-.delete-group-btn {
-    width: 25px !important;
-    height: 25px !important;
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    border: 1px solid var(--primary-color);
-}
-
-.delete-group-btn svg,
-.add-group-btn svg {
-    width: 24px;
-    height: 24px;
-}
-
-.delete-group-btn:hover,
-.add-group-btn:hover {
-    background: var(--primary-color);
-}
-
-.delete-group-btn:hover svg,
-.add-group-btn:hover svg {
-    color: var(--white-color);
 }
 
 #update-w4s-panel {
@@ -598,7 +540,7 @@ body.pwa-mode #update-w4s-panel {
 }
 
 .output-modal-content {
-    background-color: var(--background-color);
+    background-color: var(--glass-bg-light);
     max-height: 80%;
     border-radius: var(--border-radius) var(--border-radius) 0 0;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
@@ -606,6 +548,8 @@ body.pwa-mode #update-w4s-panel {
     transition: transform 0.3s ease-in-out;
     display: flex;
     flex-direction: column;
+    backdrop-filter: saturate(180%) blur(5px);
+    border: 0.5px solid var(--glass-stroke-light);
 }
 
 @media (min-width: 768px) {
@@ -615,7 +559,8 @@ body.pwa-mode #update-w4s-panel {
 }
 
 body.dark-theme .output-modal-content {
-    background-color: var(--background-color-dark);
+    background-color: var(--glass-bg-dark);
+    border-color: var(--glass-stroke-dark);
 }
 
 .output-modal.show .output-modal-content {

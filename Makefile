@@ -1,6 +1,7 @@
 SHELL := /bin/bash
 VERSION := $(shell cat VERSION)
 ROOT_DIR := /opt
+.PHONY: clean _web-clean _web-control _web-scripts _web-ipk web-kn
 
 clean:
 	rm -rf out/web
@@ -13,7 +14,7 @@ _web-clean:
 _web-control:
 	echo "Package: web4static" > out/$(BUILD_DIR)/control/control
 	echo "Version: $(VERSION)" >> out/$(BUILD_DIR)/control/control
-	echo "Depends: curl, php8-cgi, php8-mod-session, lighttpd, lighttpd-mod-cgi, lighttpd-mod-setenv, lighttpd-mod-rewrite" >> out/$(BUILD_DIR)/control/control
+	echo "Depends: curl, ip, php8-cgi, php8-mod-session, lighttpd, lighttpd-mod-cgi, lighttpd-mod-setenv, lighttpd-mod-rewrite" >> out/$(BUILD_DIR)/control/control
 	echo "License: MIT" >> out/$(BUILD_DIR)/control/control
 	echo "Section: net" >> out/$(BUILD_DIR)/control/control
 	echo "URL: https://github.com/spatiumstas/web4static" >> out/$(BUILD_DIR)/control/control
@@ -39,6 +40,9 @@ _web-ipk:
 
 	mkdir -p out/$(BUILD_DIR)/data$(ROOT_DIR)/etc/lighttpd/conf.d
 	cp web/etc/lighttpd/conf.d/80-w4s.conf out/$(BUILD_DIR)/data$(ROOT_DIR)/etc/lighttpd/conf.d/80-w4s.conf
+
+	W4S_DIR=out/$(BUILD_DIR)/data$(ROOT_DIR)/share/www/w4s; \
+	bash scripts/fingerprint.sh "$$W4S_DIR"
 	cd out/$(BUILD_DIR)/data; tar czvf ../data.tar.gz .; cd ../../..
 
 	# ipk

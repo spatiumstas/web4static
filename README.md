@@ -1,14 +1,14 @@
 ## Веб‑интерфейс управления конфигурациями [Bird4Static](https://github.com/DennoN-RUS/Bird4Static) - [IPset4Static](https://github.com/DennoN-RUS/IPset4Static) - [NFQWS](https://github.com/Anonym-tsk/nfqws-keenetic) - [XKeen](https://github.com/Skrill0/XKeen) - [HydraRoute](https://github.com/Ground-Zerro/HydraRoute) - [Antiscan](https://github.com/dimon27254/antiscan) - Xray - sing-box - dnsmasq
 
-![IMG_0671-round-corners](https://github.com/user-attachments/assets/8b0e44b3-bf50-464f-b389-04a7e8f8f29c)
+![IMG_0671-round-corners](https://github.com/user-attachments/assets/fc423457-a7cd-421a-988f-279c8741bc18)
 
-##### Автоустановка
+### Автоустановка
 
 ```shell
 opkg update && opkg install curl ca-certificates wget-ssl && curl -L -s "https://raw.githubusercontent.com/spatiumstas/web4static/main/install.sh" > /tmp/install.sh && sh /tmp/install.sh
 ```
 
-##### Ручная установка
+### Ручная установка
 
 1. Установите необходимые зависимости
    ```

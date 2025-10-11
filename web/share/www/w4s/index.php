@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/functions.php';
-$cache_buster = getVersion();
 enforceBasicAuth();
 
 if (isset($_GET['check_update'])) {
@@ -57,9 +56,9 @@ if (isset($_GET['export_all'])) {
     <title>web4static</title>
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="icon" href="favicon.png">
-    <link rel="stylesheet" href="styles.css?v=<?php echo $cache_buster; ?>">
-    <link rel="manifest" href="manifest.json?v=<?php echo $cache_buster; ?>">
-    <script src="script.js?v=<?php echo $cache_buster; ?>" defer></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <script src="script.js" defer></script>
 </head>
 <body class="dark-theme">
     <header id="asciiHeader">

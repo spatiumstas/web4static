@@ -70,7 +70,7 @@ jobs:
 
           echo "Package: web4static" > out/_pages/all/Packages
           echo "Version: ${{ steps.version.outputs.content }}" >> out/_pages/all/Packages
-          echo "Depends: curl, php8-cgi, php8-mod-session, lighttpd, lighttpd-mod-cgi, lighttpd-mod-setenv, lighttpd-mod-rewrite" >> out/_pages/all/Packages  # Adapt dependencies as needed
+          echo "Depends: curl, php8-cgi, ip, php8-mod-session, lighttpd, lighttpd-mod-cgi, lighttpd-mod-setenv, lighttpd-mod-rewrite" >> out/_pages/all/Packages  # Adapt dependencies as needed
           echo "License: MIT" >> out/_pages/all/Packages
           echo "Section: net" >> out/_pages/all/Packages
           echo "Architecture: all" >> out/_pages/all/Packages
