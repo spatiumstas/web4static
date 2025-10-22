@@ -2,7 +2,6 @@
 $allowedExtensions = ['list', 'json', 'conf', 'txt', 'yaml', 'sh'];
 $AUTH_FLAG = getenv('BASIC_AUTH');
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
-define('FILES_DIR', WEB4STATIC_DIR . '');
 
 if ($AUTH_FLAG === false && isset($_SERVER['BASIC_AUTH'])) {
     $AUTH_FLAG = $_SERVER['BASIC_AUTH'];
@@ -101,6 +100,7 @@ $SERVICES = [
         'init' => '/opt/etc/init.d/S51nfqws',
         'path' => '/opt/etc/nfqws',
         'useShell' => false,
+        'packages' => ['nfqws-keenetic'],
         'restart' => function($self) {
             return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
         },
@@ -112,6 +112,7 @@ $SERVICES = [
         'init' => 'xkeen',
         'path' => ['/opt/etc/xray/configs', '/opt/etc/mihomo/config.yaml'],
         'useShell' => false,
+        'packages' => ['xkeen'],
         'validate_config' => true,
         'restart' => function($self) {
             foreach ((array)$self['path'] as $p) {
@@ -138,6 +139,7 @@ $SERVICES = [
         'init' => '/opt/etc/init.d/S99sing-box',
         'path' => '/opt/etc/sing-box',
         'useShell' => false,
+        'packages' => ['sing-box-go'],
         'validate_config' => true,
         'restart' => function($self) {
             return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
@@ -155,6 +157,7 @@ $SERVICES = [
         'init' => '/opt/etc/init.d/S24xray',
         'path' => '/opt/etc/xray',
         'useShell' => false,
+        'packages' => ['xray'],
         'validate_config' => true,
         'restart' => function($self) {
             return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
@@ -171,6 +174,7 @@ $SERVICES = [
     'HydraRoute' => [
         'path' => ['/opt/etc/HydraRoute', '/opt/etc/AdGuardHome/domain.conf'],
         'useShell' => false,
+        'packages' => ['hydraroute', 'hrneo'],
         'restart' => function($self) {
             return is_dir('/opt/etc/AdGuardHome') ? ['agh restart'] : [];
         },
@@ -179,6 +183,7 @@ $SERVICES = [
         'init' => '/opt/etc/init.d/S99ascn',
         'path' => '/opt/etc/antiscan',
         'useShell' => false,
+        'packages' => ['antiscan'],
         'restart' => function($self) {
             return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
         },
@@ -190,6 +195,7 @@ $SERVICES = [
         'init' => '/opt/etc/init.d/S56dnsmasq',
         'path' => '/opt/etc/dnsmasq.conf',
         'useShell' => false,
+        'packages' => ['dnsmasq-full'],
         'restart' => function($self) {
             return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
         },
@@ -198,6 +204,27 @@ $SERVICES = [
         }
     ]
 ];
+
+function isPackageInstalled(array $packageNames): bool {
+    static $installed;
+    if ($installed === null) {
+        $installed = [];
+        $out = shell_exec('opkg list-installed 2>/dev/null');
+        $lines = $out ? explode("\n", trim($out)) : [];
+        foreach ($lines as $line) {
+            if ($line === '') continue;
+            $parts = explode(' - ', $line, 2);
+            $name = trim($parts[0] ?? '');
+            if ($name !== '') {
+                $installed[$name] = true;
+            }
+        }
+    }
+    foreach ($packageNames as $pkg) {
+        if (isset($installed[$pkg])) return true;
+    }
+    return false;
+}
 
 function downloadFile($url, $destination) {
     $escapedUrl = escapeshellarg($url);
@@ -212,6 +239,13 @@ function getCategories() {
     $categories = [];
 
     foreach ($SERVICES as $category => $config) {
+        if (isset($config['packages'])) {
+            $packages = (array)$config['packages'];
+            if (!isPackageInstalled($packages)) {
+                $categories[$category] = [];
+                continue;
+            }
+        }
         $categories[$category] = getLists($config['path'], $config['useShell']);
     }
 
@@ -421,21 +455,16 @@ function stripAnsi($text) {
     return $text;
 }
 
-function getServiceStatus($category) {
-    global $SERVICES;
-    if (isset($SERVICES[$category]['status'])) {
-        $status = $SERVICES[$category]['status']($SERVICES[$category]);
-        return stripAnsi($status);
-    }
-    return 'Статус не поддерживается';
-}
-
 if (isset($_GET['service_status']) && isset($SERVICES[$_GET['service_status']])) {
     $cat = $_GET['service_status'];
     $configPath = isset($_GET['config']) ? $_GET['config'] : null;
-    $raw = isset($SERVICES[$cat]['status'])
-        ? $SERVICES[$cat]['status']($SERVICES[$cat], $configPath)
-        : getServiceStatus($cat);
+    
+    if (isset($SERVICES[$cat]['status'])) {
+        $raw = $SERVICES[$cat]['status']($SERVICES[$cat], $configPath);
+    } else {
+        $raw = 'Статус не поддерживается';
+    }
+    
     $status = stripAnsi((string)$raw);
     header('Content-Type: application/json');
     echo json_encode(['status' => $status]);

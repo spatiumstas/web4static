@@ -1,6 +1,6 @@
 ## Веб‑интерфейс управления конфигурациями [Bird4Static](https://github.com/DennoN-RUS/Bird4Static) - [IPset4Static](https://github.com/DennoN-RUS/IPset4Static) - [NFQWS](https://github.com/Anonym-tsk/nfqws-keenetic) - [XKeen](https://github.com/Skrill0/XKeen) - [HydraRoute](https://github.com/Ground-Zerro/HydraRoute) - [Antiscan](https://github.com/dimon27254/antiscan) - Xray - sing-box - dnsmasq
 
-![IMG_0671-round-corners](https://github.com/user-attachments/assets/fc423457-a7cd-421a-988f-279c8741bc18)
+<img src="https://github.com/user-attachments/assets/f1c8096e-5938-4923-ab0e-bf020cdbd377" alt="" width="700">
 
 ### Автоустановка
 
@@ -27,7 +27,6 @@ opkg update && opkg install curl ca-certificates wget-ssl && curl -L -s "https:/
 
 > [!NOTE]
 > Веб‑интерфейс доступен по адресу `http://<router_ip>:99` (например http://192.168.1.1:99)<br/>
-> Для авторизации используйте `логин:пароль` от Entware (по-умолчанию `root:keenetic`)
 
 > [!TIP]
 > По-умолчанию php использует только 8Мб памяти. Из-за этого ограничения, могут не загружаться большие списки файлов.
@@ -39,14 +38,16 @@ opkg update && opkg install curl ca-certificates wget-ssl && curl -L -s "https:/
 > upload_max_filesize = 16M
 > ```
 
-##### Авторизация
+###  Авторизация
 > [!NOTE]
+> Для авторизации используйте `логин:пароль` от Entware (по-умолчанию `root:keenetic`)
+>
 > Для включения измените флаг на `"BASIC_AUTH" => "1"` в файле `/opt/etc/lighttpd/conf.d/81-w4s-local.conf` и выполните перезапуск
 ```
 /opt/etc/init.d/S80lighttpd restart
 ```
-##### Удаление
 
+###  Удаление
 ```
 opkg remove web4static
 ```

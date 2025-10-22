@@ -1,93 +1,4 @@
-/** Theme **/
-
-const themeCache = {theme: localStorage.getItem('theme') || 'dark'};
 let statusRequestInProgress = false;
-
-function toggleTheme() {
-    document.body.classList.toggle('dark-theme');
-    const footer = document.querySelector('footer');
-    if (footer) footer.classList.toggle('dark-theme');
-
-    themeCache.theme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
-    localStorage.setItem('theme', themeCache.theme);
-
-    updateThemeUI();
-}
-
-function updateThemeUI() {
-    const isDarkTheme = document.body.classList.contains('dark-theme');
-    const sunIcon = document.getElementById('sun-icon');
-    const moonIcon = document.getElementById('moon-icon');
-    const rootStyles = getComputedStyle(document.documentElement);
-
-    if (sunIcon && moonIcon) {
-        sunIcon.style.display = isDarkTheme ? 'none' : 'inline';
-        moonIcon.style.display = isDarkTheme ? 'inline' : 'none';
-    }
-
-    const lightThemeColor = rootStyles.getPropertyValue('--background-color').trim();
-    const darkThemeColor = rootStyles.getPropertyValue('--background-color-dark').trim();
-    let themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    let statusBarStyleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-
-    if (themeColorMeta) themeColorMeta.remove();
-    if (statusBarStyleMeta) statusBarStyleMeta.remove();
-
-    themeColorMeta = document.createElement('meta');
-    themeColorMeta.setAttribute('name', 'theme-color');
-    themeColorMeta.setAttribute('content', isDarkTheme ? darkThemeColor : lightThemeColor);
-
-    statusBarStyleMeta = document.createElement('meta');
-    statusBarStyleMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
-    statusBarStyleMeta.setAttribute('content', isDarkTheme ? 'black-translucent' : 'default');
-
-    document.head.appendChild(themeColorMeta);
-    document.head.appendChild(statusBarStyleMeta);
-}
-
-function applySavedTheme() {
-    const footer = document.querySelector('footer');
-    if (!themeCache.theme || themeCache.theme === 'dark') {
-        document.body.classList.add('dark-theme');
-        if (footer) footer.classList.add('dark-theme');
-        themeCache.theme = 'dark';
-        localStorage.setItem('theme', 'dark');
-    } else {
-        document.body.classList.remove('dark-theme');
-        if (footer) footer.classList.remove('dark-theme');
-    }
-
-    updateThemeUI();
-}
-
-function detectSystemTheme() {
-    const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
-    const footer = document.querySelector('footer');
-
-    if (prefersDarkScheme.matches && !themeCache.theme) {
-        document.body.classList.add('dark-theme');
-        if (footer) footer.classList.add('dark-theme');
-        themeCache.theme = 'dark';
-        localStorage.setItem('theme', 'dark');
-    }
-
-    updateThemeUI();
-}
-
-window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
-    const footer = document.querySelector('footer');
-    if (e.matches) {
-        document.body.classList.add('dark-theme');
-        if (footer) footer.classList.add('dark-theme');
-        themeCache.theme = 'dark';
-    } else {
-        document.body.classList.remove('dark-theme');
-        if (footer) footer.classList.remove('dark-theme');
-        themeCache.theme = 'light';
-    }
-    localStorage.setItem('theme', themeCache.theme);
-    updateThemeUI();
-});
 
 /** Compare files **/
 const fileVersions = new Map();
@@ -158,7 +69,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    applySavedTheme();
     restoreTextareaSizes();
     setupTextareaResizeListeners();
     checkForUpdates();

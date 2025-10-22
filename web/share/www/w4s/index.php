@@ -51,8 +51,8 @@ if (isset($_GET['export_all'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta name="theme-color" content="#fff">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#161c27">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>web4static</title>
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="icon" href="favicon.png">
@@ -60,7 +60,7 @@ if (isset($_GET['export_all'])) {
     <link rel="manifest" href="manifest.json">
     <script src="script.js" defer></script>
 </head>
-<body class="dark-theme">
+<body>
     <header id="asciiHeader">
         <pre>
                 __    __ __       __        __  _     
@@ -132,17 +132,13 @@ if (isset($_GET['export_all'])) {
         </form>
     </main>
 
-    <footer class="dark-theme">
-        <button onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle Dark Mode" title="Сменить тему">
-            <svg id="sun-icon" width="24" height="24"><use href="#sun"/></svg>
-            <svg id="moon-icon" width="24" height="24" style="display:none;"><use href="#moon"/></svg>
-        </button>
+    <footer>
+        
         <button type="button" onclick="exportAllFiles()" aria-label="Save all lists" title="Сохранить все списки">
             <svg width="24" height="24"><use href="#download-file"/></svg>
         </button>
-        <a href="https://github.com/spatiumstas/web4static" target="_blank">
-            <svg id="github-light-icon" class="github-icon" width="24" height="24"><use href="#github-light"/></svg>
-            <svg id="github-dark-icon" class="github-icon" width="24" height="24"><use href="#github-dark"/></svg>
+        <a href="https://github.com/spatiumstas/web4static/" target="_blank">
+            <svg class="github" width="24" height="24"><use href="#github"/></svg>
         </a>
         <button id="opkg-icon" onclick="opkgUpdate()" aria-label="Update opkg" title="Обновить OPKG пакеты">
             <svg width="24" height="24"><use href="#opkg"/></svg>
