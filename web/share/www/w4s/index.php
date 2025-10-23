@@ -86,10 +86,14 @@ if (isset($_GET['export_all'])) {
                         <div class="button-container">
                             <?php if (is_array($categoryFiles)): ?>
                                 <?php foreach ($categoryFiles as $key => $path): ?>
-                                    <div class="group-button-wrapper">
+                                    <div class="group-button-wrapper" data-category="<?php echo htmlspecialchars($category, ENT_QUOTES); ?>" data-file-name="<?php echo htmlspecialchars(basename($key), ENT_QUOTES); ?>">
                                         <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>')" value="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>" />
+                                        <button type="button" class="file-delete-btn" title="Удалить файл" aria-label="Удалить файл" onclick="deleteFile('<?php echo htmlspecialchars($category, ENT_QUOTES); ?>','<?php echo htmlspecialchars(basename($key), ENT_QUOTES); ?>')">&times;</button>
                                     </div>
                                 <?php endforeach; ?>
+                                <button type="button" class="create-file-btn" title="Создать файл" aria-label="Создать файл" onclick="createFilePrompt('<?php echo htmlspecialchars($category, ENT_QUOTES); ?>')">
+                                    <svg width="24" height="24"><use href="#plus"/></svg>
+                                </button>
                             <?php endif; ?>
                         </div>
                         <?php if (is_array($categoryFiles)): ?>
@@ -100,8 +104,8 @@ if (isset($_GET['export_all'])) {
                                     </div>
                                     <div class="button-container">
                                         <?php if (in_array($category, ['sing-box', 'Xray', 'XKeen'])): ?>
-                                        <button type="button" onclick="window.open('https://spatiumstas.github.io/web4core', '_blank')" aria-label="Generate configuration" title="Создать конфигурацию">
-                                            <svg width="24" height="24"><use href="#plus"/></svg>
+                                        <button type="button" onclick="window.open('https://spatiumstas.github.io/web4core/', '_blank')" aria-label="Generate configuration" title="Создать конфигурацию">
+                                            <svg width="24" height="24"><use href="#generate"/></svg>
                                         </button>
                                         <?php endif; ?>
                                         <input type="file" id="import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>" style="display:none;" accept=".list,.json,.conf,.txt,.yaml,.sh" onchange="importFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', this, '<?php echo htmlspecialchars($category); ?>')">

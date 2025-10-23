@@ -359,7 +359,7 @@ function getLists($paths, bool $useShell = false): array {
             $path = rtrim(shell_exec($path) ?? '');
         }
         if (is_file($path)) {
-            $extension = pathinfo($path, PATHINFO_EXTENSION);
+            $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
             if (in_array($extension, $allowedExtensions)) {
                 $result[$path] = $path;
             }
@@ -376,7 +376,7 @@ function getLists($paths, bool $useShell = false): array {
             }
             foreach ($files as $file) {
                 if ($file && !is_link($file) && is_file($file)) {
-                    $extension = pathinfo($file, PATHINFO_EXTENSION);
+                    $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                     if (in_array($extension, $allowedExtensions)) {
                         $result[$path . '/' . basename($file)] = $file;
                     }
@@ -469,6 +469,90 @@ if (isset($_GET['service_status']) && isset($SERVICES[$_GET['service_status']]))
     header('Content-Type: application/json');
     echo json_encode(['status' => $status]);
     exit();
+}
+
+function json_ok($data = []) {
+    header('Content-Type: application/json');
+    echo json_encode(array_merge(['ok' => true], $data));
+    exit();
+}
+
+function json_error($message) {
+    header('Content-Type: application/json');
+    echo json_encode(['error' => $message]);
+    exit();
+}
+
+function validate_file_name($name, $allowedExtensions) {
+    $name = trim((string)$name);
+    if ($name === '') return false;
+    if ($name !== basename($name)) return false;
+    if (strpos($name, '..') !== false || strpos($name, '/') !== false || strpos($name, "\\") !== false) return false;
+    $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+    if ($ext === '' || !in_array($ext, $allowedExtensions, true)) return false;
+    return true;
+}
+
+function resolve_writable_dir_for_category($category, $SERVICES) {
+    if (!isset($SERVICES[$category])) return null;
+    $paths = (array)$SERVICES[$category]['path'];
+    $useShell = !empty($SERVICES[$category]['useShell']);
+    foreach ($paths as $p) {
+        $resolved = $useShell ? rtrim((string)shell_exec($p)) : $p;
+        if ($resolved === '') continue;
+        if (is_dir($resolved) && is_writable($resolved)) return $resolved;
+        if (is_file($resolved)) {
+            $dirName = dirname($resolved);
+            if (is_dir($dirName) && is_writable($dirName)) return $dirName;
+        }
+    }
+    return null;
+}
+
+function find_file_in_category($category, $name, $SERVICES) {
+    if (!isset($SERVICES[$category])) return null;
+    $fileMap = getLists($SERVICES[$category]['path'], !empty($SERVICES[$category]['useShell']));
+    foreach ($fileMap as $filePath) {
+        if (basename($filePath) === $name) {
+            return $filePath;
+        }
+    }
+    return null;
+}
+
+if (isset($_GET['create_file']) || (isset($_POST['create_file']) && $_POST['create_file'])) {
+    $category = $_POST['category'] ?? ($_GET['category'] ?? '');
+    $name = $_POST['name'] ?? ($_GET['name'] ?? '');
+    $category = trim((string)$category);
+    $name = trim((string)$name);
+
+    if (!validate_file_name($name, $allowedExtensions)) json_error('Недопустимое имя или расширение файла');
+
+    $targetDir = resolve_writable_dir_for_category($category, $SERVICES);
+    if ($targetDir === null) json_error('Каталог сервиса недоступен для записи');
+
+    $filePath = rtrim($targetDir, '/') . '/' . $name;
+    if (file_exists($filePath)) json_error('Файл уже существует');
+
+    $ok = @file_put_contents($filePath, '') !== false;
+    if (!$ok) json_error('Не удалось создать файл');
+
+    json_ok(['path' => $filePath]);
+}
+
+if (isset($_GET['delete_file']) || (isset($_POST['delete_file']) && $_POST['delete_file'])) {
+    $category = $_POST['category'] ?? ($_GET['category'] ?? '');
+    $name = $_POST['name'] ?? ($_GET['name'] ?? '');
+    $category = trim((string)$category);
+    $name = trim((string)$name);
+
+    $path = find_file_in_category($category, $name, $SERVICES);
+    if ($path === null) json_error('Файл не найден в категории');
+
+    $ok = @unlink($path);
+    if (!$ok) json_error('Не удалось удалить файл');
+
+    json_ok();
 }
 
 function getVersion() {

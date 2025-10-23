@@ -39,14 +39,11 @@ function compareFileVersions(oldVersion, newVersion) {
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('textarea').forEach(textarea => {
         saveFileVersion(textarea);
-
         textarea.addEventListener('input', function () {
             saveFileVersion(this);
         });
     });
-});
 
-document.addEventListener('DOMContentLoaded', function () {
     if (window.navigator.standalone === true) {
         document.body.classList.add('pwa-mode');
     }
@@ -58,7 +55,6 @@ document.addEventListener('DOMContentLoaded', function () {
             toggleJsonButton(textarea, formatButton);
         }
     });
-
     document.addEventListener('input', (e) => {
         if (e.target.tagName === 'TEXTAREA') {
             const fileKey = e.target.name;
@@ -84,7 +80,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    window.getServiceStatus = getServiceStatus;
+    const modal = document.getElementById('output-modal');
+    if (modal) {
+        const closeButtons = modal.querySelectorAll('.close-modal-btn');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', hideOutputModal);
+        });
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                hideOutputModal();
+            }
+        });
+    }
 });
 
 document.getElementById('mainForm').addEventListener('submit', function (event) {
@@ -423,6 +430,53 @@ function toggleUpdateIcon(localVersion, remoteVersion, show = true) {
     });
 }
 
+function apiCall(params) {
+    const body = new URLSearchParams(params);
+    return fetch(window.location.pathname, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body
+    }).then(async r => {
+        try {
+            const data = await r.json();
+            if (!data || data.ok !== true) {
+                const message = (data && data.error) || `HTTP ${r.status}`;
+                throw new Error(message);
+            }
+            return data;
+        } catch (e) {
+            throw e;
+        }
+    });
+}
+
+function createFilePrompt(category) {
+    const name = prompt('Введите имя файла с расширением, например config.json');
+    if (!name) return;
+    apiCall({create_file: '1', category, name})
+        .then(() => {
+            alert(`Файл ${name} успешно создан`);
+            location.reload();
+        })
+        .catch(err => alert(err && err.message ? err.message : 'Ошибка создания файла'));
+}
+
+function deleteFile(category, name) {
+    if (!confirm(`Удалить файл ${name}?`)) return;
+    apiCall({delete_file: '1', category, name})
+        .then(() => {
+            alert(`Файл ${name} успешно удалён`);
+            location.reload();
+        })
+        .catch(err => alert(err && err.message ? err.message : 'Ошибка удаления файла'));
+}
+
+window.getServiceStatus = getServiceStatus;
+window.createFilePrompt = createFilePrompt;
+window.deleteFile = deleteFile;
+
 function showUpdateAlert(localVersion, remoteVersion) {
     if (isUpdating) {
         return;
@@ -604,18 +658,3 @@ function hideOutputModal() {
     modal.classList.remove('show');
     document.body.classList.remove('modal-open');
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.getElementById('output-modal');
-    const closeButtons = modal.querySelectorAll('.close-modal-btn');
-
-    closeButtons.forEach(button => {
-        button.addEventListener('click', hideOutputModal);
-    });
-
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            hideOutputModal();
-        }
-    });
-});

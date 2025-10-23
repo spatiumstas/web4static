@@ -154,10 +154,12 @@ textarea {
     color: var(--white-color);
     border: 1px solid var(--border-textarea-color-black);
 }
+
 textarea:focus {
     border: 1px solid var(--primary-color);
     outline: none;
 }
+
 textarea:hover {
     border: 1px solid var(--primary-color);
     outline: none;
@@ -243,20 +245,7 @@ header pre {
     min-height: 60px;
 }
 
-.form-section button {
-    padding: 8px 12px;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--primary-color);
-    background-color: var(--background-color);
-    color: var(--white-color);
-    cursor: pointer;
-}
-
-.form-section button:hover {
-    background-color: var(--primary-color);
-    color: var(--white-color);
-}
-
+.form-section button,
 .form-section .button-container button {
     padding: 8px;
     border-radius: var(--border-radius);
@@ -271,6 +260,7 @@ header pre {
     height: 35px;
 }
 
+.form-section button:hover,
 .form-section .button-container button:hover {
     background-color: var(--primary-color);
     color: var(--white-color);
@@ -326,6 +316,29 @@ textarea:focus, textarea:hover {
 .group-button-wrapper {
     position: relative;
     display: inline-block;
+}
+
+.group-button-wrapper .file-delete-btn {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 14px !important;
+    height: 14px !important;
+    font-size: 10px;
+    line-height: 1;
+    box-sizing: border-box;
+    z-index: 2;
+}
+
+.group-button-wrapper .file-delete-btn::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    background: transparent;
+}
+
+.group-button-wrapper .file-delete-btn:hover {
+    background-color: var(--primary-color);
 }
 
 #update-w4s-panel {
