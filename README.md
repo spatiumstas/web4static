@@ -5,7 +5,7 @@
 ### Автоустановка
 
 ```shell
-opkg update && opkg install curl ca-certificates wget-ssl && curl -L -s "https://raw.githubusercontent.com/spatiumstas/web4static/main/install.sh" > /tmp/install.sh && sh /tmp/install.sh
+opkg update && opkg install curl ca-certificates wget-ssl && curl -fsSL https://raw.githubusercontent.com/spatiumstas/web4static/main/install.sh | sh
 ```
 
 ### Ручная установка
@@ -42,7 +42,7 @@ opkg update && opkg install curl ca-certificates wget-ssl && curl -L -s "https:/
 > [!NOTE]
 > Для авторизации используйте `логин:пароль` от Entware (по-умолчанию `root:keenetic`)
 >
-> Для включения измените флаг на `"BASIC_AUTH" => "1"` в файле `/opt/etc/lighttpd/conf.d/81-w4s-local.conf` и выполните перезапуск
+> Для включения измените флаг `"BASIC_AUTH" => "1"` в файле `/opt/etc/lighttpd/conf.d/81-w4s-local.conf` и выполните перезапуск
 ```
 /opt/etc/init.d/S80lighttpd restart
 ```

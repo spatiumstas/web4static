@@ -24,7 +24,7 @@ fi
 /opt/etc/init.d/S80lighttpd restart
 
 ip_addr=$(ip -f inet addr show dev br0 2>/dev/null | grep inet | sed -n 's/.*inet \([0-9.]\+\).*/\1/p')
-print_message "Web-интерфейс доступен по адресу http://$ip_addr:99" "$GREEN"
+print_message "Web-интерфейс доступен по адресу $ip_addr:99" "$GREEN"
 
 exit 0
 

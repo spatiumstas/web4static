@@ -592,7 +592,7 @@ function isJson(text) {
             JSON.parse(trimmed);
             return true;
         } catch (e) {
-            return true;
+            return false;
         }
     }
     return false;
