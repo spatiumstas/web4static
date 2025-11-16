@@ -75,60 +75,56 @@ if (isset($_GET['export_all'])) {
     <main>
         <form id="mainForm" action="" method="post">
             <?php foreach ($categories as $category => $categoryFiles): ?>
-                <?php if (!empty($categoryFiles)): ?>
-                    <input type="button" onclick="showSection('<?php echo htmlspecialchars($category); ?>')" value="<?php echo htmlspecialchars($category); ?>" />
-                <?php endif; ?>
+                <input type="button" onclick="showSection('<?php echo htmlspecialchars($category); ?>')" value="<?php echo htmlspecialchars($category); ?>" />
             <?php endforeach; ?>
 
             <?php foreach ($categories as $category => $categoryFiles): ?>
-                <?php if (!empty($categoryFiles)): ?>
-                    <div id="<?php echo htmlspecialchars($category); ?>" class="form-section" style="display:none;">
-                        <div class="button-container">
-                            <?php if (is_array($categoryFiles)): ?>
-                                <?php foreach ($categoryFiles as $key => $path): ?>
-                                    <div class="group-button-wrapper" data-category="<?php echo htmlspecialchars($category, ENT_QUOTES); ?>" data-file-name="<?php echo htmlspecialchars(basename($key), ENT_QUOTES); ?>">
-                                        <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>')" value="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>" />
-                                        <button type="button" class="file-delete-btn" title="Удалить файл" aria-label="Удалить файл" onclick="deleteFile('<?php echo htmlspecialchars($category, ENT_QUOTES); ?>','<?php echo htmlspecialchars(basename($key), ENT_QUOTES); ?>')">&times;</button>
-                                    </div>
-                                <?php endforeach; ?>
-                                <button type="button" class="create-file-btn" title="Создать файл" aria-label="Создать файл" onclick="createFilePrompt('<?php echo htmlspecialchars($category, ENT_QUOTES); ?>')">
-                                    <svg width="24" height="24"><use href="#plus"/></svg>
-                                </button>
-                            <?php endif; ?>
-                        </div>
+                <div id="<?php echo htmlspecialchars($category); ?>" class="form-section" style="display:none;">
+                    <div class="button-container">
                         <?php if (is_array($categoryFiles)): ?>
                             <?php foreach ($categoryFiles as $key => $path): ?>
-                                <div id="<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>" class="form-section" style="display:none;">
-                                    <div class="textarea-container">
-                                        <textarea name="<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
-                                    </div>
-                                    <div class="button-container">
-                                        <?php if (in_array($category, ['sing-box', 'Xray', 'XKeen'])): ?>
-                                        <button type="button" onclick="window.open('https://spatiumstas.github.io/web4core/', '_blank')" aria-label="Generate configuration" title="Создать конфигурацию">
-                                            <svg width="24" height="24"><use href="#generate"/></svg>
-                                        </button>
-                                        <?php endif; ?>
-                                        <input type="file" id="import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>" style="display:none;" accept=".list,.json,.conf,.txt,.yaml,.sh" onchange="importFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', this, '<?php echo htmlspecialchars($category); ?>')">
-                                        <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>').click()" aria-label="Replace file" title="Заменить">
-                                            <svg width="24" height="24"><use href="#swap"/></svg>
-                                        </button>
-                                        <button type="button" onclick="exportFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', '<?php echo htmlspecialchars(pathinfo($key, PATHINFO_EXTENSION)); ?>', '<?php echo htmlspecialchars($category); ?>')" aria-label="Save file" title="Сохранить">
-                                            <svg width="24" height="24"><use href="#download-file"/></svg>
-                                        </button>
-                                        <button type="button" class="format-json-btn" onclick="formatJson('<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>')" aria-label="Format JSON" title="Форматировать JSON" style="display: none;">
-                                            <svg width="24" height="24"><use href="#json"/></svg>
-                                        </button>
-                                        <?php if (!empty($serviceStatusSupport[$category])): ?>
-                                        <button type="button" class="status-btn" onclick="getServiceStatus('<?php echo htmlspecialchars($category); ?>'<?php if (!empty($serviceValidateSupport[$category])) { ?>,'<?php echo htmlspecialchars($path, ENT_QUOTES); ?>'<?php } ?>)" aria-label="Service status" title="Статус сервиса">
-                                            <svg width="24" height="24"><use href="#status"/></svg>
-                                        </button>
-                                        <?php endif; ?>
-                                    </div>
+                                <div class="group-button-wrapper" data-category="<?php echo htmlspecialchars($category, ENT_QUOTES); ?>" data-file-name="<?php echo htmlspecialchars(basename($key), ENT_QUOTES); ?>">
+                                    <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>')" value="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>" />
+                                    <button type="button" class="file-delete-btn" title="Удалить файл" aria-label="Удалить файл" onclick="deleteFile('<?php echo htmlspecialchars($category, ENT_QUOTES); ?>','<?php echo htmlspecialchars(basename($key), ENT_QUOTES); ?>')">&times;</button>
                                 </div>
                             <?php endforeach; ?>
+                            <button type="button" class="create-file-btn" title="Создать файл" aria-label="Создать файл" onclick="createFilePrompt('<?php echo htmlspecialchars($category, ENT_QUOTES); ?>')">
+                                <svg width="24" height="24"><use href="#plus"/></svg>
+                            </button>
                         <?php endif; ?>
                     </div>
-                <?php endif; ?>
+                    <?php if (is_array($categoryFiles)): ?>
+                        <?php foreach ($categoryFiles as $key => $path): ?>
+                            <div id="<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>" class="form-section" style="display:none;">
+                                <div class="textarea-container">
+                                    <textarea name="<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
+                                </div>
+                                <div class="button-container">
+                                    <?php if (in_array($category, ['sing-box', 'Xray', 'XKeen'])): ?>
+                                    <button type="button" onclick="window.open('https://spatiumstas.github.io/web4core/', '_blank')" aria-label="Generate configuration" title="Создать конфигурацию">
+                                        <svg width="24" height="24"><use href="#generate"/></svg>
+                                    </button>
+                                    <?php endif; ?>
+                                    <input type="file" id="import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>" style="display:none;" accept=".list,.json,.conf,.txt,.yaml,.sh" onchange="importFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', this, '<?php echo htmlspecialchars($category); ?>')">
+                                    <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>').click()" aria-label="Replace file" title="Заменить">
+                                        <svg width="24" height="24"><use href="#swap"/></svg>
+                                    </button>
+                                    <button type="button" onclick="exportFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', '<?php echo htmlspecialchars(pathinfo($key, PATHINFO_EXTENSION)); ?>', '<?php echo htmlspecialchars($category); ?>')" aria-label="Save file" title="Сохранить">
+                                        <svg width="24" height="24"><use href="#download-file"/></svg>
+                                    </button>
+                                    <button type="button" class="format-json-btn" onclick="formatJson('<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>')" aria-label="Format JSON" title="Форматировать JSON" style="display: none;">
+                                        <svg width="24" height="24"><use href="#json"/></svg>
+                                    </button>
+                                    <?php if (!empty($serviceStatusSupport[$category])): ?>
+                                    <button type="button" class="status-btn" onclick="getServiceStatus('<?php echo htmlspecialchars($category); ?>'<?php if (!empty($serviceValidateSupport[$category])) { ?>,'<?php echo htmlspecialchars($path, ENT_QUOTES); ?>'<?php } ?>)" aria-label="Service status" title="Статус сервиса">
+                                        <svg width="24" height="24"><use href="#status"/></svg>
+                                    </button>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
             <?php endforeach; ?>
             <div class="button-container">
                 <input type="submit" value="Save & Restart" />

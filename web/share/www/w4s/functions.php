@@ -73,6 +73,7 @@ $SERVICES = [
             "readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/lists/'",
             "readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/scripts/'"
         ],
+        'non-package' => true,
         'useShell' => true,
         'restart' => function($self) {
             $bird = trim(shell_exec("readlink /opt/etc/init.d/S02bird-table | sed 's/scripts.*/scripts/'"));
@@ -90,6 +91,7 @@ $SERVICES = [
             "readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/lists/'",
             "readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/scripts/'"
         ],
+        'non-package' => true,
         'useShell' => true,
         'restart' => function($self) {
             $ipset = trim(shell_exec("readlink /opt/etc/init.d/S03ipset-table | sed 's/scripts.*/scripts/'"));
@@ -239,16 +241,24 @@ function getCategories() {
     $categories = [];
 
     foreach ($SERVICES as $category => $config) {
+        $useShell = !empty($config['useShell']);
+
+        if (!empty($config['non-package'])) {
+            $lists = getLists($config['path'], $useShell);
+            if (!empty($lists)) {
+                $categories[$category] = $lists;
+            }
+            continue;
+        }
+
         if (isset($config['packages'])) {
             $packages = (array)$config['packages'];
-            if (!isPackageInstalled($packages)) {
-                $categories[$category] = [];
-                continue;
+            if (isPackageInstalled($packages)) {
+                $categories[$category] = getLists($config['path'], $useShell);
             }
+            continue;
         }
-        $categories[$category] = getLists($config['path'], $config['useShell']);
     }
-
     return $categories;
 }
 
