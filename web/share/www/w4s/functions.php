@@ -1,5 +1,5 @@
 <?php
-$allowedExtensions = ['list', 'json', 'conf', 'txt', 'yaml', 'sh'];
+$allowedExtensions = ['list', 'json', 'conf', 'txt', 'yaml', 'sh', 'log'];
 $AUTH_FLAG = getenv('BASIC_AUTH');
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
 
@@ -67,6 +67,18 @@ function enforceBasicAuth(string $realm = 'web4static'): void {
 }
 
 $SERVICES = [
+    'Antiscan' => [
+        'init' => '/opt/etc/init.d/S99ascn',
+        'path' => '/opt/etc/antiscan',
+        'useShell' => false,
+        'packages' => ['antiscan'],
+        'restart' => function($self) {
+            return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
+        },
+        'status' => function($self) {
+            return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
+        }
+    ],
     'Bird4Static' => [
         'init' => '/opt/etc/init.d/S70bird',
         'path' => [
@@ -85,6 +97,34 @@ $SERVICES = [
         'status' => function($self) {
             return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
         }
+    ],
+    'dnsmasq' => [
+        'init' => '/opt/etc/init.d/S56dnsmasq',
+        'path' => '/opt/etc/dnsmasq.conf',
+        'useShell' => false,
+        'packages' => ['dnsmasq-full'],
+        'restart' => function($self) {
+            return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
+        },
+        'status' => function($self) {
+            return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
+        }
+    ],
+    'KeenSnap' => [
+        'path' => [
+            "/opt/root/KeenSnap/config.sh",
+            "/opt/var/log/keensnap.log"
+        ],
+        'non-package' => true,
+        'useShell' => false,
+    ],
+    'HydraRoute' => [
+        'path' => ['/opt/etc/HydraRoute', '/opt/etc/AdGuardHome/domain.conf'],
+        'useShell' => false,
+        'packages' => ['hydraroute', 'hrneo'],
+        'restart' => function($self) {
+            return is_dir('/opt/etc/AdGuardHome') ? ['agh restart'] : [];
+        },
     ],
     'IPset4Static' => [
         'path' => [
@@ -109,6 +149,32 @@ $SERVICES = [
         'status' => function($self) {
             return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
         }
+    ],
+    'sing-box' => [
+        'init' => '/opt/etc/init.d/S99sing-box',
+        'path' => '/opt/etc/sing-box',
+        'useShell' => false,
+        'packages' => ['sing-box-go'],
+        'validate_config' => true,
+        'restart' => function($self) {
+            return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
+        },
+        'status' => function($self, $configPath = null) {
+            $out = is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : '';
+            if ($configPath) {
+                $cfg = (string)$configPath;
+                $out .= "\n" . shell_exec('sing-box check -c ' . escapeshellarg($cfg) . " 2>&1");
+            }
+            return trim((string)$out) !== '' ? $out : 'Нет статуса';
+        }
+    ],
+    'sms2gram' => [
+        'path' => [
+            "/opt/root/sms2gram/config.sh",
+            "/opt/var/log/sms2gram.log"
+        ],
+        'non-package' => true,
+        'useShell' => false,
     ],
     'XKeen' => [
         'init' => 'xkeen',
@@ -137,24 +203,6 @@ $SERVICES = [
             return $out;
         }
     ],
-    'sing-box' => [
-        'init' => '/opt/etc/init.d/S99sing-box',
-        'path' => '/opt/etc/sing-box',
-        'useShell' => false,
-        'packages' => ['sing-box-go'],
-        'validate_config' => true,
-        'restart' => function($self) {
-            return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
-        },
-        'status' => function($self, $configPath = null) {
-            $out = is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : '';
-            if ($configPath) {
-                $cfg = (string)$configPath;
-                $out .= "\n" . shell_exec('sing-box check -c ' . escapeshellarg($cfg) . " 2>&1");
-            }
-            return trim((string)$out) !== '' ? $out : 'Нет статуса';
-        }
-    ],
     'Xray' => [
         'init' => '/opt/etc/init.d/S24xray',
         'path' => '/opt/etc/xray',
@@ -171,38 +219,6 @@ $SERVICES = [
                 $out .= "\n" . shell_exec('xray -test -config ' . escapeshellarg($cfg) . " 2>&1 | sed '1,2d'");
             }
             return trim((string)$out) !== '' ? $out : 'Нет статуса';
-        }
-    ],
-    'HydraRoute' => [
-        'path' => ['/opt/etc/HydraRoute', '/opt/etc/AdGuardHome/domain.conf'],
-        'useShell' => false,
-        'packages' => ['hydraroute', 'hrneo'],
-        'restart' => function($self) {
-            return is_dir('/opt/etc/AdGuardHome') ? ['agh restart'] : [];
-        },
-    ],
-    'Antiscan' => [
-        'init' => '/opt/etc/init.d/S99ascn',
-        'path' => '/opt/etc/antiscan',
-        'useShell' => false,
-        'packages' => ['antiscan'],
-        'restart' => function($self) {
-            return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
-        },
-        'status' => function($self) {
-            return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
-        }
-    ],
-    'dnsmasq' => [
-        'init' => '/opt/etc/init.d/S56dnsmasq',
-        'path' => '/opt/etc/dnsmasq.conf',
-        'useShell' => false,
-        'packages' => ['dnsmasq-full'],
-        'restart' => function($self) {
-            return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
-        },
-        'status' => function($self) {
-            return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
         }
     ]
 ];
@@ -328,11 +344,6 @@ function update($type = 'packages') {
             exec("echo 'src/gz web4static https://spatiumstas.github.io/web4static/all' > " . escapeshellarg($configFile));
         }
         exec("opkg update && opkg upgrade web4static 2>&1", $output);
-        $shortUrl = "aHR0cHM6Ly9sb2cuc3BhdGl1bS5uZXRjcmF6ZS5wcm8=";
-        $url = base64_decode($shortUrl);
-        $json_data = json_encode(["script_update" => "w4s_update_$remoteVersion"]);
-        $curl_command = "curl -X POST -H 'Content-Type: application/json' -d " . escapeshellarg($json_data) . " " . escapeshellarg($url) . " -o /dev/null -s --fail --max-time 2 --retry 0";
-        shell_exec($curl_command);
     } else {
         exec("opkg update && opkg upgrade 2>&1", $output);
     }
