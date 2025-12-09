@@ -100,7 +100,7 @@ if (isset($_GET['export_all'])) {
                                     <textarea name="<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>"><?php echo htmlspecialchars($texts[$key]); ?></textarea>
                                 </div>
                                 <div class="button-container">
-                                    <?php if (in_array($category, ['sing-box', 'Xray', 'XKeen'])): ?>
+                                    <?php if (in_array($category, ['Mihomo', 'sing-box', 'Xray', 'XKeen'])): ?>
                                     <button type="button" onclick="window.open('https://spatiumstas.github.io/web4core/', '_blank')" aria-label="Generate configuration" title="Создать конфигурацию">
                                         <svg width="24" height="24"><use href="#generate"/></svg>
                                     </button>

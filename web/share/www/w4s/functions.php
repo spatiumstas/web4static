@@ -138,6 +138,24 @@ $SERVICES = [
             return $ipset ? [escapeshellcmd("$ipset/update-ipset.sh")] : [];
         },
     ],
+    'Mihomo' => [
+        'init' => '/opt/etc/init.d/S99mihomo',
+        'path' => '/opt/etc/mihomo',
+        'useShell' => false,
+        'packages' => ['mihomo'],
+        'validate_config' => true,
+        'restart' => function($self) {
+            return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
+        },
+        'status' => function($self, $configPath = null) {
+            $out = is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : '';
+            if ($configPath) {
+                $cfg = (string)$configPath;
+                $out .= "\n" . shell_exec('mihomo -t -f ' . escapeshellarg($cfg) . " 2>&1");
+            }
+            return trim((string)$out) !== '' ? $out : 'Нет статуса';
+        }
+    ],
     'NFQWS' => [
         'init' => '/opt/etc/init.d/S51nfqws',
         'path' => '/opt/etc/nfqws',
@@ -178,7 +196,7 @@ $SERVICES = [
     ],
     'XKeen' => [
         'init' => 'xkeen',
-        'path' => ['/opt/etc/xray/configs', '/opt/etc/mihomo/config.yaml'],
+        'path' => '/opt/etc/xray/configs',
         'useShell' => false,
         'packages' => ['xkeen'],
         'validate_config' => true,
@@ -190,17 +208,8 @@ $SERVICES = [
             }
             return [];
         },
-        'status' => function($self, $configPath = null) {
-            $out = shell_exec($self['init'] . ' -status 2>&1');
-            if ($configPath) {
-                $cfg = (string)$configPath;
-                if (preg_match('/\.(ya?ml)$/i', $cfg)) {
-                    $out .= "\n" . shell_exec('mihomo -t -f ' . escapeshellarg($cfg) . ' 2>&1');
-                } else {
-                    $out .= "\n" . shell_exec('xray -test -config ' . escapeshellarg($cfg) . " 2>&1 | sed '1,2d'");
-                }
-            }
-            return $out;
+        'status' => function($self) {
+            return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
         }
     ],
     'Xray' => [
