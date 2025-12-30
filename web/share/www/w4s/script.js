@@ -1,69 +1,108 @@
 let statusRequestInProgress = false;
 
-/** Compare files **/
-const fileVersions = new Map();
-
-function saveFileVersion(textarea) {
-    const fileKey = textarea.name;
-    fileVersions.set(fileKey, textarea.value);
+function decodeIfEncoded(text) {
+    if (typeof text !== 'string' || !text) return null;
+    if (text.includes('\n') || text.includes('\r')) return null;
+    if (!/%[0-9A-Fa-f]{2}/.test(text)) return null;
+    try {
+        const prepared = (text.includes('+') && !text.includes(' ')) ? text.replace(/\+/g, ' ') : text;
+        const decoded = decodeURIComponent(prepared);
+        if (
+            decoded !== text &&
+            (decoded.includes('\n') || decoded.includes('\r')) &&
+            !/%[0-9A-Fa-f]{2}/.test(decoded)
+        ) {
+            return decoded.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        }
+    } catch (_) {}
+    return null;
 }
 
-function compareFileVersions(oldVersion, newVersion) {
-    const oldLines = oldVersion.split('\n');
-    const newLines = newVersion.split('\n');
-
-    const changes = {
-        added: [],
-        removed: [],
-        modified: []
-    };
-
-    const oldLinesMap = new Map(oldLines.map((line, index) => [line, index]));
-    const newLinesMap = new Map(newLines.map((line, index) => [line, index]));
-
-    for (const [line, newIndex] of newLinesMap) {
-        if (!oldLinesMap.has(line)) {
-            changes.added.push({line, lineNumber: newIndex + 1});
-        }
+function insertTextAtCursor(textarea, text) {
+    const value = String(textarea.value || '');
+    const start = (typeof textarea.selectionStart === 'number') ? textarea.selectionStart : value.length;
+    const end = (typeof textarea.selectionEnd === 'number') ? textarea.selectionEnd : value.length;
+    const next = value.slice(0, start) + text + value.slice(end);
+    textarea.value = next;
+    const pos = start + text.length;
+    if (typeof textarea.setSelectionRange === 'function') {
+        textarea.setSelectionRange(pos, pos);
     }
+}
 
-    for (const [line, oldIndex] of oldLinesMap) {
-        if (!newLinesMap.has(line)) {
-            changes.removed.push({line, lineNumber: oldIndex + 1});
-        }
+async function readJsonSafe(response) {
+    try {
+        return await response.json();
+    } catch (_) {
+        return null;
     }
+}
 
-    return changes;
+async function readResponseError(response) {
+    const data = await readJsonSafe(response);
+    if (data && typeof data === 'object') {
+        if (typeof data.error === 'string' && data.error.trim()) return data.error;
+        if (typeof data.message === 'string' && data.message.trim()) return data.message;
+    }
+    return `HTTP ${response.status}`;
+}
+
+async function fetchJsonOrThrow(url, options) {
+    try {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            throw new Error('http_error');
+        }
+        const data = await readJsonSafe(response);
+        if (data === null) {
+            throw new Error('invalid_json');
+        }
+        return data;
+    } catch (_) {
+        throw new Error('Не удалось выполнить запрос');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('textarea').forEach(textarea => {
-        saveFileVersion(textarea);
+        const section = textarea.closest('.form-section');
+        textarea._jsonBtn = section ? section.querySelector('.format-json-btn') : null;
+        if (textarea._jsonBtn) {
+            toggleJsonButton(textarea, textarea._jsonBtn);
+        }
+
+        textarea.addEventListener('paste', function (e) {
+            const cd = e.clipboardData;
+            if (!cd) return;
+            const pasted = cd.getData('text/plain');
+            const decoded = decodeIfEncoded(pasted);
+            if (!decoded) return;
+
+            e.preventDefault();
+            insertTextAtCursor(this, decoded);
+            this.dispatchEvent(new Event('input', {bubbles: true}));
+        });
+
+        textarea.addEventListener('beforeinput', function (e) {
+            this._w4sPaste = !!(e && e.inputType === 'insertFromPaste');
+        });
+
         textarea.addEventListener('input', function () {
-            saveFileVersion(this);
+            if (this._w4sPaste) {
+                this._w4sPaste = false;
+                const decoded = decodeIfEncoded(String(this.value || ''));
+                if (decoded) this.value = decoded;
+            }
+
+            if (this._jsonBtn) {
+                toggleJsonButton(this, this._jsonBtn);
+            }
         });
     });
 
     if (window.navigator.standalone === true) {
         document.body.classList.add('pwa-mode');
     }
-
-    document.querySelectorAll('textarea').forEach(textarea => {
-        const fileKey = textarea.name;
-        const formatButton = document.querySelector(`.format-json-btn[onclick="formatJson('${fileKey}')"]`);
-        if (formatButton) {
-            toggleJsonButton(textarea, formatButton);
-        }
-    });
-    document.addEventListener('input', (e) => {
-        if (e.target.tagName === 'TEXTAREA') {
-            const fileKey = e.target.name;
-            const formatButton = document.querySelector(`.format-json-btn[onclick=\"formatJson('${fileKey}')\"]`);
-            if (formatButton) {
-                toggleJsonButton(e.target, formatButton);
-            }
-        }
-    });
 
     restoreTextareaSizes();
     setupTextareaResizeListeners();
@@ -139,7 +178,7 @@ document.getElementById('mainForm').addEventListener('submit', function (event) 
         fetch(this.action, {
             method: 'POST',
             body: formData
-        }).then(response => {
+        }).then(async response => {
             console.log('Ответ от сервера получен:', response);
             if (response.ok) {
                 animateSave(button, 'success');
@@ -147,12 +186,15 @@ document.getElementById('mainForm').addEventListener('submit', function (event) 
                     textarea.defaultValue = textarea.value;
                 });
             } else {
-                console.error('Ошибка при сохранении данных');
+                const message = await readResponseError(response);
+                console.error('Ошибка при сохранении данных:', message);
                 button.value = 'Error';
+                showOutputModal('Ошибка сохранения', message);
             }
         }).catch(err => {
             console.error('Ошибка при отправке данных:', err);
             button.value = 'Error';
+            showOutputModal('Ошибка сохранения', err && err.message ? err.message : 'Ошибка при отправке данных');
         }).finally(() => {
             setTimeout(() => {
                 button.value = 'Save & Restart';
@@ -236,6 +278,7 @@ function importFile(fileKey, input, category = '') {
                 return;
             }
             textarea.value = e.target.result;
+            textarea.dispatchEvent(new Event('input', {bubbles: true}));
             input.value = '';
         };
         reader.readAsText(file);
@@ -294,7 +337,7 @@ let remoteVersion = null;
 function versionToNumber(version) {
     if (!version || version === 'unknown' || version === '') return 0;
     const parts = version.split('.');
-    return parseInt(parts[0]) * 10000 + parseInt(parts[1] || 0) * 100 + parseInt(parts[2] || 0);
+    return parseInt(parts[0], 10) * 10000 + parseInt(parts[1] || 0, 10) * 100 + parseInt(parts[2] || 0, 10);
 }
 
 function isRemoteNewer(local, remote) {
@@ -330,15 +373,11 @@ function opkgUpdate() {
 
     toggleProgressBar(true);
 
-    fetch('index.php?update&type=packages')
-        .then(response => response.json())
-        .then(data => {
-            const title = 'Обновление OPKG';
-            showOutputModal(title, data.output);
-        })
+    fetchJsonOrThrow('index.php?update&type=packages')
+        .then(data => showOutputModal('Обновление OPKG', data.output))
         .catch(err => {
             console.error(err);
-            showOutputModal('Ошибка OPKG', err.message);
+            showOutputModal('Ошибка OPKG', err && err.message ? err.message : 'Ошибка OPKG');
         })
         .finally(() => {
             toggleProgressBar(false, {
@@ -351,8 +390,7 @@ function opkgUpdate() {
 }
 
 function checkForUpdates() {
-    fetch('index.php?check_update')
-        .then(response => response.json())
+    fetchJsonOrThrow('index.php?check_update')
         .then(data => {
             console.log('Check update response:', data);
             remoteVersion = data.remote_version;
@@ -432,23 +470,15 @@ function toggleUpdateIcon(localVersion, remoteVersion, show = true) {
 
 function apiCall(params) {
     const body = new URLSearchParams(params);
-    return fetch(window.location.pathname, {
+    return fetchJsonOrThrow(window.location.pathname, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body
-    }).then(async r => {
-        try {
-            const data = await r.json();
-            if (!data || data.ok !== true) {
-                const message = (data && data.error) || `HTTP ${r.status}`;
-                throw new Error(message);
-            }
-            return data;
-        } catch (e) {
-            throw e;
+    }).then(data => {
+        if (!data || data.ok !== true) {
+            throw new Error((data && data.error) || 'Ошибка API');
         }
+        return data;
     });
 }
 
@@ -482,8 +512,7 @@ function showUpdateAlert(localVersion, remoteVersion) {
         return;
     }
 
-    fetch('index.php?get_release_notes&v=' + remoteVersion)
-        .then(response => response.json())
+    fetchJsonOrThrow('index.php?get_release_notes&v=' + remoteVersion)
         .then(data => {
             let releaseNotes = 'Информация об изменениях недоступна.';
             if (data.notes) {
@@ -525,15 +554,11 @@ function updateScript() {
 
     toggleProgressBar(true);
 
-    fetch(`index.php?update&type=web`)
-        .then(response => response.json())
-        .then(data => {
-            const title = 'Обновление веб-интерфейса';
-            showOutputModal(title, data.output);
-        })
+    fetchJsonOrThrow(`index.php?update&type=web`)
+        .then(data => showOutputModal('Обновление веб-интерфейса', data.output))
         .catch(err => {
             console.error(err);
-            showOutputModal('Ошибка обновления веб-интерфейса', err.message);
+            showOutputModal('Ошибка обновления веб-интерфейса', err && err.message ? err.message : 'Ошибка обновления');
         })
         .finally(() => {
             toggleProgressBar(false);
@@ -543,12 +568,24 @@ function updateScript() {
 }
 
 /** Textarea **/
+let _textareaSizeSaveTimer = null;
+let _lastTextareaSizeKey = null;
+
 function saveAndApplyTextareaSize(textarea) {
     const size = {
         width: textarea.style.width || getComputedStyle(textarea).width,
         height: textarea.style.height || getComputedStyle(textarea).height
     };
-    localStorage.setItem('textarea_size', JSON.stringify(size));
+    const key = `${size.width}x${size.height}`;
+    if (key === _lastTextareaSizeKey) return;
+    _lastTextareaSizeKey = key;
+
+    if (_textareaSizeSaveTimer) clearTimeout(_textareaSizeSaveTimer);
+    _textareaSizeSaveTimer = setTimeout(() => {
+        try {
+            localStorage.setItem('textarea_size', JSON.stringify(size));
+        } catch (_) {}
+    }, 150);
 
     const textareas = document.querySelectorAll('textarea');
     textareas.forEach(t => {
@@ -571,12 +608,12 @@ function restoreTextareaSizes() {
 
 function setupTextareaResizeListeners() {
     const textareas = document.querySelectorAll('textarea');
-    textareas.forEach(textarea => {
-        const observer = new ResizeObserver(() => {
-            saveAndApplyTextareaSize(textarea);
-        });
-        observer.observe(textarea);
+    const observer = new ResizeObserver((entries) => {
+        const entry = entries && entries[0];
+        if (!entry || !entry.target) return;
+        saveAndApplyTextareaSize(entry.target);
     });
+    textareas.forEach(textarea => observer.observe(textarea));
 }
 
 /** JSON **/
@@ -620,6 +657,7 @@ function formatJson(textareaName) {
         const parsedJson = JSON.parse(content);
         const formattedJson = JSON.stringify(parsedJson, null, 2);
         textarea.value = formattedJson;
+        textarea.dispatchEvent(new Event('input', {bubbles: true}));
     } catch (error) {
         showOutputModal('Ошибка JSON', error.message);
     }
@@ -633,12 +671,9 @@ function getServiceStatus(category, filePath) {
     if (filePath) {
         params.set('config', filePath);
     }
-    fetch(`index.php?${params.toString()}`)
-        .then(r => r.json())
-        .then(data => {
-            showOutputModal('Статус сервиса', data.status);
-        })
-        .catch(() => showOutputModal('Ошибка', 'Ошибка получения статуса сервиса'))
+    fetchJsonOrThrow(`index.php?${params.toString()}`)
+        .then(data => showOutputModal('Статус сервиса', data.status))
+        .catch(err => showOutputModal('Ошибка', err && err.message ? err.message : 'Ошибка получения статуса сервиса'))
         .finally(() => { statusRequestInProgress = false; });
 }
 

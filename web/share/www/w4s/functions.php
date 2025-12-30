@@ -331,17 +331,15 @@ function getRemoteVersion() {
 function checkUpdate() {
     $release = fetchGitHubRelease('latest');
     if (!$release || !isset($release['tag_name'])) {
-        die(json_encode(['error' => 'Failed to fetch release info']));
+        json_error('Failed to fetch release info', 502);
     }
 
     $remoteVersion = $release['tag_name'];
 
-    header('Content-Type: application/json');
-    echo json_encode([
+    json_send([
         'local_version' => getVersion(),
         'remote_version' => $remoteVersion,
     ]);
-    exit();
 }
 
 function update($type = 'packages') {
@@ -356,9 +354,7 @@ function update($type = 'packages') {
     } else {
         exec("opkg update && opkg upgrade 2>&1", $output);
     }
-    header('Content-Type: application/json');
-    echo json_encode(['output' => implode("\n", $output)]);
-    exit();
+    json_send(['output' => implode("\n", $output)]);
 }
 
 function getReleaseNotes($version) {
@@ -371,9 +367,7 @@ function getReleaseNotes($version) {
         });
     }
 
-    header('Content-Type: application/json');
-    echo json_encode(['notes' => $notes]);
-    exit();
+    json_send(['notes' => $notes]);
 }
 
 function getLists($paths, bool $useShell = false): array {
@@ -447,11 +441,16 @@ function exportAllFiles($categories) {
 }
 
 function handlePostRequest($files) {
-    $commands = [];
-    $changedCategories = [];
+    global $SERVICES;
 
+    $changedCategories = [];
     if (isset($_POST['changed_categories'])) {
-        $changedCategories = json_decode($_POST['changed_categories'], true);
+        $decoded = json_decode((string)$_POST['changed_categories'], true);
+        if (is_array($decoded)) {
+            $changedCategories = array_values(array_unique(array_filter($decoded, function($v) use ($SERVICES) {
+                return is_string($v) && $v !== '' && isset($SERVICES[$v]);
+            })));
+        }
     }
 
     $validMap = [];
@@ -466,17 +465,29 @@ function handlePostRequest($files) {
         }
     }
 
+    $savedFiles = [];
+    $failedFiles = [];
+
     foreach ($_POST as $textareaKey => $content) {
         if (!isset($validMap[$textareaKey])) {
             continue;
         }
         $normalizedContent = str_replace("\r", '', $content);
-        file_put_contents($validMap[$textareaKey], $normalizedContent);
+        $path = $validMap[$textareaKey];
+        $ok = @file_put_contents($path, $normalizedContent) !== false;
+        if ($ok) {
+            $savedFiles[] = $textareaKey;
+        } else {
+            $failedFiles[] = $textareaKey;
+        }
+    }
+
+    if (!empty($failedFiles)) {
+        json_error('Не удалось сохранить: ' . implode(', ', $failedFiles), 500);
     }
 
     restartServices($changedCategories);
-    http_response_code(200);
-    exit();
+    json_ok(['saved' => $savedFiles]);
 }
 
 function stripAnsi($text) {
@@ -496,21 +507,25 @@ if (isset($_GET['service_status']) && isset($SERVICES[$_GET['service_status']]))
     }
     
     $status = stripAnsi((string)$raw);
-    header('Content-Type: application/json');
-    echo json_encode(['status' => $status]);
+    json_send(['status' => $status]);
+}
+
+function json_send($data, int $status = 200): void {
+    http_response_code($status);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(
+        $data,
+        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | (defined('JSON_INVALID_UTF8_SUBSTITUTE') ? JSON_INVALID_UTF8_SUBSTITUTE : 0)
+    );
     exit();
 }
 
-function json_ok($data = []) {
-    header('Content-Type: application/json');
-    echo json_encode(array_merge(['ok' => true], $data));
-    exit();
+function json_ok($data = []): void {
+    json_send(array_merge(['ok' => true], $data), 200);
 }
 
-function json_error($message) {
-    header('Content-Type: application/json');
-    echo json_encode(['error' => $message]);
-    exit();
+function json_error($message, int $status = 400): void {
+    json_send(['ok' => false, 'error' => (string)$message], $status);
 }
 
 function validate_file_name($name, $allowedExtensions) {
