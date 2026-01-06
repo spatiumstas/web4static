@@ -63,6 +63,19 @@ async function fetchJsonOrThrow(url, options) {
     }
 }
 
+async function fetchTextOrThrow(url, options) {
+    try {
+        const response = await fetch(url, options);
+        const text = await response.text();
+        if (!response.ok) {
+            throw new Error(text || `HTTP ${response.status}`);
+        }
+        return text;
+    } catch (e) {
+        throw new Error(e && e.message ? e.message : 'Не удалось выполнить запрос');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('textarea').forEach(textarea => {
         const section = textarea.closest('.form-section');
@@ -333,6 +346,7 @@ document.addEventListener('keydown', function (e) {
 /** Updates **/
 let isUpdating = false;
 let remoteVersion = null;
+let localVersion = null;
 
 function versionToNumber(version) {
     if (!version || version === 'unknown' || version === '') return 0;
@@ -361,17 +375,27 @@ function setElementVisibility(element, isVisible) {
     }
 }
 
+function startLoader({hideElement = null} = {}) {
+    const updatePanel = document.getElementById('update-w4s-panel');
+    const wasPanelVisible = !!(updatePanel && updatePanel.style.display !== 'none');
+    toggleProgressBar(true, {hideElement});
+    return {wasPanelVisible};
+}
+
+function stopLoader(ctx, {showElement = null, onClickAfterHide = null} = {}) {
+    toggleProgressBar(false, {
+        wasPanelVisible: !!(ctx && ctx.wasPanelVisible),
+        showElement,
+        onClickAfterHide
+    });
+}
+
 function opkgUpdate() {
     if (!confirm('Обновить OPKG пакеты?')) {
         return;
     }
     isUpdating = true;
-
-    const updatePanel = document.getElementById('update-w4s-panel');
-    const opkgIcon = document.getElementById('opkg-icon');
-    const wasPanelVisible = updatePanel.style.display !== 'none';
-
-    toggleProgressBar(true);
+    const loader = startLoader();
 
     fetchJsonOrThrow('index.php?update&type=packages')
         .then(data => showOutputModal('Обновление OPKG', data.output))
@@ -380,12 +404,22 @@ function opkgUpdate() {
             showOutputModal('Ошибка OPKG', err && err.message ? err.message : 'Ошибка OPKG');
         })
         .finally(() => {
-            toggleProgressBar(false, {
-                wasPanelVisible,
-                showElement: opkgIcon,
-                onClickAfterHide: () => showUpdateAlert(local_version, remoteVersion)
-            });
+            stopLoader(loader, {onClickAfterHide: loader.wasPanelVisible ? () => showUpdateAlert(localVersion, remoteVersion) : null});
             isUpdating = false;
+        });
+}
+
+function manualStart(category) {
+    const cat = String(category || '').trim();
+    if (!cat) return;
+    if (!confirm(`Запустить ${cat}?`)) return;
+    const loader = startLoader();
+
+    fetchJsonOrThrow('index.php?manual=' + encodeURIComponent(cat))
+        .then(data => showOutputModal(cat, (data && typeof data.status === 'string') ? data.status : 'Done'))
+        .catch(err => showOutputModal('Ошибка', err && err.message ? err.message : 'Upstream request failed'))
+        .finally(() => {
+            stopLoader(loader, {onClickAfterHide: loader.wasPanelVisible ? () => showUpdateAlert(localVersion, remoteVersion) : null});
         });
 }
 
@@ -393,6 +427,7 @@ function checkForUpdates() {
     fetchJsonOrThrow('index.php?check_update')
         .then(data => {
             console.log('Check update response:', data);
+            localVersion = data.local_version;
             remoteVersion = data.remote_version;
             const newer = isRemoteNewer(data.local_version, data.remote_version);
             toggleUpdateIcon(data.local_version, data.remote_version, newer);
@@ -482,6 +517,67 @@ function apiCall(params) {
     });
 }
 
+function mapCategoryToCore(category) {
+    const c = String(category || '').toLowerCase();
+    if (c === 'mihomo') return 'mihomo';
+    if (c === 'sing-box') return 'singbox';
+    if (c === 'xray') return 'xray';
+    if (c === 'xkeen') return 'xray';
+    return '';
+}
+
+function normalizeApiErrorMessage(message) {
+    const text = String(message || '').trim();
+    if (!text) return 'Ошибка генерации';
+    if (text.startsWith('{') && text.endsWith('}')) {
+        try {
+            const obj = JSON.parse(text);
+            if (obj && typeof obj.error === 'string' && obj.error.trim()) return obj.error.trim();
+            if (obj && typeof obj.message === 'string' && obj.message.trim()) return obj.message.trim();
+        } catch (_) {}
+    }
+    return text;
+}
+
+async function generateViaApi(category, textareaName) {
+    const core = mapCategoryToCore(category);
+    const textarea = document.querySelector(`textarea[name="${textareaName}"]`);
+    const hint =
+        'Вставьте ссылку на подписку или прокси\n\n' +
+        'При пустом поле откроется внешний конвертер';
+    const raw = prompt(hint, '');
+    if (raw === null) return;
+
+    const input = String(raw || '').trim();
+    if (input === '') {
+        window.open('https://spatiumstas.github.io/web4core/', '_blank', 'noopener,noreferrer');
+        return;
+    }
+
+    const loader = startLoader();
+
+    try {
+        const body = new URLSearchParams({
+            web4core_convert: '1',
+            core,
+            input
+        });
+
+        const result = await fetchTextOrThrow(window.location.pathname, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body
+        });
+
+        textarea.value = result;
+        textarea.dispatchEvent(new Event('input', {bubbles: true}));
+    } catch (e) {
+        alert(normalizeApiErrorMessage(e && e.message ? e.message : e));
+    } finally {
+        stopLoader(loader, {onClickAfterHide: loader.wasPanelVisible ? () => showUpdateAlert(localVersion, remoteVersion) : null});
+    }
+}
+
 function createFilePrompt(category) {
     const name = prompt('Введите имя файла с расширением, например config.json');
     if (!name) return;
@@ -506,6 +602,8 @@ function deleteFile(category, name) {
 window.getServiceStatus = getServiceStatus;
 window.createFilePrompt = createFilePrompt;
 window.deleteFile = deleteFile;
+window.generateViaApi = generateViaApi;
+window.manualStart = manualStart;
 
 function showUpdateAlert(localVersion, remoteVersion) {
     if (isUpdating) {
