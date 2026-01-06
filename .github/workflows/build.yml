@@ -1,6 +1,8 @@
 name: Build and Deploy
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -62,15 +64,14 @@ jobs:
 
       - name: Build repository
         run: |
-          # Clean and prepare _pages directory
+          DEPENDENCIES=$(sed -n 's/^DEPENDENCIES := //p' Makefile | xargs)
           rm -rf out/_pages
           mkdir -p out/_pages/all
-
           cp out/web4static_${{ steps.version.outputs.content }}_kn.ipk out/_pages/all/web4static_${{ steps.version.outputs.content }}_all.ipk
 
           echo "Package: web4static" > out/_pages/all/Packages
           echo "Version: ${{ steps.version.outputs.content }}" >> out/_pages/all/Packages
-          echo "Depends: curl, php8-cgi, ip, php8-mod-session, lighttpd, lighttpd-mod-cgi, lighttpd-mod-setenv, lighttpd-mod-rewrite" >> out/_pages/all/Packages  # Adapt dependencies as needed
+          echo "Depends: $DEPENDENCIES" >> out/_pages/all/Packages
           echo "License: MIT" >> out/_pages/all/Packages
           echo "Section: net" >> out/_pages/all/Packages
           echo "Architecture: all" >> out/_pages/all/Packages

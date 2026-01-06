@@ -46,7 +46,7 @@ if (isset($_GET['export_all'])) {
 ?>
 
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -84,7 +84,7 @@ if (isset($_GET['export_all'])) {
                         <?php if (is_array($categoryFiles)): ?>
                             <?php foreach ($categoryFiles as $key => $path): ?>
                                 <div class="group-button-wrapper" data-category="<?php echo htmlspecialchars($category, ENT_QUOTES); ?>" data-file-name="<?php echo htmlspecialchars(basename($key), ENT_QUOTES); ?>">
-                                    <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>')" value="<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>" />
+                                    <input type="button" onclick="showSubSection('<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>')" value="<?php echo htmlspecialchars(basename($key)); ?>" />
                                     <button type="button" class="file-delete-btn" title="Удалить файл" aria-label="Удалить файл" onclick="deleteFile('<?php echo htmlspecialchars($category, ENT_QUOTES); ?>','<?php echo htmlspecialchars(basename($key), ENT_QUOTES); ?>')">&times;</button>
                                 </div>
                             <?php endforeach; ?>
@@ -101,10 +101,18 @@ if (isset($_GET['export_all'])) {
                                 </div>
                                 <div class="button-container">
                                     <?php if (in_array($category, ['Mihomo', 'sing-box', 'Xray', 'XKeen'])): ?>
-                                    <button type="button" onclick="window.open('https://spatiumstas.github.io/web4core/', '_blank')" aria-label="Generate configuration" title="Создать конфигурацию">
+                                    <button
+                                        type="button"
+                                        onclick="generateViaApi('<?php echo htmlspecialchars($category, ENT_QUOTES); ?>','<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME), ENT_QUOTES); ?>')"
+                                        title="Сгенерировать конфигурацию">
                                         <svg width="24" height="24"><use href="#generate"/></svg>
                                     </button>
                                     <?php endif; ?>
+                                    <?php if (isset($SERVICES[$category]['manual'])): ?>
+                                    <button type="button" onclick="manualStart('<?php echo htmlspecialchars($category, ENT_QUOTES); ?>')" aria-label="Manual start" title="Запустить вручную">
+                                        <svg width="24" height="24"><use href="#start"/></svg>
+                                    </button>
+                                    <?php endif; ?>                                    
                                     <input type="file" id="import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>" style="display:none;" accept=".list,.json,.conf,.txt,.yaml,.sh" onchange="importFile('<?php echo htmlspecialchars(pathinfo($key, PATHINFO_FILENAME)); ?>', this, '<?php echo htmlspecialchars($category); ?>')">
                                     <button type="button" onclick="document.getElementById('import-<?php echo htmlspecialchars($category . '/' . pathinfo($key, PATHINFO_FILENAME)); ?>').click()" aria-label="Replace file" title="Заменить">
                                         <svg width="24" height="24"><use href="#swap"/></svg>
@@ -133,7 +141,6 @@ if (isset($_GET['export_all'])) {
     </main>
 
     <footer>
-        
         <button type="button" onclick="exportAllFiles()" aria-label="Save all lists" title="Сохранить все списки">
             <svg width="24" height="24"><use href="#download-file"/></svg>
         </button>

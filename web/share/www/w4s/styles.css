@@ -511,8 +511,8 @@ body.pwa-mode #update-w4s-panel {
 
 body.modal-open,
 html.modal-open {
-    overflow: hidden;
-    position: fixed;
+    overflow: hidden !important;
+    position: fixed !important;
     width: 100%;
     height: 100%;
 }

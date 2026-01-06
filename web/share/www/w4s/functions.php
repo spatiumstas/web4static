@@ -1,16 +1,21 @@
 <?php
 $allowedExtensions = ['list', 'json', 'conf', 'txt', 'yaml', 'sh', 'log'];
-$AUTH_FLAG = getenv('BASIC_AUTH');
+$apiUrl = 'https://api.web2core.workers.dev/';
 define('WEB4STATIC_DIR', '/opt/share/www/w4s');
 
-if ($AUTH_FLAG === false && isset($_SERVER['BASIC_AUTH'])) {
-    $AUTH_FLAG = $_SERVER['BASIC_AUTH'];
+function getAuthFlagRaw(): string {
+    $flag = getenv('BASIC_AUTH');
+    if ($flag !== false) {
+        return (string)$flag;
+    }
+    if (isset($_SERVER['BASIC_AUTH'])) {
+        return (string)$_SERVER['BASIC_AUTH'];
+    }
+    return '';
 }
 
 function isAuthEnabled(): bool {
-    global $AUTH_FLAG;
-    $flag = strtolower(trim((string)$AUTH_FLAG));
-    return in_array($flag, ['1', 'true', 'on', 'yes'], true);
+    return trim(getAuthFlagRaw()) === '1';
 }
 
 function authenticateUser(string $username, string $password): bool {
@@ -115,6 +120,9 @@ $SERVICES = [
             "/opt/root/KeenSnap/config.sh",
             "/opt/var/log/keensnap.log"
         ],
+        'manual' => function($self) {
+            return '/opt/root/KeenSnap/keensnap-init start manual';
+        },
         'non-package' => true,
         'useShell' => false,
     ],
@@ -510,6 +518,20 @@ if (isset($_GET['service_status']) && isset($SERVICES[$_GET['service_status']]))
     json_send(['status' => $status]);
 }
 
+if (isset($_GET['manual']) && isset($SERVICES[$_GET['manual']])) {
+    $cat = $_GET['manual'];
+
+    if (isset($SERVICES[$cat]['manual']) && is_callable($SERVICES[$cat]['manual'])) {
+        $cmd = trim((string)$SERVICES[$cat]['manual']($SERVICES[$cat]));
+        $raw = $cmd !== '' ? shell_exec($cmd . ' 2>&1') : '';
+    } else {
+        $raw = 'Запуск не поддерживается';
+    }
+
+    $status = stripAnsi((string)$raw);
+    json_send(['status' => $status]);
+}
+
 function json_send($data, int $status = 200): void {
     http_response_code($status);
     header('Content-Type: application/json; charset=utf-8');
@@ -598,6 +620,82 @@ if (isset($_GET['delete_file']) || (isset($_POST['delete_file']) && $_POST['dele
     if (!$ok) json_error('Не удалось удалить файл');
 
     json_ok();
+}
+
+if (!empty($_GET['web4core_convert']) || !empty($_POST['web4core_convert'])) {
+    $core = strtolower(trim($_POST['core'] ?? $_GET['core'] ?? ''));
+    $input = trim($_POST['input'] ?? $_GET['input'] ?? '');
+
+    $fail = function(string $msg = 'Upstream request failed', int $status = 502): void {
+        http_response_code($status);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['error' => $msg], JSON_UNESCAPED_UNICODE);
+        exit();
+    };
+
+    $allowedCores = ['singbox', 'xray', 'mihomo'];
+    if (!in_array($core, $allowedCores, true)) {
+        $fail('Invalid core', 400);
+    }
+    if ($input === '') {
+        $fail('Empty input', 400);
+    }
+
+    $payload = json_encode([
+        'core' => $core,
+        'input' => $input,
+        'options' => new stdClass()
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+    if ($payload === false) {
+        $fail('Failed to encode request', 500);
+    }
+
+    $ch = curl_init($apiUrl);
+    if ($ch === false) {
+        $fail('Failed to initialize request', 500);
+    }
+
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $payload,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HEADER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS => 3,
+        CURLOPT_TIMEOUT => 35,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Content-Length: ' . strlen($payload)
+        ],
+        CURLOPT_USERAGENT => 'web4core-proxy/1.0',
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => 2,
+    ]);
+
+    $response = curl_exec($ch);
+
+    if ($response === false) {
+        $error = curl_error($ch);
+        curl_close($ch);
+        $fail('Request failed: ' . $error, 502);
+    }
+
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+    curl_close($ch);
+    $headers = substr($response, 0, $headerSize);
+    $body = substr($response, $headerSize);
+    $contentType = 'text/plain; charset=utf-8';
+    if (preg_match('/^Content-Type:\s*(.+?)$/mi', $headers, $match)) {
+        $contentType = trim($match[1]);
+    }
+
+    http_response_code($httpCode);
+    header('Content-Type: ' . $contentType);
+    echo $body;
+    exit();
 }
 
 function getVersion() {

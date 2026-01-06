@@ -13,14 +13,6 @@ print_message() {
 # Fix conflict with keenetic webdav server: https://github.com/Entware/entware-packages/pull/27
 sed -i -E "s/^PROCS=lighttpd$/PROCS=\/opt\/sbin\/lighttpd/" /opt/etc/init.d/S80lighttpd
 
-if [ ! -f /opt/etc/lighttpd/conf.d/81-w4s-local.conf ]; then
-cat > /opt/etc/lighttpd/conf.d/81-w4s-local.conf <<'EOF'
-$SERVER["socket"] == ":99" {
-    setenv.add-environment = ( "BASIC_AUTH" => "0" )
-}
-EOF
-fi
-
 /opt/etc/init.d/S80lighttpd restart
 
 ip_addr=$(ip -f inet addr show dev br0 2>/dev/null | grep inet | sed -n 's/.*inet \([0-9.]\+\).*/\1/p')

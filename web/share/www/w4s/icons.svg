@@ -67,4 +67,9 @@
                   fill="currentColor"/>
         </g>
     </symbol>
+
+    <!-- Start -->
+    <symbol id="start" viewBox="0 0 16 16" fill="none">
+        <path d="M5.2 3.2a1 1 0 0 0-1.6.8v8a1 1 0 0 0 1.6.8l6-4a1 1 0 0 0 0-1.6l-6-4Z" fill="currentColor"/>
+    </symbol>
 </svg>

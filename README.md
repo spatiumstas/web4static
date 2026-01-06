@@ -48,6 +48,12 @@ opkg update && opkg install curl ca-certificates wget-ssl && curl -fsSL https://
 ```
 
 ###  Удаление
+
+#### Пакета
 ```
 opkg remove web4static
+```
+#### Репозитория
+```
+rm /opt/etc/opkg/web4static.conf
 ```
