@@ -176,6 +176,18 @@ $SERVICES = [
             return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
         }
     ],
+    'NFQWS2' => [
+        'init' => '/opt/etc/init.d/S51nfqws2',
+        'path' => '/opt/etc/nfqws2',
+        'useShell' => false,
+        'packages' => ['nfqws2-keenetic'],
+        'restart' => function($self) {
+            return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
+        },
+        'status' => function($self) {
+            return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
+        }
+    ],
     'sing-box' => [
         'init' => '/opt/etc/init.d/S99sing-box',
         'path' => '/opt/etc/sing-box',
