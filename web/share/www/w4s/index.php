@@ -9,9 +9,6 @@ if (isset($_GET['update'])) {
     $type = $_GET['type'] ?? 'packages';
     update($type);
 }
-if (isset($_GET['get_release_notes']) && isset($_GET['v'])) {
-    getReleaseNotes(htmlspecialchars($_GET['v']));
-}
 
 $categories = getCategories();
 $GLOBALS['categories'] = $categories;

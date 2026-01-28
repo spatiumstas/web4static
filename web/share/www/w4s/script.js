@@ -346,25 +346,27 @@ document.addEventListener('keydown', function (e) {
 /** Updates **/
 let isUpdating = false;
 let remoteVersion = null;
+let remoteNotes = null;
 let localVersion = null;
 
-function versionToNumber(version) {
-    if (!version || version === 'unknown' || version === '') return 0;
-    const parts = version.split('.');
-    return parseInt(parts[0], 10) * 10000 + parseInt(parts[1] || 0, 10) * 100 + parseInt(parts[2] || 0, 10);
+function parseVersionParts(version) {
+    const v = String(version || '').trim();
+    if (!v || v === 'unknown') return [];
+    const m = v.match(/\d+/g);
+    if (!m) return [];
+    return m.map(n => parseInt(n, 10) || 0);
 }
 
 function isRemoteNewer(local, remote) {
-    const a = String(local || '0').split('.').map(n => parseInt(n, 10) || 0);
-    const b = String(remote || '0').split('.').map(n => parseInt(n, 10) || 0);
-    for (let i = 0; i < 3; i++) {
+    const a = parseVersionParts(local);
+    const b = parseVersionParts(remote);
+    if (!a.length || !b.length) return false;
+    const n = Math.max(a.length, b.length);
+    for (let i = 0; i < n; i++) {
         const av = a[i] || 0;
         const bv = b[i] || 0;
         if (bv > av) return true;
         if (bv < av) return false;
-    }
-    for (let i = 3; i < b.length; i++) {
-        if ((b[i] || 0) > 0) return true;
     }
     return false;
 }
@@ -404,7 +406,7 @@ function opkgUpdate() {
             showOutputModal('Ошибка OPKG', err && err.message ? err.message : 'Ошибка OPKG');
         })
         .finally(() => {
-            stopLoader(loader, {onClickAfterHide: loader.wasPanelVisible ? () => showUpdateAlert(localVersion, remoteVersion) : null});
+            stopLoader(loader, {onClickAfterHide: loader.wasPanelVisible ? () => showUpdateAlert() : null});
             isUpdating = false;
         });
 }
@@ -419,7 +421,7 @@ function manualStart(category) {
         .then(data => showOutputModal(cat, (data && typeof data.status === 'string') ? data.status : 'Done'))
         .catch(err => showOutputModal('Ошибка', err && err.message ? err.message : 'Upstream request failed'))
         .finally(() => {
-            stopLoader(loader, {onClickAfterHide: loader.wasPanelVisible ? () => showUpdateAlert(localVersion, remoteVersion) : null});
+            stopLoader(loader, {onClickAfterHide: loader.wasPanelVisible ? () => showUpdateAlert() : null});
         });
 }
 
@@ -429,6 +431,7 @@ function checkForUpdates() {
             console.log('Check update response:', data);
             localVersion = data.local_version;
             remoteVersion = data.remote_version;
+            remoteNotes = data.notes || null;
             const newer = isRemoteNewer(data.local_version, data.remote_version);
             toggleUpdateIcon(data.local_version, data.remote_version, newer);
         })
@@ -499,7 +502,7 @@ function toggleUpdateIcon(localVersion, remoteVersion, show = true) {
         showText: show,
         showProgressBar: false,
         text: 'Доступно обновление',
-        onClick: show ? () => showUpdateAlert(localVersion, remoteVersion) : null
+        onClick: show ? () => showUpdateAlert() : null
     });
 }
 
@@ -574,7 +577,7 @@ async function generateViaApi(category, textareaName) {
     } catch (e) {
         alert(normalizeApiErrorMessage(e && e.message ? e.message : e));
     } finally {
-        stopLoader(loader, {onClickAfterHide: loader.wasPanelVisible ? () => showUpdateAlert(localVersion, remoteVersion) : null});
+        stopLoader(loader, {onClickAfterHide: loader.wasPanelVisible ? () => showUpdateAlert() : null});
     }
 }
 
@@ -605,40 +608,31 @@ window.deleteFile = deleteFile;
 window.generateViaApi = generateViaApi;
 window.manualStart = manualStart;
 
-function showUpdateAlert(localVersion, remoteVersion) {
+function showUpdateAlert() {
     if (isUpdating) {
         return;
     }
 
-    fetchJsonOrThrow('index.php?get_release_notes&v=' + remoteVersion)
-        .then(data => {
-            let releaseNotes = 'Информация об изменениях недоступна.';
-            if (data.notes) {
-                if (typeof data.notes === 'object' && !Array.isArray(data.notes)) {
-                    releaseNotes = Object.values(data.notes)
-                        .filter(note => note && note.trim())
-                        .map(note => note.trim().replace(/\r/g, ''))
-                        .join('\n');
-                } else if (Array.isArray(data.notes)) {
-                    releaseNotes = data.notes
-                        .filter(note => note && note.trim())
-                        .map(note => note.trim().replace(/\r/g, ''))
-                        .join('\n');
-                }
-            }
+    let releaseNotes = 'Информация об изменениях недоступна.';
+    const notes = remoteNotes;
+    if (notes) {
+        if (typeof notes === 'object' && !Array.isArray(notes)) {
+            releaseNotes = Object.values(notes)
+                .filter(note => note && note.trim())
+                .map(note => note.trim().replace(/\r/g, ''))
+                .join('\n');
+        } else if (Array.isArray(notes)) {
+            releaseNotes = notes
+                .filter(note => note && note.trim())
+                .map(note => note.trim().replace(/\r/g, ''))
+                .join('\n');
+        }
+    }
 
-            const message = `Доступно обновление: ${remoteVersion} (текущая: ${localVersion})\n\n${releaseNotes}\n\nОбновить?`;
-            if (confirm(message)) {
-                updateScript();
-            }
-        })
-        .catch(err => {
-            console.error('Ошибка при получении списка изменений:', err);
-            const message = `Доступно обновление: ${remoteVersion} (текущая: ${localVersion})\n\nСписок изменений недоступен.\n\nОбновить?`;
-            if (confirm(message)) {
-                updateScript();
-            }
-        });
+    const message = `Доступно обновление: ${remoteVersion} (текущая: ${localVersion})\n\n${releaseNotes}\n\nОбновить?`;
+    if (confirm(message)) {
+        updateScript();
+    }
 }
 
 function updateScript() {

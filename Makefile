@@ -28,6 +28,8 @@ _web-control:
 _web-scripts:
 	cp web/ipk/postinst out/$(BUILD_DIR)/control/postinst;
 	chmod +x out/$(BUILD_DIR)/control/postinst
+	cp web/ipk/postrm out/$(BUILD_DIR)/control/postrm;
+	chmod +x out/$(BUILD_DIR)/control/postrm
 
 _web-ipk:
 	make _web-clean
@@ -41,9 +43,6 @@ _web-ipk:
 	mkdir -p out/$(BUILD_DIR)/data$(ROOT_DIR)/etc/lighttpd/conf.d
 	cp web/etc/lighttpd/conf.d/80-w4s.conf out/$(BUILD_DIR)/data$(ROOT_DIR)/etc/lighttpd/conf.d/80-w4s.conf
 	cp web/etc/lighttpd/conf.d/81-w4s-local.conf out/$(BUILD_DIR)/data$(ROOT_DIR)/etc/lighttpd/conf.d/81-w4s-local.conf
-
-	W4S_DIR=out/$(BUILD_DIR)/data$(ROOT_DIR)/share/www/w4s; \
-	bash scripts/fingerprint.sh "$$W4S_DIR"
 	cd out/$(BUILD_DIR)/data; tar czvf ../data.tar.gz .; cd ../../..
 
 	echo 2.0 > out/$(BUILD_DIR)/debian-binary

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+rm -rf "/opt/share/www/w4s/"
+exit 0

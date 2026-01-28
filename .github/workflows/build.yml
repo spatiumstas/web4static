@@ -22,6 +22,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Prepare web
+        shell: bash
+        run: |
+          set -euo pipefail
+          W4S_DIR="web/share/www/w4s"
+          SHA="${GITHUB_SHA::7}"
+          export SHA
+          ASSETS=("script.js" "styles.css" "functions.php" "icons.svg")
+          for f in "${ASSETS[@]}"; do
+            src="$W4S_DIR/$f"
+            [ -f "$src" ] || continue
+            ext="${f##*.}"
+            base="${f%.*}"
+            mv "$src" "$W4S_DIR/${base}-${SHA}.${ext}"
+          done
+          node -e 'const fs=require("fs"); const sha=process.env.SHA||""; if(!sha) throw new Error("Missing SHA env"); const files=["styles.css","script.js","functions.php","icons.svg"]; let s=fs.readFileSync("web/share/www/w4s/index.php","utf8"); for(const f of files){ const i=f.lastIndexOf("."); const base=i>=0?f.slice(0,i):f; const ext=i>=0?f.slice(i+1):""; const to=ext?(base+"-"+sha+"."+ext):(base+"-"+sha); s=s.split(f).join(to); } fs.writeFileSync("web/share/www/w4s/index.php", s);'
+
       - name: Build web
         run: make web-kn
 

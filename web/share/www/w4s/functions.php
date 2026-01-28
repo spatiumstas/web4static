@@ -176,6 +176,18 @@ $SERVICES = [
             return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
         }
     ],
+    'NFQWS2' => [
+        'init' => '/opt/etc/init.d/S51nfqws2',
+        'path' => ['/opt/etc/nfqws2', '/opt/etc/nfqws2/lists'],
+        'useShell' => false,
+        'packages' => ['nfqws2-keenetic'],
+        'restart' => function($self) {
+            return is_file($self['init']) ? [$self['init'] . ' restart'] : [];
+        },
+        'status' => function($self) {
+            return is_file($self['init']) ? shell_exec($self['init'] . ' status 2>&1') : 'Нет статуса';
+        }
+    ],
     'sing-box' => [
         'init' => '/opt/etc/init.d/S99sing-box',
         'path' => '/opt/etc/sing-box',
@@ -321,38 +333,48 @@ function restartServices($changedCategories = null) {
     }
 }
 
-function fetchGitHubRelease($version = 'latest') {
-    $apiUrl = $version === 'latest'
-        ? 'https://api.github.com/repos/spatiumstas/web4static/releases/latest'
-        : "https://api.github.com/repos/spatiumstas/web4static/releases/tags/$version";
+function fetchGitHubLatestReleaseInfo(): array {
+    $apiUrl = 'https://api.github.com/repos/spatiumstas/web4static/releases/latest';
     $escapedUrl = escapeshellarg($apiUrl);
-    $command = "curl -s -L -H 'User-Agent: web4static-updater' $escapedUrl";
-    $response = shell_exec($command);
-    return json_decode($response, true);
-}
 
-function getRemoteVersion() {
-    $release = fetchGitHubRelease('latest');
-    return $release['tag_name'] ?? 'unknown';
+    $connectTimeout = 5;
+    $maxTime = 15;
+    $command = "curl -s -L --connect-timeout $connectTimeout -m $maxTime -H 'User-Agent: web4static-updater' $escapedUrl 2>/dev/null";
+
+    $response = shell_exec($command);
+    $release = json_decode((string)$response, true);
+    if (!is_array($release)) {
+        return ['tag_name' => '', 'notes' => []];
+    }
+
+    $tag = isset($release['tag_name']) ? (string)$release['tag_name'] : '';
+
+    $notes = [];
+    if (isset($release['body'])) {
+        $lines = explode("\n", trim((string)$release['body']));
+        $notes = array_values(array_filter($lines, function($line) {
+            return !empty(trim($line)) && strpos($line, '#') !== 0;
+        }));
+    }
+
+    return ['tag_name' => $tag, 'notes' => $notes];
 }
 
 function checkUpdate() {
-    $release = fetchGitHubRelease('latest');
-    if (!$release || !isset($release['tag_name'])) {
+    $info = fetchGitHubLatestReleaseInfo();
+    if (($info['tag_name'] ?? '') === '') {
         json_error('Failed to fetch release info', 502);
     }
 
-    $remoteVersion = $release['tag_name'];
-
     json_send([
         'local_version' => getVersion(),
-        'remote_version' => $remoteVersion,
+        'remote_version' => $info['tag_name'],
+        'notes' => $info['notes'],
     ]);
 }
 
 function update($type = 'packages') {
     if ($type === 'web') {
-        $remoteVersion = getRemoteVersion();
         $configFile = '/opt/etc/opkg/web4static.conf';
         if (!file_exists($configFile)) {
             exec("mkdir -p /opt/etc/opkg");
@@ -363,19 +385,6 @@ function update($type = 'packages') {
         exec("opkg update && opkg upgrade 2>&1", $output);
     }
     json_send(['output' => implode("\n", $output)]);
-}
-
-function getReleaseNotes($version) {
-    $release = fetchGitHubRelease($version);
-    $notes = [];
-    if ($release && isset($release['body'])) {
-        $notes = explode("\n", trim($release['body']));
-        $notes = array_filter($notes, function($line) {
-            return !empty(trim($line)) && strpos($line, '#') !== 0;
-        });
-    }
-
-    json_send(['notes' => $notes]);
 }
 
 function getLists($paths, bool $useShell = false): array {
