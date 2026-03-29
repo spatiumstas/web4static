@@ -117,7 +117,7 @@ $SERVICES = [
     ],
     'KeenSnap' => [
         'path' => [
-            "/opt/root/KeenSnap/config.sh",
+            "/opt/root/KeenSnap/config.conf",
             "/opt/var/log/keensnap.log"
         ],
         'manual' => function($self) {
@@ -336,11 +336,7 @@ function restartServices($changedCategories = null) {
 function fetchGitHubLatestReleaseInfo(): array {
     $apiUrl = 'https://api.github.com/repos/spatiumstas/web4static/releases/latest';
     $escapedUrl = escapeshellarg($apiUrl);
-
-    $connectTimeout = 5;
-    $maxTime = 15;
-    $command = "curl -s -L --connect-timeout $connectTimeout -m $maxTime -H 'User-Agent: web4static-updater' $escapedUrl 2>/dev/null";
-
+    $command = "curl -s -L --connect-timeout 5 -m 15 -H 'User-Agent: web4static-updater' $escapedUrl 2>/dev/null";
     $response = shell_exec($command);
     $release = json_decode((string)$response, true);
     if (!is_array($release)) {
