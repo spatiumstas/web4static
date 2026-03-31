@@ -371,11 +371,6 @@ function checkUpdate() {
 
 function update($type = 'packages') {
     if ($type === 'web') {
-        $configFile = '/opt/etc/opkg/web4static.conf';
-        if (!file_exists($configFile)) {
-            exec("mkdir -p /opt/etc/opkg");
-            exec("echo 'src/gz web4static https://spatiumstas.github.io/web4static/all' > " . escapeshellarg($configFile));
-        }
         exec("opkg update && opkg upgrade web4static 2>&1", $output);
     } else {
         exec("opkg update && opkg upgrade 2>&1", $output);

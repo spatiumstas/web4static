@@ -2,9 +2,7 @@
 printf "\033c"
 set -e
 
-echo "Устанавливаю репозиторий"
-mkdir -p /opt/etc/opkg
-echo "src/gz web4static https://spatiumstas.github.io/web4static/all" > /opt/etc/opkg/web4static.conf
-echo "Начинаю установку"
-echo ""
+printf "\nУстанавливаю репозиторий\n\n"
+curl -fsSL https://raw.githubusercontent.com/spatiumstas/feedly/main/add-repo.sh | sh
+printf "\n\nНачинаю установку\n\n"
 opkg update && opkg install web4static

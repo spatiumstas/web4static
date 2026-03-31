@@ -16,8 +16,7 @@ opkg update && opkg install curl ca-certificates wget-ssl && curl -fsSL https://
    ```
 2. Установите opkg-репозиторий в систему
    ```
-   mkdir -p /opt/etc/opkg
-   echo "src/gz web4static https://spatiumstas.github.io/web4static/all" > /opt/etc/opkg/web4static.conf
+   curl -fsSL https://raw.githubusercontent.com/spatiumstas/feedly/main/add-repo.sh | sh
    ```
 
 3. Установите пакет
@@ -55,5 +54,5 @@ opkg remove web4static
 ```
 #### Репозитория
 ```
-rm /opt/etc/opkg/web4static.conf
+rm /opt/etc/opkg/feedly.conf
 ```
