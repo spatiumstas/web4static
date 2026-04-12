@@ -2,7 +2,7 @@ SHELL := /bin/bash
 VERSION := $(shell cat VERSION)
 DEPENDENCIES := curl, ip, php8-cgi, php8-mod-curl, lighttpd, lighttpd-mod-cgi, lighttpd-mod-setenv, lighttpd-mod-rewrite
 ROOT_DIR := /opt
-.PHONY: clean _web-clean _web-control _web-scripts _web-ipk web-kn
+.PHONY: clean _web-clean _web-control _web-scripts _web-ipk web4static-ipk
 
 clean:
 	rm -rf out/web
@@ -47,10 +47,10 @@ _web-ipk:
 
 	echo 2.0 > out/$(BUILD_DIR)/debian-binary
 	cd out/$(BUILD_DIR); \
-	tar czvf ../web4static_$(VERSION)_kn.ipk control.tar.gz data.tar.gz debian-binary; \
+	tar czvf ../web4static_$(VERSION).ipk control.tar.gz data.tar.gz debian-binary; \
 	cd ../..
 
-web-kn:
+web4static-ipk:
 	@make \
 		BUILD_DIR=web \
 		_web-ipk

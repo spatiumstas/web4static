@@ -1,17 +1,10 @@
 name: Build and Deploy
 
 on:
-  push:
   workflow_dispatch:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
 
 jobs:
   build-package:
@@ -19,8 +12,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dos2unix
+          
       - name: Prepare web
         shell: bash
         run: |
@@ -38,29 +36,31 @@ jobs:
           done
           node -e 'const fs=require("fs"); const sha=process.env.SHA||""; if(!sha) throw new Error("Missing SHA env"); const files=["styles.css","script.js","functions.php","icons.svg"]; let s=fs.readFileSync("web/share/www/w4s/index.php","utf8"); for(const f of files){ const i=f.lastIndexOf("."); const base=i>=0?f.slice(0,i):f; const ext=i>=0?f.slice(i+1):""; const to=ext?(base+"-"+sha+"."+ext):(base+"-"+sha); s=s.split(f).join(to); } fs.writeFileSync("web/share/www/w4s/index.php", s);'
 
-      - name: Build web
-        run: make web-kn
+      - name: Build package
+        run: make web4static-ipk
 
       - name: Upload files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: web4static
-          path: ./out/web4static_*_kn.ipk
+          path: ./out/web4static_*.ipk
           if-no-files-found: error
 
       - name: Summary
         run: |
           echo '```' >> $GITHUB_STEP_SUMMARY
-          ls ./out/web4static_*_kn.ipk >> $GITHUB_STEP_SUMMARY
+          ls ./out/web4static_*.ipk >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
-  build-repository:
+  publish-latest-release:
     runs-on: ubuntu-22.04
     needs: [ build-package ]
+    env:
+      GH_REPO: ${{ github.repository }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Read version
         id: version
@@ -68,74 +68,60 @@ jobs:
         with:
           path: ./VERSION
           trim: true
-
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: out
           merge-multiple: true
 
-      - name: Display artifacts
-        run: ls -R ./out
-
-      - name: Build repository
-        run: |
-          DEPENDENCIES=$(sed -n 's/^DEPENDENCIES := //p' Makefile | xargs)
-          rm -rf out/_pages
-          mkdir -p out/_pages/all
-          cp out/web4static_${{ steps.version.outputs.content }}_kn.ipk out/_pages/all/web4static_${{ steps.version.outputs.content }}_all.ipk
-
-          echo "Package: web4static" > out/_pages/all/Packages
-          echo "Version: ${{ steps.version.outputs.content }}" >> out/_pages/all/Packages
-          echo "Depends: $DEPENDENCIES" >> out/_pages/all/Packages
-          echo "License: MIT" >> out/_pages/all/Packages
-          echo "Section: net" >> out/_pages/all/Packages
-          echo "Architecture: all" >> out/_pages/all/Packages
-          echo "Filename: web4static_${{ steps.version.outputs.content }}_all.ipk" >> out/_pages/all/Packages
-          echo "Size: $(wc -c out/_pages/all/web4static_${{ steps.version.outputs.content }}_all.ipk | awk '{print $1}')" >> out/_pages/all/Packages
-          echo "SHA256sum: $(sha256sum out/_pages/all/web4static_${{ steps.version.outputs.content }}_all.ipk | awk '{print $1}')" >> out/_pages/all/Packages
-          echo "Description: Web interface" >> out/_pages/all/Packages
-          echo "" >> out/_pages/all/Packages
-
-          gzip -k out/_pages/all/Packages
-
-          echo '<html><head><title>Index of /all/</title></head><body><h1>Index of /all/</h1><hr><pre>' > out/_pages/all/index.html
-          echo '<a href="../">../</a>' >> out/_pages/all/index.html
-          echo '<a href="Packages">Packages</a>' >> out/_pages/all/index.html
-          echo '<a href="Packages.gz">Packages.gz</a>' >> out/_pages/all/index.html
-          echo '<a href="web4static_${{ steps.version.outputs.content }}_all.ipk">web4static_${{ steps.version.outputs.content }}_all.ipk</a>' >> out/_pages/all/index.html
-          echo '</pre><hr></body></html>' >> out/_pages/all/index.html
-
-          echo '<html><head><title>Index of /</title></head><body><h1>Index of /</h1><hr><pre>' > out/_pages/index.html
-          echo '<a href="all/">all/</a>' >> out/_pages/index.html
-          echo '</pre><hr></body></html>' >> out/_pages/index.html
-
-      - name: Upload pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Resolve latest target release
+        id: target-release
+        uses: actions/github-script@v8
         with:
-          path: ./out/_pages
+          script: |
+            const { owner, repo } = context.repo;
+            const releases = await github.paginate(github.rest.repos.listReleases, {
+              owner,
+              repo,
+              per_page: 100,
+            });
+
+            const picked = releases.find((rel) => !rel.draft && !rel.prerelease);
+            if (!picked) {
+              core.setFailed('No release found to update');
+              return;
+            }
+
+            core.setOutput('id', String(picked.id));
+            core.setOutput('tag', picked.tag_name);
+
+      - name: Remove previous web4static ipk assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_ID: ${{ steps.target-release.outputs.id }}
+        run: |
+          gh api "repos/${{ github.repository }}/releases/${RELEASE_ID}/assets" \
+            --jq '.[] | select(.name | test("^web4static_.*\\.ipk$")) | .id' \
+            | while read -r asset_id; do
+                [ -n "$asset_id" ] || continue
+                gh api -X DELETE "repos/${{ github.repository }}/releases/assets/${asset_id}"
+              done
+
+      - name: Upload new web4static ipk assets to latest release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.target-release.outputs.tag }}
+        run: |
+          ls -la ./out/web4static_*.ipk
+          gh release upload "$TAG" ./out/web4static_*.ipk --clobber
 
       - name: Summary
         run: |
           echo '```' >> $GITHUB_STEP_SUMMARY
-          ls -R ./out/_pages >> $GITHUB_STEP_SUMMARY
+          echo "Updated channel: release" >> $GITHUB_STEP_SUMMARY
+          echo "Release tag: ${{ steps.target-release.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          ls ./out/web4static_*.ipk >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-
-  deploy-repository:
-    runs-on: ubuntu-22.04
-    needs: [ build-repository ]
-
-    steps:
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      - name: Summary
-        run: |
-          echo "Repository deployed" >> $GITHUB_STEP_SUMMARY
 
       - name: Dispatch
         if: success()
@@ -145,4 +131,4 @@ jobs:
             -H "Authorization: token ${{ secrets.AGGREGATOR_PAT }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/spatiumstas/feedly/dispatches \
-            -d '{"event_type":"package-built","client_payload":{"package":"${{ github.repository }}"}}'
+            -d '{"event_type":"package-built","client_payload":{"package":"${{ github.repository }}","channel":"release","tag":"${{ steps.target-release.outputs.tag }}"}}'
